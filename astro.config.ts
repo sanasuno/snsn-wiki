@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { locales, defaultLocale } from './src/i18n/i18n.config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
@@ -10,5 +11,9 @@ const BASE_PATH = process.env.BASE_PATH || '/';
 export default defineConfig({
   integrations: [mdx(), sitemap()],
   site: SITE_URL,
-  base: BASE_PATH
+  base: BASE_PATH,
+  i18n: {
+    locales: Object.keys(locales),
+    defaultLocale: defaultLocale
+  }
 });
