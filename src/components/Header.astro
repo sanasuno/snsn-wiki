@@ -1,0 +1,94 @@
+---
+/**
+ * @components/Header.astro
+ * サイト全体のヘッダーを定義するコンポーネント
+ * @param {Locale} locale - ロケール
+ * @param {string} nPrefixBaseUrl - ベースURL
+ * @param {string} currentPath - 現在のパス
+ */
+
+import { t, locales, type Locale, showLanguageSwitcher } from "@i18n/i18n.config";
+
+interface Props {
+    locale: Locale;
+    nPrefixBaseUrl: string;
+    currentPath: string;
+}
+
+const { nPrefixBaseUrl, locale, currentPath } = Astro.props;
+
+type NavItem = {
+    path: string;
+    icon: string;
+    i18nKey: Parameters<typeof t>[0];
+}
+
+const navItems: NavItem[] = [
+    { path: '/', icon: 'fa-solid fa-house', i18nKey: 'nav.home' },
+    { path: '/category', icon: 'fa-solid fa-folder', i18nKey: 'nav.category' },
+    { path: '/tags', icon: 'fa-solid fa-tags', i18nKey: 'nav.tags' },
+    { path: '/graph', icon: 'fa-solid fa-diagram-project', i18nKey: 'nav.graph' }
+]
+
+// 現在のURLに基づいてナビゲーションのアクティブ状態を判定する関数
+// normalize()による正規化が前提
+function isActive(targetPath: string, currentPath: string, nPrefixBaseUrl: string): boolean {
+    const targetUrl = `${nPrefixBaseUrl}${targetPath}`;
+    // ルートパスの場合、自身のパスと一致する場合にアクティブ
+    if (targetPath === '/') {
+        return currentPath === nPrefixBaseUrl;
+    }
+    // 他のパスの場合、対象URL自身またはそのサブパスである場合にアクティブ
+    return (
+        currentPath === targetUrl || 
+        currentPath.startsWith(`${targetUrl}/`)
+    );
+}
+---
+
+<header class="site-header">
+    <!-- モバイルサイドバーのトグルボタン -->
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label={t('sidebar.toggle', locale)}>
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <!-- サイトタイトル -->
+    <a href={nPrefixBaseUrl} class="site-title">{t("site.title", locale)}</a>
+
+    <!-- ナビゲーション -->
+    <nav class="header-nav" aria-label={t("header.navigation", locale)}>
+        {
+            navItems.map((item) => (
+                <a href={nPrefixBaseUrl + item.path} class={isActive(item.path, currentPath, nPrefixBaseUrl) ? 'active': ''}>
+                    <i class={item.icon}></i>
+                    <span class="nav-label" data-i18n={item.i18nKey}>
+                        {t(item.i18nKey, locale)}
+                    </span>
+                </a>
+            ))
+        }
+
+        <!-- ダーク / ライトモード切替ボタン -->
+        <button class="theme-toggle" id="theme-toggle" aria-label={t("theme.toggle", locale)}>
+            <i class="fa-solid fa-moon icon-dark"></i>
+            <i class="fa-solid fa-sun icon-light"></i>
+        </button>
+
+        <!-- 言語切替ボタン -->
+        { showLanguageSwitcher && (
+            <div class="language-switcher" title={t('lang.label', locale)}>
+                <i class="fa-solid fa-language lang-menu-icon" aria-hidden="true" />
+                <select id="lang-list" class="lang-list" aria-label={t('lang.list', locale)}>
+                    {
+                        locales.map((lang: Locale) => ( 
+                                <option value={lang} selected={lang === locale}>
+                                    {t(`lang.${lang}`, lang)}
+                                </option>
+                        ))
+                    }
+                </select>
+                <i class="fa-solid fa-chevron-down lang-menu-caret" aria-hidden="true" />
+            </div>
+        )}
+    </nav>
+</header>

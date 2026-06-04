@@ -1,3 +1,4 @@
+// @ts-check
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
@@ -5,6 +6,7 @@
   "compilerOptions": {
     "paths": {
       "@components/*": ["./src/components/*"],
+      "@content/*": ["./src/content/*"],
       "@i18n/*": ["./src/i18n/*"],
       "@layouts/*": ["./src/layouts/*"],
       "@scripts/*": ["./src/scripts/*"],

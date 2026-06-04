@@ -1,0 +1,130 @@
+---
+/**
+ * @components/MainContent.astro
+ * メインコンテンツを定義するコンポーネント
+ * @param {string} title ページタイトル
+ * @param {Locale} locale ロケール
+ * @param {string} nPrefixBaseUrl プレフィックスベースURL
+ * @param {string} currentPath 現在のパス
+ * @param {string[]} tags タグ
+ * @param {Date} date 作成日
+ * @param {Date} updated 更新日
+ */
+
+import { t, type Locale, formatDate } from '@i18n/i18n.config';
+interface Props {
+    title: string;
+    nPrefixBaseUrl: string;
+    locale: Locale;
+    currentPath: string;
+    tags?: string[];
+    date?: Date;
+    updated?: Date;
+}
+
+const { title, nPrefixBaseUrl, locale, currentPath, tags = [], date, updated } = Astro.props;
+const year = new Date().getFullYear();
+
+type Crumb = {
+    label: string;
+    href: string;
+}
+
+function buildCrumbs(path: string, title: string, nPrefixBaseUrl: string): Crumb[] {
+    const strippedPath = path.startsWith(nPrefixBaseUrl) 
+        ? path.slice(nPrefixBaseUrl.length) || '/'
+        : path;
+    const segments = strippedPath.split('/').filter(Boolean);
+    const crumbs: Crumb[] = [
+        {
+            label: t('nav.home', locale),
+            href: nPrefixBaseUrl
+        }
+    ]
+    let accumulated = '';
+    segments.forEach((segment, index) => {
+        accumulated += `/${segment}`;
+        const isLast = index === segments.length - 1;
+        const label = isLast && title 
+            ? title
+            : segment;
+        crumbs.push({
+            label,
+            href: `${nPrefixBaseUrl}${accumulated}`
+        });
+    });
+    return crumbs;
+}
+
+const crumbs: Crumb[] = buildCrumbs(currentPath, title, nPrefixBaseUrl);
+---
+<main class="main-content" id="main-content">
+    <header class="page-header">
+        <!-- パンくずリスト -->
+        <nav class="breadcrumb">
+            <ol class="breadcrumbs">
+                {crumbs.map((crumb, index) => {
+                    const isHome = index === 0;
+                    const isLast = index === crumbs.length - 1;
+                    return (
+                        <>
+                            <li class:list={[{ 'breadcrumb__current': isLast }]} aria-current={isLast ? 'page' : undefined}>
+                                {crumb.href && !isHome && !isLast
+                                    ? <i class="fa-solid fa-folder" /><a href={crumb.href}>{crumb.label}</a>
+                                    : isHome && !isLast
+                                        ? <i class="fa-solid fa-house" /><a href={crumb.href}>{crumb.label}</a>
+                                        : isHome && isLast
+                                            ? <i class="fa-solid fa-house" /><span>{crumb.label}</span>
+                                            : <i class="fa-regular fa-file" /><span>{crumb.label}</span>
+                                }
+                            </li>
+                            {!isLast && (
+                                <li class="breadcrumb__separator" aria-hidden="true">
+                                    <i class="fa-solid fa-chevron-right" />
+                                </li>
+                            )}
+                        </>
+                    );
+                })}
+            </ol>
+        </nav>
+        <h1 class="page-title">{title}</h1>
+        <div class="page-meta">
+            {(date || updated) && (
+                <div class="page-meta-dates">
+                    {date && (
+                        <span class="page-date">
+                            <i class="fa-regular fa-calendar-plus" />
+                            {t("meta.created", locale)}: {formatDate(date, locale)}
+                        </span>
+                    )}
+                    {updated && (
+                        <span class="page-date">
+                            <i class="fa-solid fa-clock-rotate-left" />
+                            {t("meta.updated", locale)}: {formatDate(updated, locale)}
+                        </span>
+                    )}
+                </div>
+            )}
+            {tags.length > 0 && (
+                <div class="page-tags">
+                    {tags.map(tag => (
+                        <a href={`${nPrefixBaseUrl}/tags/${encodeURIComponent(tag)}`} class="tag">
+                            #{tag}
+                        </a>
+                    ))}
+                </div>
+            )}
+        </div>
+    </header>
+    <slot />
+    <footer class="site-footer">
+        <div class="site-footer-links">
+            <a href={`${nPrefixBaseUrl}/privacy`}>{t('footer.privacy', locale)}</a>
+            <a href={`${nPrefixBaseUrl}/terms`}>{t('footer.terms', locale)}</a>
+        </div>
+        <div class="site-footer-credit">
+            © {year} {t('site.title', locale)}.
+        </div>
+    </footer>
+</main>
