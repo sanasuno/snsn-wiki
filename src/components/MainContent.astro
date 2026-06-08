@@ -31,6 +31,7 @@ interface Props {
 }
 
 const { title, localeBaseUrl, locale, currentPath, categories, tags = [], date, updated, isFallbackContent = false, isWikiPage = false, showMeta = true } = Astro.props;
+const startyear = 2026;
 const year = new Date().getFullYear();
 
 // メタ情報欄に表示するカテゴリ：末尾の1つのみ（例: ['tech', 'astro'] → 'astro'）
@@ -185,7 +186,7 @@ const crumbs: Crumb[] = buildCrumbs(currentPath, title, localeBaseUrl, isWikiPag
             <a href={`${localeBaseUrl}/terms`}>{t('footer.terms', locale)}</a>
         </div>
         <div class="site-footer-credit">
-            © {year} {t('site.title', locale)}.
+            © {startyear}-{year} {t('site.title', locale)}.
         </div>
     </footer>
 </main>
