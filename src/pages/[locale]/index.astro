@@ -5,7 +5,10 @@
  */
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import MainLayout from '@layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
 import { t, locales, type Locale } from '@i18n/i18n.config';
+import { getRoute, removeTrailingSlash } from '@scripts/utils';
+import { getCategoryFromId } from '@scripts/category';
 
 export const getStaticPaths = () => {
 	return locales.map((locale) => ({
@@ -14,12 +17,57 @@ export const getStaticPaths = () => {
 };
 
 const locale = Astro.params.locale as Locale;
+const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+const localeBaseUrl = `${baseUrl}/${locale}`;
+const allPages = await getCollection('wiki', (p) => !p.data.draft && !p.data.hidden);
 
 const alternateLinks = locales.map((locale) => ({
 	locale: locale,
 	url: getRelativeLocaleUrl(locale, '/'),
 }));
 
+const uniquePagesByBaseSlug: Record<string, (typeof allPages)[0]> = {};
+for (const page of allPages) {
+	const parts = page.id.split('/');
+	const pLocale = parts[0];
+	const baseSlug = parts.slice(1).join('/');
+	if (!uniquePagesByBaseSlug[baseSlug]) {
+		uniquePagesByBaseSlug[baseSlug] = page;
+	} else if (pLocale === locale) {
+		uniquePagesByBaseSlug[baseSlug] = page;
+	}
+}
+const pages = Object.values(uniquePagesByBaseSlug);
+
+const recentPages = [...pages]
+	.sort((a, b) => {
+		const aDate = a.data.date || a.data.updated || new Date(0);
+		const bDate = b.data.date || b.data.updated || new Date(0);
+		return bDate.getTime() - aDate.getTime();
+	})
+	.slice(0, 10);
+
+const tagCount: Record<string, number> = {};
+for (const page of pages) {
+	const tags = page.data.tags || [];
+	for (const tag of tags) {
+		tagCount[tag] = (tagCount[tag] || 0) + 1;
+	}
+}
+const topTags = Object.entries(tagCount)
+	.sort((a, b) => b[1] - a[1])
+	.slice(0, 10);
+
+const categoryMap: Record<string, typeof pages> = {};
+for (const page of pages) {
+	const category = getCategoryFromId(page.id);
+	if (category.length > 0) {
+		const topCategory = category[0];
+		if (!categoryMap[topCategory]) categoryMap[topCategory] = [];
+		categoryMap[topCategory].push(page);
+	}
+}
+const catCount = Object.keys(categoryMap).length;
 ---
 
 <MainLayout 
@@ -27,7 +75,100 @@ const alternateLinks = locales.map((locale) => ({
 	description={t('home.description', locale)}
 	locale={locale}
 	alternateLinks={alternateLinks}
+	isWikiPage={false}
+	showMeta={false}
 >
+	<div class="home-page">
+		<section class="home-header">
+			<h1>{t('site.title', locale)}</h1>
+			<p>{t('site.description', locale)}</p>
+			<div class="home-counter">
+				<a href={`${localeBaseUrl}/pages`}>
+					<i class="fa-solid fa-file" />
+					{pages.length} {t('home.counter.pages', locale)}
+				</a>
+				<a href={`${localeBaseUrl}/category`}>
+					<i class="fa-solid fa-folder" />
+					{catCount} {t('home.counter.categories', locale)}
+				</a>
+				<a href={`${localeBaseUrl}/tags`}>
+					<i class="fa-solid fa-tags" />
+					{topTags.length} {t('home.counter.tags', locale)}
+				</a>
+			</div>
+		</section>
 
-	<div>{locale}</div>
+		<!-- 最近更新 -->
+		{ recentPages.length > 0 && (
+			<section class="home-recent">
+				<h2>
+					<i class="fa-solid fa-clock-rotate-left" />
+					{t('home.recentUpdates', locale)}
+				</h2>
+				<div class="home-recent-updates">
+					{recentPages.map((page) => (
+						<a href={getRoute(locale, page.id)} class="home-recent-item">
+							<div class="home-recent-item-title">
+								{page.data.title}
+							</div>
+							{page.data.description && (
+								<div class="home-recent-item-description">
+									{page.data.description}
+								</div>
+							)}
+							{page.data.tags.length > 0 && (
+								<div class="home-recent-item-tags">
+									{page.data.tags.slice(0, 3).map((tag) => (
+										<span class="home-recent-item-tag">
+											#{tag}
+										</span>
+									))}
+								</div>
+							)}
+						</a>
+					))}
+				</div>
+			</section>
+		)}
+
+		<!-- タグクラウド -->
+		{ topTags.length > 0 && (
+			<section class="home-tag-cloud">
+				<h2>
+					<i class="fa-solid fa-tags" />
+					{t('home.tagCloud', locale)}
+				</h2>
+				<div class="home-tag-cloud-tags">
+					{topTags.map(([tag, count]) => (
+						<a href={`${localeBaseUrl}/tag/${tag}`} class="tag">
+							#{tag}
+							<sup>{count}</sup>
+						</a>
+					))}
+					{Object.keys(tagCount).length > topTags.length && (
+						<a href={`${localeBaseUrl}/tag`} class="tag">
+							{t('home.allTags', locale)}
+						</a>
+					)}
+				</div>
+			</section>
+		)}
+		<!-- グラフへのリンク -->
+		<section class="home-graph">
+			<div class="home-graph-icon">
+				<i class="fa-solid fa-diagram-project" />
+			</div>
+			<div class="home-graph-content">
+				<div class="home-graph-title">
+					{t('home.graph', locale)}
+				</div>
+				<div class="home-graph-description">
+					{t('home.graphDescription', locale)}
+				</div>
+			</div>
+			<a href={`${localeBaseUrl}/graph`} class="home-graph-link">
+				{t('home.graphLink', locale)}
+			</a>
+		</section>
+	</div>
 </MainLayout>

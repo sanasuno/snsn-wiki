@@ -24,6 +24,13 @@ export const en = {
   'nav.tags': 'Tags',
   'theme.toggle': 'Toggle theme',
   
+  // Search
+  'search.title':       'Search',
+  'search.placeholder': 'Search pages…',
+  'search.noResults':   'No results found',
+  'search.loading':     'Loading…',
+  'search.hint':        'Move with Tab, Enter to open, Esc to close',
+  
   // Sidebar
   'sidebar.toggle': 'Toggle sidebar',
   'sidebar.navigation': 'Navigation',
@@ -34,6 +41,7 @@ export const en = {
   'sidebar.category': 'Category',
   'sidebar.tags': 'Tags',
   'sidebar.recent': 'Recent Updates',
+  'sidebar.pages': 'Pages',
   'sidebar.sampleAuto': 'Sample (Auto)',
 
   // Category
@@ -61,6 +69,15 @@ export const en = {
   // Home
   'home.title': 'Home',
   'home.description': 'SNSN Wiki Home',
+  'home.counter.pages': 'pages',
+  'home.counter.tags': 'tags',
+  'home.counter.categories': 'categories',
+  'home.recentUpdates': 'Recent Updates',
+  'home.tagCloud': 'Tag Cloud',
+  'home.allTags': 'All Tags',
+  'home.graph': 'Visualize knowledge connections with Graph View',
+  'home.graphDescription': 'Interactively explore the link structure between pages',
+  'home.graphLink': 'Open Graph →',
   
   // Fallback
   'fallback.warning': 'This page does not have a current translation.',
@@ -102,6 +119,13 @@ export const en = {
   'graph.mini.title':   'Connections',
   'graph.mini.loading': 'Loading',
   'graph.mini.noLinks': 'This page has no links yet',
+
+  // Pages
+  'pages.title': 'Pages',
+  'pages.description': 'List of created pages',
+  'pages.filterByTag': 'Filter by tag',
+  'pages.clearFilter': 'Clear filter',
+  'pages.noResults': 'No pages match the selected tags',
 
   // 404
   '404.title':       '404 — Page Not Found',

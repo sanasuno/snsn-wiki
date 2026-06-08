@@ -55,7 +55,8 @@ export const sidebarNavigation: NavigationSection[] = [
             { i18nKey: 'sidebar.search', href: '/search', icon: 'fa-solid fa-magnifying-glass' },
             { i18nKey: 'sidebar.category', href: '/category', icon: 'fa-solid fa-folder' },
             { i18nKey: 'sidebar.tags', href: '/tag', icon: 'fa-solid fa-tags' },
-            { i18nKey: 'sidebar.recent', href: '/recent', icon: 'fa-solid fa-clock-rotate-left' }
+            { i18nKey: 'sidebar.recent', href: '/recent', icon: 'fa-solid fa-clock-rotate-left' },
+            { i18nKey: 'sidebar.pages', href: '/pages', icon: 'fa-solid fa-list' }
         ],
     },
 

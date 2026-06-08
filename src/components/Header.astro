@@ -45,6 +45,21 @@ function isActive(targetPath: string, currentPath: string, localeBaseUrl: string
     <!-- サイトタイトル -->
     <a href={localeBaseUrl} class="site-title">{t("site.title", locale)}</a>
 
+    <!-- 検索ボタン -->
+    <i class="fa-solid fa-magnifying-glass sp-search-icon"></i>
+    <input
+        id="sp-input"
+        class="sp-search-input"
+        type="search"
+        placeholder={t('search.placeholder', locale)}
+        autocomplete="off"
+        spellcheck="false"
+        autofocus
+    />
+    <button id="sp-clear" class="sp-clear-btn" aria-label="clear" hidden>
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+
     <!-- ナビゲーション -->
     <nav class="header-nav" aria-label={t("header.navigation", locale)}>
         {

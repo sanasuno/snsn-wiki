@@ -23,6 +23,13 @@ export const ja = {
   'nav.graph': 'グラフ',
   'nav.tags': 'タグ',
   'theme.toggle': 'テーマ切り替え',
+
+  // 検索
+  'search.title':       '検索',
+  'search.placeholder': 'ページを検索…',
+  'search.noResults':   '結果が見つかりませんでした',
+  'search.loading':     '読み込み中…',
+  'search.hint':        'で移動　Enterで開く　Escで閉じる',
   
   // サイドバー
   'sidebar.toggle': 'サイドバー切り替え',
@@ -34,6 +41,7 @@ export const ja = {
   'sidebar.category': 'カテゴリ',
   'sidebar.tags': 'タグ',
   'sidebar.recent': '最近の更新',
+  'sidebar.pages': 'ページ一覧',
   'sidebar.sampleAuto': 'サンプル（自動）',
 
   // カテゴリ
@@ -61,6 +69,15 @@ export const ja = {
   // ホーム
   'home.title': 'ホーム',
   'home.description': 'SNSN Wikiのホーム',
+  'home.counter.pages': 'ページ',
+  'home.counter.tags': 'タグ',
+  'home.counter.categories': 'カテゴリ',
+  'home.recentUpdates': '最近の更新',
+  'home.tagCloud': 'タグクラウド',
+  'home.allTags': 'すべてのタグ',
+  'home.graph': 'グラフビューで知識の繋がりを可視化',
+  'home.graphDescription': 'ページ間のリンク構造をインタラクティブなネットワークグラフで確認できます',
+  'home.graphLink': 'グラフを開く →',
 
   // フォールバック
   'fallback.warning': 'このページには現在の翻訳がありません。',
@@ -102,6 +119,13 @@ export const ja = {
   'graph.mini.title':   'このページの繋がり',
   'graph.mini.loading': '読み込み中',
   'graph.mini.noLinks': 'このページにはまだリンクがありません',
+
+  // ページ一覧
+  'pages.title': 'ページ一覧',
+  'pages.description': '作成されたページの一覧',
+  'pages.filterByTag': 'タグで絞り込み',
+  'pages.clearFilter': '絞り込みをクリア',
+  'pages.noResults': 'タグに一致するページが見つかりませんでした',
 
   // 404
   '404.title':       '404 — ページが見つかりません',

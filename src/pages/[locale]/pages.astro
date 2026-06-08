@@ -1,0 +1,250 @@
+---
+/**
+ * src/pages/[locale]/pages.astro
+ * ページ一覧ページ
+ */
+import MainLayout from "@layouts/MainLayout.astro";
+import { getCollection } from "astro:content";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { t, locales, defaultLocale, formatDate, type Locale } from "@i18n/i18n.config";
+import { removeTrailingSlash } from "@scripts/utils";
+import { getRoute } from "@scripts/utils";
+
+export const getStaticPaths = () => {
+	return locales.map((locale) => ({
+		params: { locale },
+	}));
+};
+
+const locale = Astro.params.locale as Locale;
+const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+const localeBaseUrl = `${baseUrl}/${locale}`;
+const allPages = await getCollection('wiki', (p) => !p.data.draft && !p.data.hidden);
+
+const alternateLinks = locales.map((loc) => ({
+	locale: loc,
+	url: getRelativeLocaleUrl(loc, '/pages'),
+}));
+
+const uniquePagesByBaseSlug: Record<string, typeof allPages[0]> = {};
+for (const page of allPages) {
+	const parts = page.id.split('/');
+	const pLocale = parts[0];
+	const baseSlug = parts.slice(1).join('/');
+	if (!uniquePagesByBaseSlug[baseSlug]) {
+		uniquePagesByBaseSlug[baseSlug] = page;
+	} else {
+		if (pLocale === locale) uniquePagesByBaseSlug[baseSlug] = page;
+		else if (pLocale === defaultLocale && uniquePagesByBaseSlug[baseSlug].id.split('/')[0] !== locale) {
+			uniquePagesByBaseSlug[baseSlug] = page;
+		}
+	}
+}
+const pages = Object.values(uniquePagesByBaseSlug);
+
+const sortedPages = pages.sort((a, b) => {
+    return a.data.title.localeCompare(b.data.title);
+});
+
+// 全ページから使われているタグを収集（出現回数付き）
+const tagCountMap: Record<string, number> = {};
+for (const page of sortedPages) {
+	for (const tag of page.data.tags ?? []) {
+		tagCountMap[tag] = (tagCountMap[tag] ?? 0) + 1;
+	}
+}
+const allTags = Object.entries(tagCountMap)
+	.sort(([a], [b]) => a.localeCompare(b));
+---
+<MainLayout
+    title={t('pages.title')}
+    description={t('pages.description')}
+    locale={locale}
+    alternateLinks={alternateLinks}
+    isWikiPage={false}
+    showMeta={false}
+>
+    <div class="specialpage-title">
+        <h1>
+            <i class="fa-regular fa-file-lines" />
+            <span data-i18n="pages.title">
+                {t('pages.title', locale)}
+            </span>
+        </h1>
+        <span class="specialpage-description">
+            {t('pages.description', locale)}
+        </span>
+    </div>
+
+    {allTags.length > 0 && (
+        <div class="tag-filter-section">
+            <div class="tag-filter-header">
+                <span class="tag-filter-label">
+                    <i class="fa-solid fa-tag" />
+                    {t('pages.filterByTag', locale)}
+                </span>
+                <div class="tag-filter-controls">
+                    <div class="tag-mode-toggle" role="group" aria-label="Filter mode">
+                        <button id="tag-mode-and" class="tag-mode-btn tag-mode-btn--active" data-mode="and" aria-pressed="true">
+                            AND
+                        </button>
+                        <button id="tag-mode-or" class="tag-mode-btn" data-mode="or" aria-pressed="false">
+                            OR
+                        </button>
+                    </div>
+                    <button id="tag-filter-clear" class="tag-filter-clear" hidden>
+                        <i class="fa-solid fa-xmark" />
+                        {t('pages.clearFilter', locale)}
+                    </button>
+                </div>
+            </div>
+            <div class="tag-filter-chips">
+                {allTags.map(([tag, count]) => (
+                    <button
+                        class="tag-chip"
+                        data-tag={tag}
+                        aria-pressed="false"
+                    >
+                        #{tag}
+                        <span class="tag-chip-count">{count}</span>
+                    </button>
+                ))}
+            </div>
+            <p id="tag-filter-status" class="tag-filter-status" hidden></p>
+        </div>
+    )}
+
+    <div class="index-page" id="pages-list">
+        {sortedPages.map((page) => {
+            const updated = page.data.updated || page.data.date || new Date(0);
+            const isUpdated = !!page.data.updated;
+            const pageTags: string[] = page.data.tags ?? [];
+            return (
+            <section
+                class="page-entry"
+                data-tags={JSON.stringify(pageTags)}
+            >
+                <ul class="index-list">
+                    <li class="index-page-item">
+                        <div class="index-page-item-header">
+                            <div class="index-page-item-title">
+                                <a href={`${localeBaseUrl}/wiki${getRoute(page.id, baseUrl)}`} class="index-file">
+                                    <i class="fa-regular fa-file-lines" />
+                                    {page.data.title}
+                                </a>
+                                {pageTags.length > 0 && (
+                                    <div class="index-tags">
+                                        {pageTags.map((tag: string) => (
+                                            <a href={`${localeBaseUrl}/tag/${encodeURIComponent(tag)}`} class="index-tag">
+                                                #{tag}
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            {page.data.description && (
+                                <p class="index-description">
+                                    {page.data.description}
+                                </p>
+                            )}
+                        </div>
+                        <div class="index-page-item-content">
+                            <p class="index-updated-date">
+                                <i class={`${isUpdated ? 'fa-solid fa-clock-rotate-left' : 'fa-regular fa-calendar-plus'}`} />
+                                {formatDate(updated, locale)}
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+            );
+        })}
+    </div>
+    <p id="pages-empty" class="pages-empty" hidden>
+        <i class="fa-regular fa-folder-open" />
+        {t('pages.noResults', locale)}
+    </p>
+</MainLayout>
+
+<script>
+(() => {
+    const chips = document.querySelectorAll<HTMLButtonElement>('.tag-chip');
+    const entries = document.querySelectorAll<HTMLElement>('.page-entry');
+    const clearBtn = document.getElementById('tag-filter-clear') as HTMLButtonElement | null;
+    const statusEl = document.getElementById('tag-filter-status') as HTMLElement | null;
+    const emptyEl = document.getElementById('pages-empty') as HTMLElement | null;
+    const modeAndBtn = document.getElementById('tag-mode-and') as HTMLButtonElement | null;
+    const modeOrBtn = document.getElementById('tag-mode-or') as HTMLButtonElement | null;
+
+    const selected = new Set<string>();
+    let mode: 'and' | 'or' = 'and';
+
+    function applyFilter() {
+        const hasFilter = selected.size > 0;
+        if (clearBtn) clearBtn.hidden = !hasFilter;
+
+        let visibleCount = 0;
+
+        entries.forEach((entry) => {
+            const tags: string[] = JSON.parse(entry.dataset.tags ?? '[]');
+            let visible: boolean;
+            if (!hasFilter) {
+                visible = true;
+            } else if (mode === 'and') {
+                visible = [...selected].every(t => tags.includes(t));
+            } else {
+                visible = [...selected].some(t => tags.includes(t));
+            }
+            if (visible) {
+                entry.removeAttribute('data-hidden');
+                visibleCount++;
+            } else {
+                entry.setAttribute('data-hidden', '');
+            }
+        });
+
+        if (statusEl) {
+            if (hasFilter) {
+                statusEl.hidden = false;
+                statusEl.textContent = `${visibleCount} / ${entries.length}`;
+            } else {
+                statusEl.hidden = true;
+            }
+        }
+
+        if (emptyEl) emptyEl.hidden = visibleCount > 0;
+    }
+
+    function setMode(next: 'and' | 'or') {
+        mode = next;
+        modeAndBtn?.setAttribute('aria-pressed', String(next === 'and'));
+        modeOrBtn?.setAttribute('aria-pressed', String(next === 'or'));
+        modeAndBtn?.classList.toggle('tag-mode-btn--active', next === 'and');
+        modeOrBtn?.classList.toggle('tag-mode-btn--active', next === 'or');
+        applyFilter();
+    }
+
+    modeAndBtn?.addEventListener('click', () => setMode('and'));
+    modeOrBtn?.addEventListener('click', () => setMode('or'));
+
+    chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+            const tag = chip.dataset.tag ?? '';
+            if (selected.has(tag)) {
+                selected.delete(tag);
+                chip.setAttribute('aria-pressed', 'false');
+            } else {
+                selected.add(tag);
+                chip.setAttribute('aria-pressed', 'true');
+            }
+            applyFilter();
+        });
+    });
+
+    clearBtn?.addEventListener('click', () => {
+        selected.clear();
+        chips.forEach(c => c.setAttribute('aria-pressed', 'false'));
+        applyFilter();
+    });
+})();
+</script>
