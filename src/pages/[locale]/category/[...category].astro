@@ -6,7 +6,7 @@
 import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import MainLayout from '@layouts/MainLayout.astro';
-import { t, locales, type Locale } from '@i18n/i18n.config';
+import { t, locales, formatDate, type Locale } from '@i18n/i18n.config';
 import { getRoute, removeTrailingSlash } from '@scripts/utils';
 import { getCategoryFromId, matchCategory } from '@scripts/category';
 
@@ -163,30 +163,42 @@ const alternateLinks = locales.map((loc) => ({
             <section class="category-directpage-list">
                 <h2>{t('category.pages', locale)}</h2>
                 <ul>
-                    {directPages.map(page => (
-                        <li class="index-page-item">
-                            <div class="index-page-item-title">
-                                <a href={`${localeBaseUrl}/wiki${getRoute(page.id, baseUrl)}`} class="index-file">
-                                    <i class="fa-regular fa-file-lines" />
-                                    {page.data.title}
-                                </a>
-                                {page.data.tags && (
-                                    <div class="index-tags">
-                                        {page.data.tags.map((tag: string) => (
-                                            <a href={`${localeBaseUrl}/tag/${encodeURIComponent(tag)}`} class="index-tag">
-                                                #{tag}
-                                            </a>
-                                        ))}
+                    {directPages.map(page => {
+                        const updated = page.data.updated || page.data.date || new Date(0);
+                        const isUpdated = !!page.data.updated;
+                        return (
+                            <li class="index-page-item">
+                                <div class="index-page-item-header">
+                                    <div class="index-page-item-title">
+                                        <a href={`${localeBaseUrl}/wiki${getRoute(page.id, baseUrl)}`} class="index-file">
+                                            <i class="fa-regular fa-file-lines" />
+                                            {page.data.title}
+                                        </a>
+                                        {page.data.tags && (
+                                            <div class="index-tags">
+                                                {page.data.tags.map((tag: string) => (
+                                                    <a href={`${localeBaseUrl}/tag/${encodeURIComponent(tag)}`} class="index-tag">
+                                                        #{tag}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                            {page.data.description && (
-                                <p class="index-description">
-                                    {page.data.description}
-                                </p>
-                            )}
-                        </li>
-                    ))}
+                                    {page.data.description && (
+                                        <p class="index-description">
+                                            {page.data.description}
+                                        </p>
+                                    )}
+                                </div>
+                                <div class="index-page-item-content">
+                                    <p class="index-updated-date">
+                                        <i class={`${isUpdated ? 'fa-solid fa-clock-rotate-left' : 'fa-regular fa-calendar-plus'}`} />
+                                        {formatDate(updated, locale)}
+                                    </p>
+                                </div>
+                            </li>
+                        );
+                    })}
                 </ul>
             </section>
         )}

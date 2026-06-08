@@ -54,6 +54,10 @@ export const ja = {
   'tag.description': 'タグ一覧',
   'tag.empty': 'タグがありません',
 
+  // 最近の更新
+  'recent.title': '最近の更新',
+  'recent.description': '最近更新されたページの一覧',
+
   // ホーム
   'home.title': 'ホーム',
   'home.description': 'SNSN Wikiのホーム',

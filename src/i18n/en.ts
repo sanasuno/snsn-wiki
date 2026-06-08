@@ -54,6 +54,10 @@ export const en = {
   'tag.description': 'Tag list',
   'tag.empty': 'No tags',
 
+  // Recent
+  'recent.title': 'Recent Updates',
+  'recent.description': 'Recently updated pages',
+
   // Home
   'home.title': 'Home',
   'home.description': 'SNSN Wiki Home',

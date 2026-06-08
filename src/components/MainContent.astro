@@ -168,17 +168,17 @@ const crumbs: Crumb[] = buildCrumbs(currentPath, title, localeBaseUrl, isWikiPag
     )}
     <article class="article-content">
         <slot />
+        <!-- タグ -->
+        {tags.length > 0 && (
+            <div class="page-tags">
+                {tags.map(tag => (
+                    <a href={`${localeBaseUrl}/tag/${encodeURIComponent(tag)}`} class="tag">
+                        #{tag}
+                    </a>
+                ))}
+            </div>
+        )}
     </article>
-    <!-- タグ -->
-    {tags.length > 0 && (
-        <div class="page-tags">
-            {tags.map(tag => (
-                <a href={`${localeBaseUrl}/tag/${encodeURIComponent(tag)}`} class="tag">
-                    #{tag}
-                </a>
-            ))}
-        </div>
-    )}
     <!-- フッター -->
     <footer class="site-footer">
         <div class="site-footer-links">

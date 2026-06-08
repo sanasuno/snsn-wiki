@@ -526,6 +526,11 @@ body {
     }
 }
 
+.article-content {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 24px;
+}
+
 .article-content h1,
 .article-content h2,
 .article-content h3,
@@ -693,8 +698,7 @@ body {
 
 /* -------- タグ -------- */
 .page-tags {
-    margin-top: 24px;
-    padding-top: 24px;
+    margin-top: 12px;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -720,9 +724,7 @@ body {
 
 /* -------- フッター -------- */
 .site-footer {
-    margin-top: 48px;
     padding: 24px 48px;
-    border-top: 1px solid var(--color-border);
     font-size: 0.8rem;
     color: var(--color-text-muted);
 }
@@ -1162,7 +1164,7 @@ body {
 .index-page {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
 }
 
 .index-page-category {
@@ -1196,8 +1198,13 @@ body {
 }
 
 .index-page-item {
-    padding: 10px 0;
+    padding: 0;
     border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+}
+
+.index-page-item-header {
     display: flex-start;
     flex-direction: column;
     justify-content: space-between;
@@ -1237,6 +1244,7 @@ body {
 }
 
 .index-description {
+    margin: 8px 0 !important;
     font-size: 0.85rem;
     color: var(--color-text-muted);
 }
@@ -1255,6 +1263,12 @@ body {
     border-radius: var(--radius-lg);
     color: var(--color-accent) !important;
     text-decoration: none !important;
+}
+
+.index-updated-date {
+    font-size: 0.8rem;
+    color: var(--color-text-subtle);
+    white-space: nowrap;
 }
 
 /* -------- カテゴリ一覧ページ -------- */
