@@ -26,6 +26,7 @@ export const ja = {
 
   // 検索
   'search.title':       '検索',
+  'search.description': 'Wikiページのタイトルと本文を検索します',
   'search.placeholder': 'ページを検索…',
   'search.noResults':   '結果が見つかりませんでした',
   'search.loading':     '読み込み中…',

@@ -1,0 +1,461 @@
+---
+/**
+ * src/components/HeaderSearch.astro
+ *
+ * ヘッダー用検索コンポーネント。
+ * - 入力中: ドロップダウンで候補を最大8件表示
+ * - Enter / 候補クリック: /[locale]/search?q=... に遷移
+ * - Esc: ドロップダウンを閉じる
+ */
+import type { Locale } from '@i18n/i18n.config';
+import { t, defaultLocale } from '@i18n/i18n.config';
+import { removeTrailingSlash } from '@scripts/utils';
+
+interface Props {
+    locale?: Locale;
+    localeBaseUrl?: string;
+}
+
+const { locale = defaultLocale, localeBaseUrl = '' } = Astro.props;
+const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+const placeholder = t('search.placeholder', locale) ?? (locale === 'ja' ? 'ページを検索…' : 'Search pages…');
+const searchPageUrl = `${localeBaseUrl}/search`;
+---
+
+<div
+    id="header-search-root"
+    class="header-search"
+    data-locale={locale}
+    data-base-url={baseUrl}
+    data-search-page={searchPageUrl}
+    role="search"
+>
+    <i class="fa-solid fa-magnifying-glass header-search-icon" aria-hidden="true"></i>
+    <input
+        id="header-search-input"
+        class="header-search-input"
+        type="search"
+        placeholder={placeholder}
+        autocomplete="off"
+        spellcheck="false"
+        aria-label={placeholder}
+        aria-autocomplete="list"
+        aria-controls="header-search-dropdown"
+        aria-expanded="false"
+    />
+    <!-- ドロップダウン -->
+    <ul
+        id="header-search-dropdown"
+        class="header-search-dropdown"
+        role="listbox"
+        hidden
+    ></ul>
+</div>
+
+<style is:global>
+.header-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 280px;
+    min-width: 0;
+}
+
+.header-search-icon {
+    position: absolute;
+    left: 10px;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.header-search-input {
+    width: 100%;
+    padding: 6px 10px 6px 30px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-family: var(--font-sans);
+    outline: none;
+    transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+.header-search-input:focus {
+    border-color: var(--color-accent);
+    background: var(--color-bg);
+    box-shadow: 0 0 0 2px var(--color-accent-light, rgba(99,102,241,0.12));
+}
+
+.header-search-input::-webkit-search-cancel-button {
+    display: none;
+}
+
+/* ドロップダウン */
+.header-search-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    list-style: none;
+    margin: 0;
+    padding: 4px;
+    z-index: 9999;
+    max-height: 320px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.header-search-dropdown[hidden] {
+    display: none;
+}
+
+/* 各候補 */
+.hsd-item {
+    border-radius: var(--radius-sm);
+}
+
+.hsd-item a {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: background var(--transition);
+}
+
+.hsd-item a:hover,
+.hsd-item.active a {
+    background: var(--color-bg-accent);
+}
+
+.hsd-item-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hsd-item-title i {
+    color: var(--color-text-subtle);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.hsd-item-title mark {
+    background: var(--color-accent-light, rgba(99,102,241,0.15));
+    color: var(--color-accent);
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 700;
+}
+
+.hsd-item-excerpt {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hsd-item-excerpt mark {
+    background: var(--color-accent-light, rgba(99,102,241,0.15));
+    color: var(--color-accent);
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 600;
+}
+
+/* 「すべての結果を見る」フッター */
+.hsd-footer {
+    border-top: 1px solid var(--color-border);
+    margin-top: 4px;
+    padding-top: 4px;
+}
+
+.hsd-footer a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 10px;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition), color var(--transition);
+}
+
+.hsd-footer a:hover,
+.hsd-footer.active a {
+    background: var(--color-bg-accent);
+    color: var(--color-accent);
+}
+
+/* ローディング / 結果なし */
+.hsd-status {
+    padding: 10px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+</style>
+
+<script>
+const root       = document.getElementById('header-search-root')!;
+const input      = document.getElementById('header-search-input') as HTMLInputElement;
+const dropdown   = document.getElementById('header-search-dropdown') as HTMLUListElement;
+
+const locale     = root.dataset.locale     ?? 'ja';
+const baseUrl    = root.dataset.baseUrl    ?? '';
+const searchPage = root.dataset.searchPage ?? '';
+
+const DEBOUNCE_MS   = 120;
+const MAX_DROPDOWN  = 8;
+const CONTEXT_CHARS = 40;
+
+interface SearchEntry { url: string; title: string; body: string; excerpt: string; }
+let index: SearchEntry[] | null = null;
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+// 0 = 「すべての結果を見る」, 1~ = 候補
+let activeIdx = -1;
+
+// ---- インデックスロード ----
+
+async function ensureIndex() {
+    if (index) return;
+    try {
+        const res = await fetch(`${baseUrl}/search-index.${locale}.json`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        index = await res.json();
+    } catch (e) {
+        console.error('[HeaderSearch] index load failed:', e);
+    }
+}
+
+// ---- ユーティリティ ----
+
+function escapeRe(s: string) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function highlight(text: string, query: string): string {
+    const safe = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    if (!query) return safe;
+    return safe.replace(new RegExp(`(${escapeRe(query)})`, 'gi'), '<mark>$1</mark>');
+}
+
+function extractSnippet(body: string, query: string): string {
+    const pos = body.toLowerCase().indexOf(query.toLowerCase());
+    if (pos === -1) return body.slice(0, 60);
+    const start = Math.max(0, pos - CONTEXT_CHARS);
+    const end   = Math.min(body.length, pos + query.length + CONTEXT_CHARS);
+    let s = body.slice(start, end);
+    if (start > 0) s = '…' + s;
+    if (end < body.length) s += '…';
+    return s;
+}
+
+function search(query: string): SearchEntry[] {
+    const q = query.trim().toLowerCase();
+    if (!q || !index) return [];
+    const scored = index
+        .map(entry => {
+            const inTitle = entry.title.toLowerCase().includes(q);
+            const inBody  = entry.body.toLowerCase().includes(q);
+            if (!inTitle && !inBody) return null;
+            return { entry, score: (inTitle ? 2 : 0) + (inBody ? 1 : 0) };
+        })
+        .filter(Boolean) as { entry: SearchEntry; score: number }[];
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, MAX_DROPDOWN).map(s => s.entry);
+}
+
+// ---- ドロップダウン表示 ----
+
+function openDropdown() {
+    dropdown.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+}
+
+function closeDropdown() {
+    dropdown.hidden = true;
+    input.setAttribute('aria-expanded', 'false');
+    activeIdx = -1;
+}
+
+function renderDropdown(entries: SearchEntry[], query: string) {
+    dropdown.innerHTML = '';
+    activeIdx = -1;
+
+    if (!entries.length) {
+        dropdown.innerHTML = `<li class="hsd-status">${
+            locale === 'ja'
+                ? '結果が見つかりませんでした'
+                : 'No results found'
+        }</li>`;
+        openDropdown();
+        return;
+    }
+
+    // 候補リスト
+    for (const entry of entries) {
+        const snippet = extractSnippet(entry.body, query.trim());
+        const li = document.createElement('li');
+        li.className = 'hsd-item';
+        li.setAttribute('role', 'option');
+        const a = document.createElement('a');
+        a.href = `${baseUrl}${entry.url}`;
+        a.innerHTML = `
+            <span class="hsd-item-title">
+                <i class="fa-regular fa-file-lines"></i>
+                ${highlight(entry.title, query.trim())}
+            </span>
+            <span class="hsd-item-excerpt">${highlight(snippet, query.trim())}</span>
+        `;
+        a.addEventListener('mousedown', (e) => {
+            // クリック時にinputのblurより先に遷移させる
+            e.preventDefault();
+            closeDropdown();
+            window.location.href = a.href;
+        });
+        li.appendChild(a);
+        dropdown.appendChild(li);
+    }
+
+    // 「すべての結果を見る」フッター
+    const footer = document.createElement('li');
+    footer.className = 'hsd-footer';
+    footer.setAttribute('role', 'option');
+    const footerA = document.createElement('a');
+    footerA.href = `${searchPage}?q=${encodeURIComponent(query.trim())}`;
+    const allLabel = locale === 'ja' ? 'すべての結果を見る' : 'See all results';
+    footerA.innerHTML = `<span>${allLabel}</span><i class="fa-solid fa-arrow-right"></i>`;
+    footerA.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        closeDropdown();
+        window.location.href = footerA.href;
+    });
+    footer.appendChild(footerA);
+    dropdown.appendChild(footer);
+
+    openDropdown();
+}
+
+// ---- キーボードナビ ----
+
+function getItems(): HTMLElement[] {
+    // hsd-item の a + hsd-footer の a
+    return Array.from(dropdown.querySelectorAll('.hsd-item, .hsd-footer')) as HTMLElement[];
+}
+
+function setActive(idx: number) {
+    const items = getItems();
+    items.forEach((el, i) => el.classList.toggle('active', i === idx));
+    if (items[idx]) items[idx].scrollIntoView({ block: 'nearest' });
+    activeIdx = idx;
+}
+
+function moveActive(dir: number) {
+    const items = getItems();
+    if (!items.length) return;
+    let next = activeIdx + dir;
+    if (next < -1) next = items.length - 1;
+    if (next >= items.length) next = -1;
+    // -1 のときは選択解除（input にフォーカス戻る）
+    if (next === -1) {
+        items.forEach(el => el.classList.remove('active'));
+        activeIdx = -1;
+    } else {
+        setActive(next);
+    }
+}
+
+function activateSelected() {
+    const items = getItems();
+    const item = items[activeIdx];
+    if (item) {
+        const a = item.querySelector('a') as HTMLAnchorElement | null;
+        if (a) { closeDropdown(); window.location.href = a.href; }
+    } else {
+        // 何も選択されていない場合は検索ページへ
+        goToSearchPage();
+    }
+}
+
+function goToSearchPage() {
+    const q = input.value.trim();
+    if (!q) return;
+    closeDropdown();
+    window.location.href = `${searchPage}?q=${encodeURIComponent(q)}`;
+}
+
+// ---- イベント ----
+
+input.addEventListener('focus', async () => {
+    if (input.value.trim()) {
+        await ensureIndex();
+        const hits = search(input.value);
+        renderDropdown(hits, input.value);
+    }
+});
+
+input.addEventListener('input', () => {
+    const q = input.value;
+    if (debounceTimer) clearTimeout(debounceTimer);
+    if (!q.trim()) { closeDropdown(); return; }
+
+    debounceTimer = setTimeout(async () => {
+        await ensureIndex();
+        const hits = search(q);
+        renderDropdown(hits, q);
+    }, DEBOUNCE_MS);
+});
+
+input.addEventListener('keydown', (e) => {
+    if (dropdown.hidden) {
+        if (e.key === 'Enter') { e.preventDefault(); goToSearchPage(); }
+        return;
+    }
+    if (e.key === 'ArrowDown')  { e.preventDefault(); moveActive(+1); }
+    if (e.key === 'ArrowUp')    { e.preventDefault(); moveActive(-1); }
+    if (e.key === 'Enter')      { e.preventDefault(); activateSelected(); }
+    if (e.key === 'Escape')     { e.preventDefault(); closeDropdown(); }
+});
+
+// フォーカスが外れたらドロップダウンを閉じる
+input.addEventListener('blur', () => {
+    // mousedown で先に遷移しているので少し遅らせる
+    setTimeout(closeDropdown, 150);
+});
+
+// ページ外クリックで閉じる
+document.addEventListener('click', (e) => {
+    if (!root.contains(e.target as Node)) closeDropdown();
+});
+
+// / キー or Ctrl+K でヘッダー入力欄にフォーカス
+document.addEventListener('keydown', (e) => {
+    const tag = (document.activeElement as HTMLElement)?.tagName;
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault(); input.focus();
+    }
+    if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        e.preventDefault(); input.focus();
+    }
+});
+</script>

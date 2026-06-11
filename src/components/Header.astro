@@ -1,14 +1,12 @@
 ---
 /**
  * @components/Header.astro
- * サイト全体のヘッダーを定義するコンポーネント
- * @param {Locale} locale - ロケール
- * @param {string} localeBaseUrl - ロケールベースURL
- * @param {string} currentPath - 現在のパス
+ * ※ HeaderSearch を追加、旧 sp-input/sp-clear を削除
  */
 
 import { t, locales, type Locale, showLanguageSwitcher } from "@i18n/i18n.config";
 import { headerNavigation } from "@layouts/header.config";
+import HeaderSearch from "@components/HeaderSearch.astro";   // ← 追加
 
 interface Props {
     locale: Locale;
@@ -18,19 +16,15 @@ interface Props {
 
 const { localeBaseUrl, locale, currentPath }: Props = Astro.props;
 
-const navItems= headerNavigation;
+const navItems = headerNavigation;
 
-// 現在のURLに基づいてナビゲーションのアクティブ状態を判定する関数
-// normalize()による正規化が前提
 function isActive(targetPath: string, currentPath: string, localeBaseUrl: string): boolean {
     const targetUrl = `${localeBaseUrl}${targetPath}`;
-    // ルートパスの場合、自身のパスと一致する場合にアクティブ
     if (targetPath === '/') {
         return currentPath === localeBaseUrl;
     }
-    // 他のパスの場合、対象URL自身またはそのサブパスである場合にアクティブ
     return (
-        currentPath === targetUrl || 
+        currentPath === targetUrl ||
         currentPath.startsWith(`${targetUrl}/`)
     );
 }
@@ -45,20 +39,8 @@ function isActive(targetPath: string, currentPath: string, localeBaseUrl: string
     <!-- サイトタイトル -->
     <a href={localeBaseUrl} class="site-title">{t("site.title", locale)}</a>
 
-    <!-- 検索ボタン -->
-    <i class="fa-solid fa-magnifying-glass sp-search-icon"></i>
-    <input
-        id="sp-input"
-        class="sp-search-input"
-        type="search"
-        placeholder={t('search.placeholder', locale)}
-        autocomplete="off"
-        spellcheck="false"
-        autofocus
-    />
-    <button id="sp-clear" class="sp-clear-btn" aria-label="clear" hidden>
-        <i class="fa-solid fa-xmark"></i>
-    </button>
+    <!-- 検索コンポーネント（旧 sp-input/sp-clear/sp-search-icon を置き換え） -->
+    <HeaderSearch locale={locale} localeBaseUrl={localeBaseUrl} />
 
     <!-- ナビゲーション -->
     <nav class="header-nav" aria-label={t("header.navigation", locale)}>
@@ -85,10 +67,10 @@ function isActive(targetPath: string, currentPath: string, localeBaseUrl: string
                 <i class="fa-solid fa-language lang-menu-icon" aria-hidden="true" />
                 <select id="lang-list" class="lang-list" aria-label={t('lang.list', locale)}>
                     {
-                        locales.map((lang: Locale) => ( 
-                                <option value={lang} selected={lang === locale}>
-                                    {t(`lang.${lang}`, lang)}
-                                </option>
+                        locales.map((lang: Locale) => (
+                            <option value={lang} selected={lang === locale}>
+                                {t(`lang.${lang}`, lang)}
+                            </option>
                         ))
                     }
                 </select>

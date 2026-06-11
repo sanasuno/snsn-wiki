@@ -17,13 +17,13 @@ interface Props {
 
 const { locale = defaultLocale, baseUrl = '' } = Astro.props;
 
-// i18n ラベル（キーが未定義の場合はフォールバック文字列を使用）
+// i18n ラベル
 const label = {
-    placeholder: t('search.placeholder', locale) ?? (locale === 'ja' ? 'ページを検索…' : 'Search pages…'),
-    noResults:   t('search.noResults',   locale) ?? (locale === 'ja' ? '結果が見つかりませんでした' : 'No results found'),
-    loading:     t('search.loading',     locale) ?? (locale === 'ja' ? '読み込み中…' : 'Loading…'),
-    title:       t('search.title',       locale) ?? (locale === 'ja' ? '検索' : 'Search'),
-    hint:        t('search.hint',        locale) ?? (locale === 'ja' ? 'で移動　Enterで開く　Escで閉じる' : 'to navigate　Enter to open　Esc to close'),
+    placeholder: t('search.placeholder', locale),
+    noResults:   t('search.noResults',   locale),
+    loading:     t('search.loading',     locale),
+    title:       t('search.title',       locale),
+    hint:        t('search.hint',        locale),
 };
 ---
 
@@ -35,7 +35,9 @@ const label = {
     title={`${label.title} (/)`}
 >
     <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-trigger-label">{label.title}</span>
+    <span class="search-trigger-label">
+        {label.title}
+    </span>
     <kbd class="search-trigger-kbd">/</kbd>
 </button>
 

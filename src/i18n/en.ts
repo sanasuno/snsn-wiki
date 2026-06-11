@@ -26,6 +26,7 @@ export const en = {
   
   // Search
   'search.title':       'Search',
+  'search.description': 'Search wiki pages by title and content',
   'search.placeholder': 'Search pages…',
   'search.noResults':   'No results found',
   'search.loading':     'Loading…',

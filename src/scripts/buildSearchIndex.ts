@@ -35,11 +35,12 @@ export interface SearchEntry {
 // ----------------------------------------
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CONTENT_ROOT = path.resolve(__dirname, '../../content/wiki');
-const PUBLIC_DIR   = path.resolve(__dirname, '../../../public');
+const CONTENT_ROOT = path.resolve(__dirname, '../content/wiki');
+const PUBLIC_DIR   = path.resolve(__dirname, '../../public');
 
 /** サポートするロケール（i18n.config.ts の locales と合わせる） */
-const LOCALES = ['ja', 'en'] as const;
+import { locales } from '@i18n/i18n.config';
+const LOCALES = locales as readonly string[];
 type Locale = typeof LOCALES[number];
 
 // ----------------------------------------
@@ -168,6 +169,8 @@ function buildEntries(locale: Locale): SearchEntry[] {
 // ----------------------------------------
 
 function main() {
+    console.log('CONTENT_ROOT:', CONTENT_ROOT);
+    console.log('PUBLIC_DIR:  ', PUBLIC_DIR);
     if (!fs.existsSync(PUBLIC_DIR)) {
         fs.mkdirSync(PUBLIC_DIR, { recursive: true });
     }

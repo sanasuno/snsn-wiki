@@ -1,13 +1,8 @@
 ---
 /**
  * src/pages/[locale]/search.astro
- *
- * 全文検索ページ。
- * - ?q= パラメータによる URL 共有対応
- * - ビルド時生成の /search-index.[locale].json をクライアントサイドで fetch
- * - リアルタイムフィルタリング（デバウンス 150ms）
  */
-import { locales, defaultLocale, type Locale } from '@i18n/i18n.config';
+import { locales, type Locale } from '@i18n/i18n.config';
 import { t } from '@i18n/i18n.config';
 import MainLayout from '@layouts/MainLayout.astro';
 import { removeTrailingSlash } from '@scripts/utils';
@@ -17,26 +12,15 @@ export async function getStaticPaths(): Promise<GetStaticPathsResult> {
     return locales.map((locale) => ({ params: { locale } }));
 }
 
-interface Props {
-    locale: Locale;
-}
-
 const { locale } = Astro.params as { locale: Locale };
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 
-// i18n ラベル（キー未定義時はフォールバック）
 const label = {
-    pageTitle:   t('search.title',       locale) ?? (locale === 'ja' ? '検索'                        : 'Search'),
-    placeholder: t('search.placeholder', locale) ?? (locale === 'ja' ? 'ページを検索…'               : 'Search pages…'),
-    noResults:   t('search.noResults',   locale) ?? (locale === 'ja' ? '結果が見つかりませんでした'   : 'No results found'),
-    loading:     t('search.loading',     locale) ?? (locale === 'ja' ? '読み込み中…'                 : 'Loading…'),
-    resultCount: (n: number) => locale === 'ja' ? `${n} 件` : `${n} result${n !== 1 ? 's' : ''}`,
-    description: locale === 'ja'
-        ? 'Wikiページのタイトルと本文を検索します'
-        : 'Search across all wiki page titles and content',
+    pageTitle:   t('search.title',       locale) ?? (locale === 'ja' ? '検索'                      : 'Search'),
+    placeholder: t('search.placeholder', locale) ?? (locale === 'ja' ? 'ページを検索…'             : 'Search pages…'),
+    description: t('search.description', locale) ?? (locale === 'ja' ? 'Wikiページのタイトルと本文を検索します' : 'Search across all wiki page titles and content'),
 };
 
-// alternate links（言語切替用）
 const siteUrl = Astro.site ? Astro.site.href.replace(/\/$/, '') : '';
 const alternateLinks = locales.map((l) => ({
     locale: l,
@@ -52,8 +36,13 @@ const alternateLinks = locales.map((l) => ({
     isWikiPage={false}
     showMeta={false}
 >
-    <div class="search-page">
-        <!-- ページヘッダー -->
+    <!-- data-* 属性でサーバー値をクライアントに渡す -->
+    <div
+        id="search-root"
+        class="search-page"
+        data-locale={locale}
+        data-base-url={baseUrl}
+    >
         <div class="specialpage-title">
             <h1>
                 <i class="fa-solid fa-magnifying-glass" style="color: var(--color-accent); margin-right: 0.4em;"></i>
@@ -62,7 +51,6 @@ const alternateLinks = locales.map((l) => ({
             <p class="specialpage-description">{label.description}</p>
         </div>
 
-        <!-- 検索入力 -->
         <div class="sp-search-bar">
             <i class="fa-solid fa-magnifying-glass sp-search-icon"></i>
             <input
@@ -79,21 +67,12 @@ const alternateLinks = locales.map((l) => ({
             </button>
         </div>
 
-        <!-- ステータスバー -->
         <p id="sp-status" class="sp-status" aria-live="polite" hidden></p>
-
-        <!-- 結果リスト -->
         <ul id="sp-results" class="sp-results" role="list"></ul>
     </div>
 </MainLayout>
 
-<style>
-/* -------- ページ全体 -------- */
-.search-page {
-    max-width: 760px;
-}
-
-/* -------- 検索バー -------- */
+<style is:global>
 .sp-search-bar {
     position: relative;
     display: flex;
@@ -151,7 +130,6 @@ const alternateLinks = locales.map((l) => ({
     color: var(--color-text);
 }
 
-/* -------- ステータス -------- */
 .sp-status {
     font-size: 0.825rem;
     color: var(--color-text-muted);
@@ -161,7 +139,6 @@ const alternateLinks = locales.map((l) => ({
     gap: 6px;
 }
 
-/* -------- 結果リスト -------- */
 .sp-results {
     list-style: none;
     padding: 0;
@@ -171,7 +148,6 @@ const alternateLinks = locales.map((l) => ({
     gap: 2px;
 }
 
-/* -------- 各結果カード -------- */
 .sp-result-item a {
     display: block;
     padding: 14px 16px;
@@ -184,7 +160,7 @@ const alternateLinks = locales.map((l) => ({
 
 .sp-result-item a:hover {
     border-color: var(--color-accent);
-    background: var(--color-bg-accent);
+    background: var(--color-bg-hover);
     transform: translateX(2px);
 }
 
@@ -230,7 +206,6 @@ const alternateLinks = locales.map((l) => ({
     font-family: var(--font-mono);
 }
 
-/* -------- 空状態 -------- */
 .sp-empty {
     padding: 48px 0;
     text-align: center;
@@ -240,6 +215,7 @@ const alternateLinks = locales.map((l) => ({
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    list-style: none;
 }
 
 .sp-empty i {
@@ -247,82 +223,47 @@ const alternateLinks = locales.map((l) => ({
     color: var(--color-text-subtle);
 }
 
-/* -------- ローディング -------- */
 .sp-loading {
     padding: 48px 0;
     text-align: center;
     color: var(--color-text-muted);
     font-size: 0.875rem;
+    list-style: none;
 }
 </style>
 
-<script define:vars={{ locale, baseUrl }}>
-// ----------------------------------------
-// 設定
-// ----------------------------------------
+<script>
+// define:vars を使わず data-* 属性から値を取得
+const root    = document.getElementById('search-root')!;
+const locale  = root.dataset.locale  ?? 'ja';
+const baseUrl = root.dataset.baseUrl ?? '';
+
 const DEBOUNCE_MS   = 150;
 const MAX_RESULTS   = 50;
 const CONTEXT_CHARS = 80;
 
-// ----------------------------------------
-// DOM
-// ----------------------------------------
-const input    = document.getElementById('sp-input');
-const results  = document.getElementById('sp-results');
-const statusEl = document.getElementById('sp-status');
-const clearBtn = document.getElementById('sp-clear');
+const input    = document.getElementById('sp-input')    as HTMLInputElement;
+const results  = document.getElementById('sp-results')  as HTMLUListElement;
+const statusEl = document.getElementById('sp-status')   as HTMLParagraphElement;
+const clearBtn = document.getElementById('sp-clear')    as HTMLButtonElement;
 
-let index        = null;   // SearchEntry[]
-let debounceTimer = null;
-let currentQuery  = '';
+interface SearchEntry { url: string; title: string; body: string; excerpt: string; }
+let index: SearchEntry[] | null = null;
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-// ----------------------------------------
-// URL パラメータとの同期
-// ----------------------------------------
+// ---- URL パラメータ同期 ----
 
-function getQueryParam() {
+function getQueryParam(): string {
     return new URLSearchParams(window.location.search).get('q') ?? '';
 }
 
-function setQueryParam(q) {
+function setQueryParam(q: string) {
     const url = new URL(window.location.href);
-    if (q) {
-        url.searchParams.set('q', q);
-    } else {
-        url.searchParams.delete('q');
-    }
-    // pushState で履歴に積む（戻るボタン対応）
+    q ? url.searchParams.set('q', q) : url.searchParams.delete('q');
     window.history.pushState({}, '', url.toString());
 }
 
-// ページロード時に ?q= があれば検索を実行
-window.addEventListener('DOMContentLoaded', async () => {
-    const q = getQueryParam();
-    if (q) {
-        input.value = q;
-        clearBtn.hidden = false;
-        await ensureIndex();
-        runSearch(q);
-    } else {
-        showInitial();
-    }
-});
-
-// 戻る/進む ボタン対応
-window.addEventListener('popstate', () => {
-    const q = getQueryParam();
-    input.value = q;
-    clearBtn.hidden = !q;
-    if (q) {
-        runSearch(q);
-    } else {
-        showInitial();
-    }
-});
-
-// ----------------------------------------
-// インデックスの遅延ロード
-// ----------------------------------------
+// ---- インデックスロード ----
 
 async function ensureIndex() {
     if (index) return;
@@ -337,77 +278,61 @@ async function ensureIndex() {
     }
 }
 
-// ----------------------------------------
-// 検索ロジック
-// ----------------------------------------
+// ---- 検索ロジック ----
 
-function escapeRe(s) {
+function escapeRe(s: string) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function highlight(text, query) {
-    const safe = text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+function highlight(text: string, query: string): string {
+    const safe = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     if (!query) return safe;
-    const re = new RegExp(`(${escapeRe(query)})`, 'gi');
-    return safe.replace(re, '<mark>$1</mark>');
+    return safe.replace(new RegExp(`(${escapeRe(query)})`, 'gi'), '<mark>$1</mark>');
 }
 
-function extractSnippet(body, query) {
+function extractSnippet(body: string, query: string): string {
     if (!query) return body.slice(0, 140);
-    const lc  = body.toLowerCase();
-    const pos = lc.indexOf(query.toLowerCase());
+    const pos = body.toLowerCase().indexOf(query.toLowerCase());
     if (pos === -1) return body.slice(0, 140);
     const start = Math.max(0, pos - CONTEXT_CHARS);
     const end   = Math.min(body.length, pos + query.length + CONTEXT_CHARS);
-    let snippet = body.slice(start, end);
-    if (start > 0) snippet = '…' + snippet;
-    if (end < body.length) snippet += '…';
-    return snippet;
+    let s = body.slice(start, end);
+    if (start > 0) s = '…' + s;
+    if (end < body.length) s += '…';
+    return s;
 }
 
-function search(query) {
+function search(query: string): SearchEntry[] {
     const q = query.trim().toLowerCase();
     if (!q || !index) return [];
-
-    const scored = [];
-    for (const entry of index) {
-        const inTitle = entry.title.toLowerCase().includes(q);
-        const inBody  = entry.body.toLowerCase().includes(q);
-        if (!inTitle && !inBody) continue;
-        scored.push({ entry, score: (inTitle ? 2 : 0) + (inBody ? 1 : 0) });
-    }
-
+    const scored = index
+        .map(entry => {
+            const inTitle = entry.title.toLowerCase().includes(q);
+            const inBody  = entry.body.toLowerCase().includes(q);
+            if (!inTitle && !inBody) return null;
+            return { entry, score: (inTitle ? 2 : 0) + (inBody ? 1 : 0) };
+        })
+        .filter(Boolean) as { entry: SearchEntry; score: number }[];
     scored.sort((a, b) => b.score - a.score);
     return scored.slice(0, MAX_RESULTS).map(s => s.entry);
 }
 
-// ----------------------------------------
-// 描画
-// ----------------------------------------
+// ---- 描画 ----
 
-function renderResults(entries, query) {
+function renderResults(entries: SearchEntry[], query: string) {
     results.innerHTML = '';
-
     if (!entries.length) {
         showStatus('empty', query);
         return;
     }
-
-    // 件数表示
     const count = entries.length;
-    const countLabel = locale === 'ja'
-        ? `${count} 件`
-        : `${count} result${count !== 1 ? 's' : ''}`;
+    const countLabel = locale === 'ja' ? `${count} 件` : `${count} result${count !== 1 ? 's' : ''}`;
     showStatusText(`<i class="fa-solid fa-check" style="color:var(--color-accent)"></i> ${countLabel}`);
 
     for (const entry of entries) {
         const snippet = extractSnippet(entry.body, query.trim());
         const li = document.createElement('li');
         li.className = 'sp-result-item';
-
         const a = document.createElement('a');
         a.href = `${baseUrl}${entry.url}`;
         a.innerHTML = `
@@ -418,17 +343,12 @@ function renderResults(entries, query) {
             <div class="sp-result-excerpt">${highlight(snippet, query.trim())}</div>
             <div class="sp-result-url">${entry.url}</div>
         `;
-
         li.appendChild(a);
         results.appendChild(li);
     }
 }
 
-// ----------------------------------------
-// 状態表示ヘルパー
-// ----------------------------------------
-
-function showStatusText(html) {
+function showStatusText(html: string) {
     statusEl.innerHTML = html;
     statusEl.hidden = false;
 }
@@ -439,66 +359,70 @@ function showInitial() {
 }
 
 function showLoading() {
-    results.innerHTML = `
-        <li class="sp-loading">
-            <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px"></i>
-            ${locale === 'ja' ? '読み込み中…' : 'Loading…'}
-        </li>`;
+    results.innerHTML = `<li class="sp-loading">
+        <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px"></i>
+        ${locale === 'ja' ? '読み込み中…' : 'Loading…'}
+    </li>`;
     statusEl.hidden = true;
 }
 
 function showError() {
-    results.innerHTML = `
-        <li class="sp-empty">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            ${locale === 'ja'
-                ? 'インデックスの読み込みに失敗しました'
-                : 'Failed to load search index'}
-        </li>`;
+    results.innerHTML = `<li class="sp-empty">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        ${locale === 'ja' ? 'インデックスの読み込みに失敗しました' : 'Failed to load search index'}
+    </li>`;
     statusEl.hidden = true;
 }
 
-function showStatus(type, query = '') {
+function showStatus(type: string, query = '') {
     if (type === 'empty') {
-        results.innerHTML = `
-            <li class="sp-empty">
-                <i class="fa-regular fa-face-frown-open"></i>
-                ${locale === 'ja'
-                    ? `"${query}" に一致するページが見つかりませんでした`
-                    : `No results found for "${query}"`}
-            </li>`;
+        results.innerHTML = `<li class="sp-empty">
+            <i class="fa-regular fa-face-frown-open"></i>
+            ${locale === 'ja' ? `"${query}" に一致するページが見つかりませんでした` : `No results found for "${query}"`}
+        </li>`;
         statusEl.hidden = true;
     }
 }
 
-// ----------------------------------------
-// 検索実行
-// ----------------------------------------
-
-async function runSearch(query) {
-    currentQuery = query;
+async function runSearch(query: string) {
     await ensureIndex();
     if (!index) return;
-    const hits = search(query);
-    renderResults(hits, query);
+    renderResults(search(query), query);
 }
 
-// ----------------------------------------
-// イベント
-// ----------------------------------------
+// ---- イベント ----
+
+async function init() {
+    const q = getQueryParam();
+    if (q) {
+        input.value = q;
+        clearBtn.hidden = false;
+        await runSearch(q);
+    } else {
+        showInitial();
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+
+window.addEventListener('popstate', () => {
+    const q = getQueryParam();
+    input.value = q;
+    clearBtn.hidden = !q;
+    q ? runSearch(q) : showInitial();
+});
 
 input?.addEventListener('input', () => {
     const q = input.value;
     clearBtn.hidden = !q;
-
-    clearTimeout(debounceTimer);
+    if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         setQueryParam(q);
-        if (!q.trim()) {
-            showInitial();
-            return;
-        }
-        runSearch(q);
+        q.trim() ? runSearch(q) : showInitial();
     }, DEBOUNCE_MS);
 });
 
@@ -510,17 +434,13 @@ clearBtn?.addEventListener('click', () => {
     input.focus();
 });
 
-// ----------------------------------------
-// キーボード: Ctrl+K / / でこのページの入力欄にフォーカス
-// ----------------------------------------
 document.addEventListener('keydown', (e) => {
+    const tag = (document.activeElement as HTMLElement)?.tagName;
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        input?.focus();
+        e.preventDefault(); input?.focus();
     }
-    if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-        input?.focus();
+    if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        e.preventDefault(); input?.focus();
     }
 });
 </script>
