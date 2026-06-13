@@ -3,6 +3,8 @@ import { defineConfig } from 'astro/config';
 import { locales, defaultLocale } from './src/i18n/i18n.config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { remarkWikiLinks } from './src/lib/wikilinks';
 
 const DEFAULT_SITE_URL = 'http://localhost:4321';
@@ -44,6 +46,10 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [
       [remarkWikiLinks, { base: BASE_PATH === '/' ? '' : BASE_PATH}],
+      remarkMath
     ],
+    rehypePlugins: [
+      rehypeKatex
+    ]
   }
 });

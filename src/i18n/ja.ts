@@ -31,6 +31,7 @@ export const ja = {
   'search.noResults':   '結果が見つかりませんでした',
   'search.loading':     '読み込み中…',
   'search.hint':        'で移動　Enterで開く　Escで閉じる',
+  'search.countlabel':  '件',
   
   // サイドバー
   'sidebar.toggle': 'サイドバー切り替え',

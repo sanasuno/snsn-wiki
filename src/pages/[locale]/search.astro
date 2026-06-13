@@ -2,8 +2,7 @@
 /**
  * src/pages/[locale]/search.astro
  */
-import { locales, type Locale } from '@i18n/i18n.config';
-import { t } from '@i18n/i18n.config';
+import { t, locales, defaultLocale, type Locale } from '@i18n/i18n.config';
 import MainLayout from '@layouts/MainLayout.astro';
 import { removeTrailingSlash } from '@scripts/utils';
 import type { GetStaticPathsResult } from 'astro';
@@ -233,9 +232,11 @@ const alternateLinks = locales.map((l) => ({
 </style>
 
 <script>
+import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
+
 // define:vars を使わず data-* 属性から値を取得
 const root    = document.getElementById('search-root')!;
-const locale  = root.dataset.locale  ?? 'ja';
+const locale: Locale = (root.dataset.locale  ?? defaultLocale) as Locale;
 const baseUrl = root.dataset.baseUrl ?? '';
 
 const DEBOUNCE_MS   = 150;
@@ -326,7 +327,7 @@ function renderResults(entries: SearchEntry[], query: string) {
         return;
     }
     const count = entries.length;
-    const countLabel = locale === 'ja' ? `${count} 件` : `${count} result${count !== 1 ? 's' : ''}`;
+    const countLabel = `${count} ${t('search.countlabel', locale)}`;
     showStatusText(`<i class="fa-solid fa-check" style="color:var(--color-accent)"></i> ${countLabel}`);
 
     for (const entry of entries) {

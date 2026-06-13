@@ -31,6 +31,7 @@ export const en = {
   'search.noResults':   'No results found',
   'search.loading':     'Loading…',
   'search.hint':        'Move with Tab, Enter to open, Esc to close',
+  'search.countlabel':  'results',
   
   // Sidebar
   'sidebar.toggle': 'Toggle sidebar',
