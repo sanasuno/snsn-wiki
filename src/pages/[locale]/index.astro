@@ -9,6 +9,7 @@ import { getCollection } from 'astro:content';
 import { t, locales, type Locale } from '@i18n/i18n.config';
 import { getRoute, removeTrailingSlash } from '@scripts/utils';
 import { getCategoryFromId } from '@scripts/category';
+import { getUniquePagesByLocale } from '@scripts/pages';
 
 export const getStaticPaths = () => {
 	return locales.map((locale) => ({
@@ -27,23 +28,13 @@ const alternateLinks = locales.map((locale) => ({
 	url: getRelativeLocaleUrl(locale, '/'),
 }));
 
-const uniquePagesByBaseSlug: Record<string, (typeof allPages)[0]> = {};
-for (const page of allPages) {
-	const parts = page.id.split('/');
-	const pLocale = parts[0];
-	const baseSlug = parts.slice(1).join('/');
-	if (!uniquePagesByBaseSlug[baseSlug]) {
-		uniquePagesByBaseSlug[baseSlug] = page;
-	} else if (pLocale === locale) {
-		uniquePagesByBaseSlug[baseSlug] = page;
-	}
-}
-const pages = Object.values(uniquePagesByBaseSlug);
+const uniquePages = getUniquePagesByLocale(allPages, locale);
+const pages: typeof allPages = Object.values(uniquePages);
 
 const recentPages = [...pages]
 	.sort((a, b) => {
-		const aDate = a.data.date || a.data.updated || new Date(0);
-		const bDate = b.data.date || b.data.updated || new Date(0);
+		const aDate = a.data.updated || a.data.date || new Date(0);
+		const bDate = b.data.updated || b.data.date || new Date(0);
 		return bDate.getTime() - aDate.getTime();
 	})
 	.slice(0, 10);

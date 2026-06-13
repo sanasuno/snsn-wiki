@@ -13,6 +13,7 @@ import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
 import { sidebarNavigation, autoAddUnknownCategories } from "@layouts/sidebar.config";
 import { removeTrailingSlash, getRoute, getBaseSlug } from "@scripts/utils";
 import { getCategoryFromId } from "@scripts/category";
+import { getUniquePagesByLocale } from "@scripts/pages";
 
 interface Props { 
     locale: Locale;
@@ -39,32 +40,10 @@ function isCurrentPageId(pageId: string): boolean {
 const allPages = await getCollection("wiki", (p) => !p.data.draft && !p.data.hidden);
 
 // 重複を排除して最も適切なページを選択
-const uniquePagesByBaseSlug: Record<string, typeof allPages[0]> = {};
-for (const page of allPages) {
-    const parts = page.id.split('/');
-    const hasLocale = parts.length > 1;
-    const pLocale = 
-        hasLocale 
-            ? parts[0] 
-            : defaultLocale;
-    const pBaseSlug = getBaseSlug(page.id);
-    const existing = uniquePagesByBaseSlug[pBaseSlug];
-    
-    if (!existing) {
-        uniquePagesByBaseSlug[pBaseSlug] = page;
-    } else if (pLocale === locale) {
-        uniquePagesByBaseSlug[pBaseSlug] = page;
-    } else if (
-        pLocale === defaultLocale && 
-        existing.id.split('/')[0] !== locale
-    ) {
-        uniquePagesByBaseSlug[pBaseSlug] = page;
-    }
-}
-
+const uniquePages = getUniquePagesByLocale(allPages, locale);
 
 // カテゴリ別にページをグループ化
-const pages = Object.values(uniquePagesByBaseSlug);
+const pages = Object.values(uniquePages);
 const byCategory: Record<string, typeof pages> = {};
 for (const page of pages) {
     const category: string[] = getCategoryFromId(page.id) || [];
@@ -86,7 +65,7 @@ for (const page of pages) {
 const renderedCategories = new Set<string>();
 
 type WikiPage = typeof allPages[0];
-const sorters: Record<string, (a: WikiPage, b: WikiPage) => number > = {
+const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
     title: (a, b) => a.data.title.localeCompare(b.data.title),
     order: (a, b) => (a.data.order ?? 0) - (b.data.order ?? 0),
     date: (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0),

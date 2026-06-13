@@ -6,10 +6,10 @@
 import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import MainLayout from '@layouts/MainLayout.astro';
-import { t, locales, defaultLocale, formatDate, type Locale } from '@i18n/i18n.config';
+import { t, locales, translations, defaultLocale, formatDate, type Locale } from '@i18n/i18n.config';
 import { getRoute, removeTrailingSlash } from '@scripts/utils';
 import { getCategoryFromId } from '@scripts/category';
-
+import { getUniquePagesByLocale } from '@scripts/pages';
 
 export const getStaticPaths = () => {
 	return locales.map((locale) => ({
@@ -27,21 +27,8 @@ const alternateLinks = locales.map((locale) => ({
 	url: getRelativeLocaleUrl(locale, '/category'),
 }));
 
-const uniquePagesByBaseSlug: Record<string, typeof allPages[0]> = {};
-for (const page of allPages) {
-	const parts = page.id.split('/');
-	const pLocale = parts[0];
-	const baseSlug = parts.slice(1).join('/');
-	if (!uniquePagesByBaseSlug[baseSlug]) {
-		uniquePagesByBaseSlug[baseSlug] = page;
-	} else {
-		if (pLocale === locale) uniquePagesByBaseSlug[baseSlug] = page;
-		else if (pLocale === defaultLocale && uniquePagesByBaseSlug[baseSlug].id.split('/')[0] !== locale) {
-			uniquePagesByBaseSlug[baseSlug] = page;
-		}
-	}
-}
-const pages = Object.values(uniquePagesByBaseSlug);
+const uniquePages = getUniquePagesByLocale(allPages, locale);
+const pages: typeof allPages = Object.values(uniquePages);
 
 const categoryMap: Record<string, typeof pages> = {};
 for (const page of pages) {
@@ -84,7 +71,7 @@ const sortedCategories = Object.entries(categoryMap).sort(([a], [b]) =>
 			<section>
 				<a href={`${localeBaseUrl}/category/${encodeURIComponent(cat)}`} class="index-page-category">
 					<i class="fa-solid fa-folder" />
-					{t(`category.${cat}`, locale)}
+					{t(`category.${cat}`, locale) !== `category.${cat}` ? t(`category.${cat}`, locale) : cat}
 					<span>({catPages.length} {t('category.count.page', locale)})</span>
 				</a>
 				<ul class="index-list">

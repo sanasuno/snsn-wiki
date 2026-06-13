@@ -8,6 +8,7 @@ import { getRelativeLocaleUrl } from 'astro:i18n';
 import MainLayout from '@layouts/MainLayout.astro';
 import { t, locales, formatDate, type Locale } from '@i18n/i18n.config';
 import { getRoute, removeTrailingSlash } from '@scripts/utils';
+import { getUniquePagesByLocale } from '@scripts/pages';
 
 export async function getStaticPaths() {
 	const pages = await getCollection('wiki', (p) => !p.data.draft && !p.data.hidden);
@@ -43,19 +44,8 @@ const filterTag = tag.split('/');
 const tagLabel = filterTag[filterTag.length - 1];
 
 // ロケール優先で重複排除
-const uniquePagesByBaseSlug: Record<string, typeof tagPages[0]> = {};
-for (const page of tagPages) {
-    const parts = page.id.split('/');
-    const pLocale = parts[0];
-    const baseSlug = parts.slice(1).join('/');
-    if (!uniquePagesByBaseSlug[baseSlug]) {
-        uniquePagesByBaseSlug[baseSlug] = page;
-    } else if (pLocale === locale) {
-        uniquePagesByBaseSlug[baseSlug] = page;
-    }
-}
-
-const sortedPages = Object.values(uniquePagesByBaseSlug).sort((a, b) =>
+const uniquePages = getUniquePagesByLocale(tagPages, locale);
+const sortedPages: typeof tagPages = Object.values(uniquePages).sort((a, b) =>
     a.data.title.localeCompare(b.data.title)
 );
 

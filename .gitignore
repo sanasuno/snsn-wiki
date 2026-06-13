@@ -31,3 +31,6 @@ Thumbs.db
 
 # cache
 .node_modules/
+
+# search
+search-index.*.json

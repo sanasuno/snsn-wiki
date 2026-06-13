@@ -131,7 +131,7 @@ export const en = {
 
   // 404
   '404.title':       '404 — Page Not Found',
-  '404.heading':     'Page Not Found',
+  '404.description': 'Page Not Found',
   '404.message':     'The URL might be incorrect, or the page may have been deleted or moved.',
   '404.backHome':    'Back to Home',
   '404.search':      'Search',

@@ -9,6 +9,7 @@ import MainLayout from '@layouts/MainLayout.astro';
 import { t, locales, formatDate, type Locale } from '@i18n/i18n.config';
 import { getRoute, removeTrailingSlash } from '@scripts/utils';
 import { getCategoryFromId, matchCategory } from '@scripts/category';
+import { getUniquePagesByLocale } from '@scripts/pages';
 
 export async function getStaticPaths() {
 	const pages = await getCollection('wiki', (p) => !p.data.draft && !p.data.hidden);
@@ -49,19 +50,8 @@ const categoryPages = allPages.filter(page =>
 );
 
 // ロケール優先で重複排除
-const uniquePagesByBaseSlug: Record<string, typeof categoryPages[0]> = {};
-for (const page of categoryPages) {
-    const parts = page.id.split('/');
-    const pLocale = parts[0];
-    const baseSlug = parts.slice(1).join('/');
-    if (!uniquePagesByBaseSlug[baseSlug]) {
-        uniquePagesByBaseSlug[baseSlug] = page;
-    } else if (pLocale === locale) {
-        uniquePagesByBaseSlug[baseSlug] = page;
-    }
-}
-
-const sortedPages = Object.values(uniquePagesByBaseSlug).sort((a, b) =>
+const uniquePages = getUniquePagesByLocale(categoryPages, locale);
+const sortedPages: typeof categoryPages = Object.values(uniquePages).sort((a, b) =>
     a.data.title.localeCompare(b.data.title)
 );
 
@@ -69,7 +59,7 @@ const sortedPages = Object.values(uniquePagesByBaseSlug).sort((a, b) =>
 // 例: filterCategory = ['tech'] のとき
 //   getCategoryFromId が ['tech', 'astro', ...] のページから 'astro' を取り出す
 const childCategorySet = new Set<string>();
-for (const page of Object.values(uniquePagesByBaseSlug)) {
+for (const page of Object.values(uniquePages)) {
     const cats = getCategoryFromId(page.id);
     // filterCategory より1階層深いセグメントが存在する場合、それが直下の子カテゴリ
     if (cats.length > filterCategory.length && matchCategory(cats, filterCategory)) {
@@ -81,7 +71,7 @@ for (const page of Object.values(uniquePagesByBaseSlug)) {
 const childCategories = Array.from(childCategorySet).sort().map((childCat) => {
     const childPath = [...filterCategory, childCat].join('/');
     const childFilter = childPath.split('/');
-    const count = Object.values(uniquePagesByBaseSlug).filter(page =>
+    const count = Object.values(uniquePages).filter(page =>
         matchCategory(getCategoryFromId(page.id), childFilter)
     ).length;
     return { name: childCat, path: childPath, count };
@@ -112,7 +102,7 @@ const alternateLinks = locales.map((loc) => ({
                 ? (
                     <a href={`${localeBaseUrl}/category/${filterCategory.slice(0, -1).join('/')}`}>
                         <i class="fa-solid fa-arrow-left" />
-                        {t(`category.${filterCategory[filterCategory.length - 2]}`, locale)}
+                        {t(`category.${filterCategory[filterCategory.length - 2]}`, locale) !== `category.${filterCategory[filterCategory.length - 2]}` ? t(`category.${filterCategory[filterCategory.length - 2]}`, locale) : filterCategory[filterCategory.length - 2]}
                     </a>
                 ) : (
                     <a href={`${localeBaseUrl}/category`}>
@@ -131,8 +121,12 @@ const alternateLinks = locales.map((loc) => ({
                     <>
                         {index > 0 && <span class="category-separator"> / </span>}
                         {isLast
-                            ? <span>{t(`category.${cat}`, locale)}</span>
-                            : <a href={`${localeBaseUrl}/category/${catPath}`}>{t(`category.${cat}`, locale)}</a>
+                            ? <span>
+                                {t(`category.${cat}`, locale) !== `category.${cat}` ? t(`category.${cat}`, locale) : cat}
+                            </span>
+                            : <a href={`${localeBaseUrl}/category/${catPath}`}>
+                                {t(`category.${cat}`, locale) !== `category.${cat}` ? t(`category.${cat}`, locale) : cat}
+                            </a>
                         }
                     </>
                 );
@@ -151,7 +145,7 @@ const alternateLinks = locales.map((loc) => ({
                 {childCategories.map(({ name, path, count }) => (
                     <a href={`${localeBaseUrl}/category/${path}`} class="index-page-category">
                         <i class="fa-solid fa-folder" />
-                        {t(`category.${name}`, locale)}
+                        {t(`category.${name}`, locale) !== `category.${name}` ? t(`category.${name}`, locale) : name}
                         <span>({count} {t('category.count.page', locale)})</span>
                     </a>
                 ))}

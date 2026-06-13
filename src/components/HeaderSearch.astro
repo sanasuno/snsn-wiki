@@ -216,6 +216,8 @@ const searchPageUrl = `${localeBaseUrl}/search`;
 </style>
 
 <script>
+import { highlight, extractSnippet, search } from '@scripts/search';
+
 const root       = document.getElementById('header-search-root')!;
 const input      = document.getElementById('header-search-input') as HTMLInputElement;
 const dropdown   = document.getElementById('header-search-dropdown') as HTMLUListElement;
@@ -245,44 +247,6 @@ async function ensureIndex() {
     } catch (e) {
         console.error('[HeaderSearch] index load failed:', e);
     }
-}
-
-// ---- ユーティリティ ----
-
-function escapeRe(s: string) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function highlight(text: string, query: string): string {
-    const safe = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    if (!query) return safe;
-    return safe.replace(new RegExp(`(${escapeRe(query)})`, 'gi'), '<mark>$1</mark>');
-}
-
-function extractSnippet(body: string, query: string): string {
-    const pos = body.toLowerCase().indexOf(query.toLowerCase());
-    if (pos === -1) return body.slice(0, 60);
-    const start = Math.max(0, pos - CONTEXT_CHARS);
-    const end   = Math.min(body.length, pos + query.length + CONTEXT_CHARS);
-    let s = body.slice(start, end);
-    if (start > 0) s = '…' + s;
-    if (end < body.length) s += '…';
-    return s;
-}
-
-function search(query: string): SearchEntry[] {
-    const q = query.trim().toLowerCase();
-    if (!q || !index) return [];
-    const scored = index
-        .map(entry => {
-            const inTitle = entry.title.toLowerCase().includes(q);
-            const inBody  = entry.body.toLowerCase().includes(q);
-            if (!inTitle && !inBody) return null;
-            return { entry, score: (inTitle ? 2 : 0) + (inBody ? 1 : 0) };
-        })
-        .filter(Boolean) as { entry: SearchEntry; score: number }[];
-    scored.sort((a, b) => b.score - a.score);
-    return scored.slice(0, MAX_DROPDOWN).map(s => s.entry);
 }
 
 // ---- ドロップダウン表示 ----
@@ -409,7 +373,7 @@ function goToSearchPage() {
 input.addEventListener('focus', async () => {
     if (input.value.trim()) {
         await ensureIndex();
-        const hits = search(input.value);
+        const hits = search(input.value, index!);
         renderDropdown(hits, input.value);
     }
 });
@@ -421,7 +385,7 @@ input.addEventListener('input', () => {
 
     debounceTimer = setTimeout(async () => {
         await ensureIndex();
-        const hits = search(q);
+        const hits = search(q, index!);
         renderDropdown(hits, q);
     }, DEBOUNCE_MS);
 });

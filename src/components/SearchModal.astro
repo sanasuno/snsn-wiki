@@ -314,6 +314,8 @@ const label = {
 </style>
 
 <script define:vars={{ locale, baseUrl }}>
+import { highlight, extractSnippet, search } from '@scripts/search';
+
 // ----------------------------------------
 // 検索ロジック（クライアントサイド）
 // ----------------------------------------
@@ -389,62 +391,6 @@ function showStatus(type) {
     status.textContent = msgs[type] ?? '';
 }
 
-// ----------------------------------------
-// 検索・ハイライト
-// ----------------------------------------
-
-function escapeRe(s) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
- * テキスト中のクエリをハイライトして返す（HTMLエスケープ込み）
- */
-function highlight(text, query) {
-    const escaped = text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    if (!query) return escaped;
-    const re = new RegExp(`(${escapeRe(query)})`, 'gi');
-    return escaped.replace(re, '<mark>$1</mark>');
-}
-
-/**
- * 本文中でクエリが最初にヒットする周辺 CONTEXT_CHARS 文字を抽出
- */
-function extractSnippet(body, query) {
-    if (!query) return body.slice(0, 120);
-    const lc = body.toLowerCase();
-    const pos = lc.indexOf(query.toLowerCase());
-    if (pos === -1) return body.slice(0, 120);
-    const start = Math.max(0, pos - CONTEXT_CHARS);
-    const end   = Math.min(body.length, pos + query.length + CONTEXT_CHARS);
-    let snippet = body.slice(start, end);
-    if (start > 0) snippet = '…' + snippet;
-    if (end < body.length) snippet += '…';
-    return snippet;
-}
-
-function search(query) {
-    if (!index) return [];
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-
-    const scored = [];
-    for (const entry of index) {
-        const titleMatch = entry.title.toLowerCase().includes(q);
-        const bodyMatch  = entry.body.toLowerCase().includes(q);
-        if (!titleMatch && !bodyMatch) continue;
-
-        // スコア：タイトルヒットを優先
-        const score = (titleMatch ? 2 : 0) + (bodyMatch ? 1 : 0);
-        scored.push({ entry, score });
-    }
-
-    scored.sort((a, b) => b.score - a.score);
-    return scored.slice(0, MAX_RESULTS).map(s => s.entry);
-}
 
 // ----------------------------------------
 // 結果の描画
