@@ -19,6 +19,7 @@ export const getStaticPaths = () => {
 const locale = Astro.params.locale as Locale;
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 const localeBaseUrl = `${baseUrl}/${locale}`;
+const wikiBaseUrl = `${localeBaseUrl}/wiki`;
 const allPages = await getCollection('wiki', (p) => !p.data.draft && !p.data.hidden);
 
 const alternateLinks = locales.map((locale) => ({
@@ -107,7 +108,7 @@ const catCount = Object.keys(categoryMap).length;
 				</h2>
 				<div class="home-recent-updates">
 					{recentPages.map((page) => (
-						<a href={`${localeBaseUrl}/wiki${getRoute(page.id, baseUrl)}`} class="home-recent-item">
+						<a href={`${getRoute(page.id, wikiBaseUrl)}`} class="home-recent-item">
 							<div class="home-recent-item-title">
 								{page.data.title}
 							</div>
