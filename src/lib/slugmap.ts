@@ -141,7 +141,6 @@ interface SlugmapCache {
 
 // キャッシュ
 let _cache: SlugmapCache | null = null;
-let _slugsCache: Set<string> | null = null;
 const CACHE_PATH = path.resolve(process.cwd(), '.node_modules/.cache/snsn-wiki-slugmap.json');
 
 

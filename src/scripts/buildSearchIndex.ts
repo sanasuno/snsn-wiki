@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseFrontmatter } from 'astro/markdown';
+import { locales, type Locale} from '../i18n/i18n.config';
 
 // ----------------------------------------
 // 型定義
@@ -39,10 +40,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONTENT_ROOT = path.resolve(__dirname, '../content/wiki');
 const PUBLIC_DIR   = path.resolve(__dirname, '../../public');
 
-/** サポートするロケール（i18n.config.ts の locales と合わせる） */
-import { locales } from '../i18n/i18n.config';
-const LOCALES = locales as readonly string[];
-type Locale = typeof LOCALES[number];
 
 // ----------------------------------------
 // フロントマター解析ユーティリティ
@@ -189,7 +186,7 @@ function main() {
     }
 
     // 各ロケールに対してインデックスを生成
-    for (const locale of LOCALES) {
+    for (const locale of locales) {
         const entries = buildEntries(locale);
         const outPath = path.join(PUBLIC_DIR, `search-index.${locale}.json`);
         fs.writeFileSync(outPath, JSON.stringify(entries, null, 0), 'utf-8');

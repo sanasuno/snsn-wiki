@@ -31,11 +31,11 @@ export function extractWikiLinks(
     const map = slugMap || buildSlugMapSync();
     const slugs = existingSlugs || buildPublishedSlugs();
     const links: string[] = [];
-    let match: RegExpExecArray | null;
-    const regex = new RegExp(/\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g.source, 'g');
-
+    const PATTERN = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g;
+    
     // regexでマッチしたすべてのWikiリンクを処理
-    while ((match = regex.exec(body)) !== null) {
+    let match: RegExpExecArray | null;
+    while ((match = PATTERN.exec(body)) !== null) {
         const pageName = match[1].trim();
         const baseSlug = resolveSlug(pageName, map);
         let targetFullSlug  = `${sourceLocale}/${baseSlug}`;

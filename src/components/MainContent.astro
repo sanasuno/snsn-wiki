@@ -54,8 +54,6 @@ type Crumb = {
  * @returns パンくずリスト
  */
 function buildCrumbs(path: string, title: string, localeBaseUrl: string, isWikiPage: boolean): Crumb[] {
-    const escapedPrefix = localeBaseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
     if (isWikiPage) {
         // ウィキページのパスからカテゴリを抽出
         const wikiPrefix = `${localeBaseUrl}/wiki`;

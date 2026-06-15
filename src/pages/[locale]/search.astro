@@ -293,7 +293,7 @@ function renderResults(entries: SearchEntry[], query: string) {
     showStatusText(`<i class="fa-solid fa-check" style="color:var(--color-accent)"></i> ${countLabel}`);
 
     for (const entry of entries) {
-        const snippet = extractSnippet(entry.body, query.trim());
+        const snippet = extractSnippet(entry.body, query.trim(), CONTEXT_CHARS);
         const li = document.createElement('li');
         li.className = 'sp-result-item';
         const a = document.createElement('a');
@@ -350,7 +350,7 @@ function showStatus(type: string, query = '') {
 async function runSearch(query: string) {
     await ensureIndex();
     if (!index) return;
-    renderResults(search(query, index), query);
+    renderResults(search(query, index, MAX_RESULTS), query);
 }
 
 // ---- イベント ----
