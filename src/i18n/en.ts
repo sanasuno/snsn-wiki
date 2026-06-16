@@ -5,7 +5,7 @@
 
 export const en = {
   // Add English translations here
-  'lang.en': 'English',
+  'lang.name': 'English',
   'lang.label': 'Language',
   'lang.list': 'Select language',
 
@@ -29,9 +29,11 @@ export const en = {
   'search.description': 'Search wiki pages by title and content',
   'search.placeholder': 'Search pages…',
   'search.noResults':   'No results found',
+  'search.indexError':  'Failed to load search index',
   'search.loading':     'Loading…',
   'search.hint':        'Move with Tab, Enter to open, Esc to close',
   'search.countlabel':  'results',
+  'search.seeAllResults': 'See all results',
   
   // Sidebar
   'sidebar.toggle': 'Toggle sidebar',
@@ -55,6 +57,7 @@ export const en = {
   'category.description': 'Category list',
   'category.subcategories': 'Subcategories',
   'category.pages': 'Pages',
+  'category.document': 'Document',
 
   // Tags
   'tag.title': 'Tag List',

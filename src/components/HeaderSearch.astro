@@ -17,9 +17,10 @@ interface Props {
 }
 
 const { locale = defaultLocale, localeBaseUrl = '' } = Astro.props;
-const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
-const placeholder = t('search.placeholder', locale) ?? (locale === 'ja' ? 'ページを検索…' : 'Search pages…');
-const searchPageUrl = `${localeBaseUrl}/search`;
+
+const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL); // ベースURL
+const placeholder = t('search.placeholder', locale); // 検索ボックスのプレースホルダー
+const searchPageUrl = `${localeBaseUrl}/search`; // 検索ページのURL
 ---
 
 <div
@@ -30,7 +31,10 @@ const searchPageUrl = `${localeBaseUrl}/search`;
     data-search-page={searchPageUrl}
     role="search"
 >
-    <i class="fa-solid fa-magnifying-glass header-search-icon" aria-hidden="true"></i>
+    <!-- 検索アイコン -->
+    <i class="fa-solid fa-magnifying-glass header-search-icon" aria-hidden="true" />
+
+    <!-- 検索入力ボックス -->
     <input
         id="header-search-input"
         class="header-search-input"
@@ -43,6 +47,7 @@ const searchPageUrl = `${localeBaseUrl}/search`;
         aria-controls="header-search-dropdown"
         aria-expanded="false"
     />
+
     <!-- ドロップダウン -->
     <ul
         id="header-search-dropdown"
@@ -217,71 +222,98 @@ const searchPageUrl = `${localeBaseUrl}/search`;
 
 <script>
 import { highlight, extractSnippet, search } from '@scripts/search';
+import { t, defaultLocale, type Locale } from '@i18n/i18n.config';
 
-const root       = document.getElementById('header-search-root')!;
-const input      = document.getElementById('header-search-input') as HTMLInputElement;
-const dropdown   = document.getElementById('header-search-dropdown') as HTMLUListElement;
+const root       = document.getElementById('header-search-root')!; // ルート要素
+const input      = document.getElementById('header-search-input') as HTMLInputElement; // 検索入力ボックス
+const dropdown   = document.getElementById('header-search-dropdown') as HTMLUListElement; // ドロップダウン
 
-const locale     = root.dataset.locale     ?? 'ja';
-const baseUrl    = root.dataset.baseUrl    ?? '';
-const searchPage = root.dataset.searchPage ?? '';
+const locale     = (root.dataset.locale     ?? defaultLocale) as Locale; // ロケール
+const baseUrl    = root.dataset.baseUrl    ?? ''; // ベースURL
+const searchPage = root.dataset.searchPage ?? ''; // 検索ページURL
 
-const DEBOUNCE_MS   = 120;
-const MAX_DROPDOWN  = 8;
-const CONTEXT_CHARS = 40;
+const DEBOUNCE_MS   = 120; // デバウンス時間
+const MAX_DROPDOWN  = 8; // 表示する最大候補数
+const CONTEXT_CHARS = 40; // コンテキスト文字数
 
-interface SearchEntry { url: string; title: string; body: string; excerpt: string; }
-let index: SearchEntry[] | null = null;
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-// 0 = 「すべての結果を見る」, 1~ = 候補
-let activeIdx = -1;
+interface SearchEntry {
+    url: string;
+    title: string;
+    body: string;
+    excerpt: string;
+}
+let index: SearchEntry[] | null = null; // 検索インデックス
+let debounceTimer: ReturnType<typeof setTimeout> | null = null; // デバウンスタイマー
+let activeIdx = -1; // アクティブな候補のインデックス、-1 = なし、0 = 「すべての結果を見る」、1~ = 候補
 
 // ---- インデックスロード ----
-
+/**
+ * インデックスを確保する
+ * @returns {Promise<void>} ロード完了まで待機
+ */
 async function ensureIndex() {
+    // 既にロード済みなら何もしない
     if (index) return;
     try {
+        // インデックスを取得
         const res = await fetch(`${baseUrl}/search-index.${locale}.json`);
+        // HTTPエラーの場合はエラーをスローする
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        // JSONとしてパースする
         index = await res.json();
     } catch (e) {
+        // エラーをログに出力する
         console.error('[HeaderSearch] index load failed:', e);
     }
 }
 
 // ---- ドロップダウン表示 ----
-
+/**
+ * ドロップダウンを表示する
+ */
 function openDropdown() {
     dropdown.hidden = false;
     input.setAttribute('aria-expanded', 'true');
 }
 
+/**
+ * ドロップダウンを非表示にする
+ */
 function closeDropdown() {
     dropdown.hidden = true;
     input.setAttribute('aria-expanded', 'false');
     activeIdx = -1;
 }
 
+/**
+ * ドロップダウンをレンダリングする
+ * @param entries 検索結果
+ * @param query 検索クエリ
+ */
 function renderDropdown(entries: SearchEntry[], query: string) {
-    dropdown.innerHTML = '';
-    activeIdx = -1;
+    dropdown.innerHTML = ''; // ドロップダウンをクリア
+    activeIdx = -1; // アクティブな候補をリセット
 
     if (!entries.length) {
-        dropdown.innerHTML = `<li class="hsd-status">${
-            locale === 'ja'
-                ? '結果が見つかりませんでした'
-                : 'No results found'
-        }</li>`;
+        // 結果がなかった場合、ステータスを表示してドロップダウンを開く
+        dropdown.innerHTML = `
+            <li class="hsd-status">
+                ${t('search.noResults', locale)}
+            </li>
+        `;
         openDropdown();
         return;
     }
 
-    // 候補リスト
+    // 候補リストをレンダリングする
     for (const entry of entries) {
+        // スニペットを抽出する
         const snippet = extractSnippet(entry.body, query.trim(), CONTEXT_CHARS);
+        // リストを作成する
         const li = document.createElement('li');
         li.className = 'hsd-item';
         li.setAttribute('role', 'option');
+        // リンクを作成する
         const a = document.createElement('a');
         a.href = `${baseUrl}${entry.url}`;
         a.innerHTML = `
@@ -289,10 +321,12 @@ function renderDropdown(entries: SearchEntry[], query: string) {
                 <i class="fa-regular fa-file-lines"></i>
                 ${highlight(entry.title, query.trim())}
             </span>
-            <span class="hsd-item-excerpt">${highlight(snippet, query.trim())}</span>
+            <span class="hsd-item-excerpt">
+                ${highlight(snippet, query.trim())}
+            </span>
         `;
         a.addEventListener('mousedown', (e) => {
-            // クリック時にinputのblurより先に遷移させる
+            // マウスダウン時に遷移させる
             e.preventDefault();
             closeDropdown();
             window.location.href = a.href;
@@ -305,54 +339,83 @@ function renderDropdown(entries: SearchEntry[], query: string) {
     const footer = document.createElement('li');
     footer.className = 'hsd-footer';
     footer.setAttribute('role', 'option');
+    // リンクを作成する
     const footerA = document.createElement('a');
     footerA.href = `${searchPage}?q=${encodeURIComponent(query.trim())}`;
-    const allLabel = locale === 'ja' ? 'すべての結果を見る' : 'See all results';
-    footerA.innerHTML = `<span>${allLabel}</span><i class="fa-solid fa-arrow-right"></i>`;
+    const allLabel = t('search.seeAllResults', locale);
+    footerA.innerHTML = `
+        <span>${allLabel}</span>
+        <i class="fa-solid fa-arrow-right" />
+    `;
     footerA.addEventListener('mousedown', (e) => {
+        // マウスダウン時に遷移させる
         e.preventDefault();
         closeDropdown();
         window.location.href = footerA.href;
     });
+    // フッターにリンクを追加し、ドロップダウンにフッターを追加する
     footer.appendChild(footerA);
     dropdown.appendChild(footer);
-
+    // ドロップダウンを開く
     openDropdown();
 }
 
 // ---- キーボードナビ ----
-
+/**
+ * ドロップダウン内のアイテムを取得する
+ * @returns ドロップダウン内のアイテム
+ */
 function getItems(): HTMLElement[] {
     // hsd-item の a + hsd-footer の a
     return Array.from(dropdown.querySelectorAll('.hsd-item, .hsd-footer')) as HTMLElement[];
 }
 
+/**
+ * アクティブなアイテムを設定する
+ * @param idx アクティブなアイテムのインデックス
+ */
 function setActive(idx: number) {
+    // ドロップダウン内のアイテムを取得する
     const items = getItems();
+    // アクティブなアイテムを設定する
     items.forEach((el, i) => el.classList.toggle('active', i === idx));
+    // アクティブなアイテムをスクロールする
     if (items[idx]) items[idx].scrollIntoView({ block: 'nearest' });
     activeIdx = idx;
 }
 
+/**
+ * アクティブなアイテムを移動する
+ * @param dir 移動方向（-1: 上, 1: 下）
+ */
 function moveActive(dir: number) {
+    // ドロップダウン内のアイテムを取得する
     const items = getItems();
+    // アイテムがない場合は終了
     if (!items.length) return;
+    
+    // アクティブなアイテムを移動する
     let next = activeIdx + dir;
-    if (next < -1) next = items.length - 1;
-    if (next >= items.length) next = -1;
-    // -1 のときは選択解除（input にフォーカス戻る）
+    if (next < -1) next = items.length - 1; // 最後へ
+    if (next >= items.length) next = -1; // 最初へ
     if (next === -1) {
+        // -1 のときは選択解除（input にフォーカス戻る）
         items.forEach(el => el.classList.remove('active'));
         activeIdx = -1;
     } else {
+        // アクティブなアイテムを設定する
         setActive(next);
     }
 }
 
+/**
+ * 選択されたアイテムをアクティブにする
+ */
 function activateSelected() {
     const items = getItems();
     const item = items[activeIdx];
     if (item) {
+        // アクティブなアイテムのリンクを取得し、遷移する
         const a = item.querySelector('a') as HTMLAnchorElement | null;
         if (a) { closeDropdown(); window.location.href = a.href; }
     } else {
@@ -361,6 +424,9 @@ function activateSelected() {
     }
 }
 
+/**
+ * 検索ページへ遷移する
+ */
 function goToSearchPage() {
     const q = input.value.trim();
     if (!q) return;
@@ -369,36 +435,41 @@ function goToSearchPage() {
 }
 
 // ---- イベント ----
-
+// フォーカス時イベント
 input.addEventListener('focus', async () => {
     if (input.value.trim()) {
+        // インデックスがなければ読み込んでから検索
         await ensureIndex();
         const hits = search(input.value, index!, MAX_DROPDOWN);
         renderDropdown(hits, input.value);
     }
 });
 
+// 入力時イベント
 input.addEventListener('input', () => {
     const q = input.value;
-    if (debounceTimer) clearTimeout(debounceTimer);
-    if (!q.trim()) { closeDropdown(); return; }
+    if (debounceTimer) clearTimeout(debounceTimer); // 既存のタイマーをクリア
+    if (!q.trim()) {closeDropdown(); return; } // 入力がない場合はドロップダウンを閉じる
 
     debounceTimer = setTimeout(async () => {
+        // インデックスがなければ読み込んでから検索
         await ensureIndex();
         const hits = search(q, index!, MAX_DROPDOWN);
         renderDropdown(hits, q);
     }, DEBOUNCE_MS);
 });
 
+// キーボード操作イベント
 input.addEventListener('keydown', (e) => {
     if (dropdown.hidden) {
+        // ドロップダウンが表示されていない場合、Enterキーで検索ページへ遷移
         if (e.key === 'Enter') { e.preventDefault(); goToSearchPage(); }
         return;
     }
-    if (e.key === 'ArrowDown')  { e.preventDefault(); moveActive(+1); }
-    if (e.key === 'ArrowUp')    { e.preventDefault(); moveActive(-1); }
-    if (e.key === 'Enter')      { e.preventDefault(); activateSelected(); }
-    if (e.key === 'Escape')     { e.preventDefault(); closeDropdown(); }
+    if (e.key === 'ArrowDown')  { e.preventDefault(); moveActive(+1); } // 下キーが押された場合、次のアイテムを選択
+    if (e.key === 'ArrowUp')    { e.preventDefault(); moveActive(-1); } // 上キーが押された場合、前のアイテムを選択
+    if (e.key === 'Enter')      { e.preventDefault(); activateSelected(); } // Enterキーが押された場合、選択されたアイテムをアクティブにする
+    if (e.key === 'Escape')     { e.preventDefault(); closeDropdown(); } // Escapeキーが押された場合、ドロップダウンを閉じる
 });
 
 // フォーカスが外れたらドロップダウンを閉じる
@@ -416,9 +487,11 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
     const tag = (document.activeElement as HTMLElement)?.tagName;
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        // Ctrl+K が押された場合、ヘッダー入力欄にフォーカスを当てる
         e.preventDefault(); input.focus();
     }
     if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        // / キーが押された場合、ヘッダー入力欄にフォーカスを当てる
         e.preventDefault(); input.focus();
     }
 });

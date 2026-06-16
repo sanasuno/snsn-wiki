@@ -6,7 +6,7 @@
 import * as d3 from 'd3';
 import { type Locale, defaultLocale } from '@i18n/i18n.config';
 import { savePreference, getPreference } from '@scripts/storage';
-import { makeColors, getIsDark } from '@scripts/graphColors';
+import { makeColors } from '@scripts/graphColors';
 
 interface GraphNode extends d3.SimulationNodeDatum {
   id: string;
@@ -22,12 +22,12 @@ interface GraphLink {
   target: string | GraphNode;
 }
 
-const container = document.getElementById('graph-container');
-const locale = (container?.dataset.locale as Locale) ?? defaultLocale;
-const localeBaseUrl = container?.dataset.localeBaseUrl ?? '';
-const errFetch = container?.dataset.errFetch ?? '';
-const errNoNodes = container?.dataset.errNoNodes ?? '';
+const container = document.getElementById('graph-container'); // グラフコンテナ
+const localeBaseUrl = container?.dataset.localeBaseUrl ?? ''; // ロケールベースURL
+const errFetch = container?.dataset.errFetch ?? ''; // 取得エラーメッセージ
+const errNoNodes = container?.dataset.errNoNodes ?? ''; // ノードなしエラーメッセージ
 
+// グラフAPIURL
 const graphApiUrl = `${localeBaseUrl}/api/graph.json`;
 
 // =============================================
@@ -121,7 +121,7 @@ async function main() {
     draw(); 
   });
   ro.observe(container);
-
+  // アストロページスイッチ時（ページ遷移時）にリソースを解放
   document.addEventListener('astro:before-swap', () => {
     ro.disconnect();
     themeObserver.disconnect();
@@ -136,17 +136,18 @@ async function main() {
 
   // D3フォースシミュレーションの設定
   const sim = d3.forceSimulation(sNodes as d3.SimulationNodeDatum[])
-    .force('link',   d3.forceLink(sLinks as d3.SimulationLinkDatum<GraphNode>[]).id((d: any) => d.id).distance(90).strength(0.4))
-    .force('charge', d3.forceManyBody().strength((d: any) => -180 - (d.linkCount || 0) * 8))
-    .force('center', d3.forceCenter(canvas.width/2, canvas.height/2))
-    .force('col',    d3.forceCollide((d: any) => R(d as GraphNode) + 8))
+    .force('link',   d3.forceLink(sLinks as d3.SimulationLinkDatum<GraphNode>[]).id((d: any) => d.id).distance(90).strength(0.4)) // リンク強度
+    .force('charge', d3.forceManyBody().strength((d: any) => -180 - (d.linkCount || 0) * 8)) // 電荷強度
+    .force('center', d3.forceCenter(canvas.width/2, canvas.height/2)) // 中心引力
+    .force('col',    d3.forceCollide((d: any) => R(d as GraphNode) + 8)) // 衝突回避
     .on('tick', draw);
 
   // ズーム・パン設定
   let tf = d3.zoomIdentity;
   const zoom = d3.zoom<HTMLCanvasElement, unknown>()
-    .scaleExtent([0.05, 5])
+    .scaleExtent([0.05, 5]) // ズーム範囲
     .filter((event) => {
+      // マウスダウン時にノードをクリックしていない場合のみズーム有効
       if (event.type === 'mousedown') {
         const rc = canvas.getBoundingClientRect();
         return !hit(event.clientX - rc.left, event.clientY - rc.top);
@@ -161,9 +162,12 @@ async function main() {
 
   // 全体表示関数
   const fitView = () => {
+    // ノードの座標を取得
     const xs = sNodes.map((n: any) => n.x).filter((v: any) => v != null);
     const ys = sNodes.map((n: any) => n.y).filter((v: any) => v != null);
+    // 座標がなければ終了
     if (!xs.length) return;
+
     const p = 60;
     const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
     const sc = Math.min((canvas.width-p*2)/((x1-x0)||1), (canvas.height-p*2)/((y1-y0)||1), 2);
@@ -174,9 +178,9 @@ async function main() {
   };
 
   // コントロールボタンイベント
-  document.getElementById('zoom-in') ?.addEventListener('click', () => d3.select(canvas).transition().call(zoom.scaleBy, 1.3));
-  document.getElementById('zoom-out')?.addEventListener('click', () => d3.select(canvas).transition().call(zoom.scaleBy, 0.77));
-  document.getElementById('zoom-fit')?.addEventListener('click', fitView);
+  document.getElementById('zoom-in') ?.addEventListener('click', () => d3.select(canvas).transition().call(zoom.scaleBy, 1.3)); // ズームイン
+  document.getElementById('zoom-out')?.addEventListener('click', () => d3.select(canvas).transition().call(zoom.scaleBy, 0.77)); // ズームアウト
+  document.getElementById('zoom-fit')?.addEventListener('click', fitView); // 全体表示
   sim.on('end', fitView);
 
   // ノードホバー状態

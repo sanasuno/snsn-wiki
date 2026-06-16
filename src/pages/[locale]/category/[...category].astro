@@ -90,7 +90,7 @@ const alternateLinks = locales.map((loc) => ({
 ---
 <MainLayout
     title={t("category.title", locale)}
-    description={`${t("category.description", locale)} - ${t(`category.${categoryLabel}`, locale) ?? categoryLabel}`}
+    description={`${t("category.description", locale)} - ${t(`category.${categoryLabel}` as any, locale) ?? categoryLabel}`}
     locale={locale}
     alternateLinks={alternateLinks}
     showMeta={false}
@@ -103,7 +103,7 @@ const alternateLinks = locales.map((loc) => ({
                 ? (
                     <a href={`${localeBaseUrl}/category/${filterCategory.slice(0, -1).join('/')}`}>
                         <i class="fa-solid fa-arrow-left" />
-                        {t(`category.${filterCategory[filterCategory.length - 2]}`, locale) !== `category.${filterCategory[filterCategory.length - 2]}` ? t(`category.${filterCategory[filterCategory.length - 2]}`, locale) : filterCategory[filterCategory.length - 2]}
+                        {t(`category.${filterCategory[filterCategory.length - 2]}` as any, locale) !== `category.${filterCategory[filterCategory.length - 2]}` ? t(`category.${filterCategory[filterCategory.length - 2]}` as any, locale) : filterCategory[filterCategory.length - 2]}
                     </a>
                 ) : (
                     <a href={`${localeBaseUrl}/category`}>
@@ -123,10 +123,10 @@ const alternateLinks = locales.map((loc) => ({
                         {index > 0 && <span class="category-separator"> / </span>}
                         {isLast
                             ? <span>
-                                {t(`category.${cat}`, locale) !== `category.${cat}` ? t(`category.${cat}`, locale) : cat}
+                                {t(`category.${cat}` as any, locale) !== `category.${cat}` ? t(`category.${cat}` as any, locale) : cat}
                             </span>
                             : <a href={`${localeBaseUrl}/category/${catPath}`}>
-                                {t(`category.${cat}`, locale) !== `category.${cat}` ? t(`category.${cat}`, locale) : cat}
+                                {t(`category.${cat}` as any, locale) !== `category.${cat}` ? t(`category.${cat}` as any, locale) : cat}
                             </a>
                         }
                     </>
@@ -147,7 +147,7 @@ const alternateLinks = locales.map((loc) => ({
                 {childCategories.map(({ name, path, count }) => (
                     <a href={`${localeBaseUrl}/category/${path}`} class="index-page-category">
                         <i class="fa-solid fa-folder" />
-                        {t(`category.${name}`, locale) !== `category.${name}` ? t(`category.${name}`, locale) : name}
+                        {t(`category.${name}` as any, locale) !== `category.${name}` ? t(`category.${name}` as any, locale) : name}
                         <span>({count} {t('category.count.page', locale)})</span>
                     </a>
                 ))}

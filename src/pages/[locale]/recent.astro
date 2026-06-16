@@ -45,6 +45,7 @@ const sortedPages = pages.sort((a, b) => {
     isWikiPage={false}
     showMeta={false}
 >
+    <!-- 特殊ページのタイトルと説明 -->
     <div class="specialpage-title">
         <h1>
             <i class="fa-solid fa-clock-rotate-left" />
@@ -56,6 +57,8 @@ const sortedPages = pages.sort((a, b) => {
             {t('recent.description', locale)}
         </span>
     </div>
+    
+    <!-- 最近更新されたページの一覧 -->
     <div class="index-page">
         {sortedPages.map((page) => {
             const updated = page.data.updated || page.data.date || new Date(0);

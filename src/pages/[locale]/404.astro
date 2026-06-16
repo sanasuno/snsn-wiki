@@ -11,6 +11,7 @@ interface Props {
     locale: Locale;
 }
 
+// 404ページの静的パスを生成
 export const getStaticPaths = () => {
 	return locales.map((locale) => ({
 		params: { locale },

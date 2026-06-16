@@ -12,7 +12,11 @@ interface Props {
 
 const { locale, localeBaseUrl }: Props = Astro.props;
 ---
-<div class="graph-container" id="graph-container" data-locale={locale} data-locale-base-url={localeBaseUrl} data-err-fetch={t('graph.error.fetch', locale)} data-err-no-nodes={t('graph.error.noNodes', locale)}>
+<div class="graph-container" id="graph-container"
+    data-locale={locale}
+    data-locale-base-url={localeBaseUrl}
+    data-err-fetch={t('graph.error.fetch', locale)}
+    data-err-no-nodes={t('graph.error.noNodes', locale)}>
     <canvas id="graph-canvas" />
 
     <!-- ツールチップ -->

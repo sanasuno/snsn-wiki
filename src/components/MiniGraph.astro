@@ -9,6 +9,7 @@
  * @param props.localeBaseUrl - ロケールに基づいたベースURL
  */
 import {t, type Locale} from '@i18n/i18n.config';
+
 interface Props {
   currentPath: string;
   locale: Locale;
@@ -18,6 +19,7 @@ interface Props {
 const { currentPath, locale, localeBaseUrl } = Astro.props;
 ---
 <section class="mini-graph-section">
+  <!-- グラフヘッダー -->
   <div class="mini-graph-header">
     <span class="mini-graph-title">
       <i class="fa-solid fa-diagram-project" />
@@ -27,7 +29,8 @@ const { currentPath, locale, localeBaseUrl } = Astro.props;
       <i class="fa-solid fa-arrow-up-right-from-square" />
     </a>
   </div>
-  <div class="mini-graph-container" id="mini-graph-container"  data-current-path={currentPath} data-locale={locale} data-locale-base-url={localeBaseUrl} data-no-link-msg={t('graph.mini.noLinks', locale)}>
+  <!-- グラフコンテナ -->
+  <div class="mini-graph-container" id="mini-graph-container" data-current-path={currentPath} data-locale={locale} data-locale-base-url={localeBaseUrl} data-no-link-msg={t('graph.mini.noLinks', locale)}>
     <canvas id="mini-graph-canvas" role="img" aria-label={t('graph.mini.title', locale)} />
     <div id="mini-graph-loading">
       <i class="fa-solid fa-spinner fa-spin" />

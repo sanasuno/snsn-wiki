@@ -1,43 +1,64 @@
 /**
  * @i18n/i18n.config.ts
  * i18n 設定ファイル
+ * 
  * 言語を追加する際は、src/i18n/ に翻訳ファイルを追加し、
- * translations オブジェクトに追加する
+ * このファイルにインポートを追加し、日付フォーマット用の文字列を追加する
+ * デフォルトロケールを変更したい場合は、defaultLocale を変更する
  */
 
 // i18nフォルダ内の翻訳ファイルをインポート
+// 言語追加時はここにインポートを追加する
 import { ja } from './ja';
 import { en } from './en';
 
-// ロケール定義
+// 翻訳ファイルをまとめる
+// 言語追加時はここに追加する
 export const translations = {
   ja,
   en
 } as const;
-// ロケール型
+// 翻訳ファイルからロケール型を生成
 export type Locale = keyof typeof translations;
 // 利用可能なロケール配列
 export const locales = Object.keys(translations) as Locale[];
-// ロケールに対応する日付フォーマット用の文字列
+
+// ロケールに対応する日付フォーマット用の文字列を生成
+// 言語追加時はここに追加する
 const dateLocaleMap: Record<Locale, string> = {
   ja: 'ja-JP',
   en: 'en-US',
 };
 
-// デフォルトロケール指定
+// デフォルトロケールを指定
+// デフォルトロケールを変更したい場合は、ここを変更する
 export const defaultLocale: Locale = 'ja';
 
-// 言語切替ボタンを表示するか
+// ロケールの数が2つ以上ある場合に言語切替ボタンを表示する
 export const showLanguageSwitcher: boolean = locales.length > 1;
 
-// 与えられた言語とキーから翻訳を返す関数
-export function t(key: string, locale: Locale = defaultLocale): string {
+// 翻訳キーの型定義
+// デフォルトロケールのキーのみを許可する
+export type TranslationKey = keyof typeof translations[typeof defaultLocale];
+
+/**
+ * 翻訳キーから翻訳された文字列を返す関数
+ * @param key 翻訳キー
+ * @param locale ロケール
+ * @returns 翻訳された文字列
+ */
+export function t(key: TranslationKey, locale: Locale = defaultLocale): string {
     return (translations[locale] as Record<string, string>)?.[key] 
       ?? (translations[defaultLocale] as Record<string, string>)?.[key] 
       ?? key;
 }
 
-// ロケールに適した日付形式で日付をフォーマットする関数
+/**
+ * ロケールに適した日付形式で日付をフォーマットする関数
+ * @param date 日付
+ * @param locale ロケール
+ * @returns フォーマットされた日付文字列
+ */
 export function formatDate(date: Date, locale: Locale = defaultLocale): string {
     return date.toLocaleDateString(dateLocaleMap[locale], {
       year: 'numeric',

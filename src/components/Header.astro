@@ -1,12 +1,15 @@
 ---
 /**
  * @components/Header.astro
- * ※ HeaderSearch を追加、旧 sp-input/sp-clear を削除
+ * ヘッダーコンポーネント
+ * 
+ * ・ナビゲーション: @layouts/header.config
+ * ・検索コンポーネント: @components/HeaderSearch.astro
  */
 
 import { t, locales, type Locale, showLanguageSwitcher } from "@i18n/i18n.config";
 import { headerNavigation } from "@layouts/header.config";
-import HeaderSearch from "@components/HeaderSearch.astro";   // ← 追加
+import HeaderSearch from "@components/HeaderSearch.astro";
 
 interface Props {
     locale: Locale;
@@ -18,15 +21,23 @@ const { localeBaseUrl, locale, currentPath }: Props = Astro.props;
 
 const navItems = headerNavigation;
 
+/**
+ * 現在のパスが指定されたパスと一致するか判定する関数
+ * @param targetPath - 比較するパス
+ * @param currentPath - 現在のパス
+ * @param localeBaseUrl - ロケールベースURL
+ * @returns パスが一致する場合はtrue、そうでない場合はfalse
+ */
 function isActive(targetPath: string, currentPath: string, localeBaseUrl: string): boolean {
+    // 対象のURLを生成
     const targetUrl = `${localeBaseUrl}${targetPath}`;
     if (targetPath === '/') {
+        // ルートパスの場合は完全一致で判定
         return currentPath === localeBaseUrl;
+    } else {
+        // ルートパス以外の場合、完全一致またはサブパスで判定
+        return currentPath === targetUrl || currentPath.startsWith(`${targetUrl}/`);
     }
-    return (
-        currentPath === targetUrl ||
-        currentPath.startsWith(`${targetUrl}/`)
-    );
 }
 ---
 
@@ -39,7 +50,7 @@ function isActive(targetPath: string, currentPath: string, localeBaseUrl: string
     <!-- サイトタイトル -->
     <a href={localeBaseUrl} class="site-title">{t("site.title", locale)}</a>
 
-    <!-- 検索コンポーネント（旧 sp-input/sp-clear/sp-search-icon を置き換え） -->
+    <!-- 検索コンポーネント -->
     <HeaderSearch locale={locale} localeBaseUrl={localeBaseUrl} />
 
     <!-- ナビゲーション -->
@@ -69,7 +80,7 @@ function isActive(targetPath: string, currentPath: string, localeBaseUrl: string
                     {
                         locales.map((lang: Locale) => (
                             <option value={lang} selected={lang === locale}>
-                                {t(`lang.${lang}`, lang)}
+                                {t('lang.name', lang)}
                             </option>
                         ))
                     }

@@ -19,6 +19,15 @@
  * - external: 外部リンクの場合にtrue（省略可、デフォルトfalse）
  */
 
+/**
+ * サイドバーのナビゲーションアイテム
+ * 
+ * @property slug - Wikiページのスラッグ（src/content/wiki/以下のファイル名）
+ * @property href - 外部リンクのURL（slugがない場合に使用）
+ * @property i18nKey - 表示名（slug指定時はページタイトルを直接取得）
+ * @property icon - Font Awesomeのアイコンクラス
+ * @property external - 外部リンクの場合にtrue
+ */
 export type NavigationItem = {
     slug?: string;
     href?: string;
@@ -27,8 +36,25 @@ export type NavigationItem = {
     external?: boolean;
 };
 
-export type SortMode = 'title' | 'order' | 'date' | 'updated'; // デフォルト: 'title'
+/**
+ * ソートモード、Sidebar.astroでデフォルトをtitleに設定
+ * - title: タイトル順
+ * - order: order.frontmatterの数値順（数値が小さい方が上）
+ * - date: 発行日順（古いものが上）
+ * - updated: 更新日順（新しいものが上）
+ */
+export type SortMode = 'title' | 'order' | 'date' | 'updated';
 
+/**
+ * サイドバーのナビゲーションセクション
+ * 
+ * @property titleKey - 翻訳キー（必須）
+ * @property icon - Font Awesomeのアイコンクラス（省略可）
+ * @property collapsed - 初期状態で折りたたまれているかどうか（省略可、デフォルトfalse）
+ * @property items - 手動リンク一覧
+ * @property category - 指定カテゴリのWikiページを自動収集、itemsが指定されていない場合にのみ有効
+ * @property autoSort - 自動収集時の並び順（省略可、デフォルト'title'）
+ */
 export type NavigationSection = {
     titleKey: string;
     icon?: string;
@@ -38,11 +64,8 @@ export type NavigationSection = {
     autoSort?: SortMode;
 };
 
-/**
- * true にすると、明示されていない全カテゴリをサイドバー末尾に自動追加する
- */
-export const autoAddUnknownCategories = true;
-export const autoGroupByLeafCategory = true;
+export const autoAddUnknownCategories = true; // true にすると、明示されていない全カテゴリをサイドバー末尾に自動追加する
+export const autoGroupByLeafCategory = true; // true にすると、カテゴリを葉カテゴリ単位でグループ化する
 
 export const sidebarNavigation: NavigationSection[] = [
     // -------- クイックリンク（手動） --------

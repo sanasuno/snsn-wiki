@@ -15,9 +15,9 @@ const { locale } = Astro.params as { locale: Locale };
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 
 const label = {
-    pageTitle:   t('search.title',       locale) ?? (locale === 'ja' ? '検索'                      : 'Search'),
-    placeholder: t('search.placeholder', locale) ?? (locale === 'ja' ? 'ページを検索…'             : 'Search pages…'),
-    description: t('search.description', locale) ?? (locale === 'ja' ? 'Wikiページのタイトルと本文を検索します' : 'Search across all wiki page titles and content'),
+    pageTitle:   t('search.title',       locale),
+    placeholder: t('search.placeholder', locale),
+    description: t('search.description', locale),
 };
 
 const siteUrl = Astro.site ? Astro.site.href.replace(/\/$/, '') : '';
@@ -42,6 +42,7 @@ const alternateLinks = locales.map((l) => ({
         data-locale={locale}
         data-base-url={baseUrl}
     >
+        <!-- 特殊ページのタイトルと説明 -->
         <div class="specialpage-title">
             <h1>
                 <i class="fa-solid fa-magnifying-glass" style="color: var(--color-accent); margin-right: 0.4em;"></i>
@@ -50,6 +51,7 @@ const alternateLinks = locales.map((l) => ({
             <p class="specialpage-description">{label.description}</p>
         </div>
 
+        <!-- 検索バー -->
         <div class="sp-search-bar">
             <i class="fa-solid fa-magnifying-glass sp-search-icon"></i>
             <input
@@ -66,6 +68,7 @@ const alternateLinks = locales.map((l) => ({
             </button>
         </div>
 
+        <!-- 検索結果 -->
         <p id="sp-status" class="sp-status" aria-live="polite" hidden></p>
         <ul id="sp-results" class="sp-results" role="list"></ul>
     </div>
@@ -240,37 +243,48 @@ const root    = document.getElementById('search-root')!;
 const locale: Locale = (root.dataset.locale  ?? defaultLocale) as Locale;
 const baseUrl = root.dataset.baseUrl ?? '';
 
-const DEBOUNCE_MS   = 150;
-const MAX_RESULTS   = 50;
-const CONTEXT_CHARS = 80;
+const DEBOUNCE_MS   = 150; // 検索のデバウンス時間（ミリ秒）
+const MAX_RESULTS   = 50; // 最大表示結果数
+const CONTEXT_CHARS = 80; // コンテキスト文字数
 
-const input    = document.getElementById('sp-input')    as HTMLInputElement;
-const results  = document.getElementById('sp-results')  as HTMLUListElement;
-const statusEl = document.getElementById('sp-status')   as HTMLParagraphElement;
-const clearBtn = document.getElementById('sp-clear')    as HTMLButtonElement;
+const input    = document.getElementById('sp-input')    as HTMLInputElement; // 検索入力フィールド
+const results  = document.getElementById('sp-results')  as HTMLUListElement; // 検索結果リスト
+const statusEl = document.getElementById('sp-status')   as HTMLParagraphElement; // ステータスメッセージ
+const clearBtn = document.getElementById('sp-clear')    as HTMLButtonElement; // クリアボタン
 
 interface SearchEntry { url: string; title: string; body: string; excerpt: string; }
 let index: SearchEntry[] | null = null;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 // ---- URL パラメータ同期 ----
-
+/**
+ * URLのクエリパラメータから検索キーワードを取得
+ * @returns 検索キーワード
+ */
 function getQueryParam(): string {
     return new URLSearchParams(window.location.search).get('q') ?? '';
 }
 
+/**
+ * URLのクエリパラメータを設定
+ * @param q 検索キーワード
+ */
 function setQueryParam(q: string) {
     const url = new URL(window.location.href);
+    // 検索キーワードを設定または削除
     q ? url.searchParams.set('q', q) : url.searchParams.delete('q');
     window.history.pushState({}, '', url.toString());
 }
 
 // ---- インデックスロード ----
-
+/**
+ * インデックスを確保し、ロードする
+ */
 async function ensureIndex() {
     if (index) return;
     showLoading();
     try {
+        // 検索インデックスをロードし、パースする
         const res = await fetch(`${baseUrl}/search-index.${locale}.json`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         index = await res.json();
@@ -281,17 +295,23 @@ async function ensureIndex() {
 }
 
 // ---- 描画 ----
-
+/**
+ * 検索結果を描画する
+ * @param entries 検索結果の配列
+ * @param query 検索キーワード
+ */
 function renderResults(entries: SearchEntry[], query: string) {
     results.innerHTML = '';
+    // 検索結果が空の場合、ステータスを表示して終了
     if (!entries.length) {
-        showStatus('empty', query);
+        showStatus('empty');
         return;
     }
     const count = entries.length;
     const countLabel = `${count} ${t('search.countlabel', locale)}`;
-    showStatusText(`<i class="fa-solid fa-check" style="color:var(--color-accent)"></i> ${countLabel}`);
+    showStatusText(`<i class="fa-solid fa-check" style="color:var(--color-accent)" /> ${countLabel}`);
 
+    // 検索結果を描画
     for (const entry of entries) {
         const snippet = extractSnippet(entry.body, query.trim(), CONTEXT_CHARS);
         const li = document.createElement('li');
@@ -311,42 +331,63 @@ function renderResults(entries: SearchEntry[], query: string) {
     }
 }
 
+/**
+ * ステータスを表示する
+ * @param html HTML文字列
+ */
 function showStatusText(html: string) {
     statusEl.innerHTML = html;
     statusEl.hidden = false;
 }
 
+/**
+ * 初期状態を表示する
+ */
 function showInitial() {
     results.innerHTML = '';
     statusEl.hidden = true;
 }
 
+/**
+ * ローディング状態を表示する
+ */
 function showLoading() {
     results.innerHTML = `<li class="sp-loading">
-        <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px"></i>
-        ${locale === 'ja' ? '読み込み中…' : 'Loading…'}
+        <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px" />
+        ${t('search.loading', locale)}
     </li>`;
     statusEl.hidden = true;
 }
 
+/**
+ * エラー状態を表示する
+ */
 function showError() {
     results.innerHTML = `<li class="sp-empty">
         <i class="fa-solid fa-circle-exclamation"></i>
-        ${locale === 'ja' ? 'インデックスの読み込みに失敗しました' : 'Failed to load search index'}
+        ${t('search.indexError', locale)}
     </li>`;
     statusEl.hidden = true;
 }
 
-function showStatus(type: string, query = '') {
+/**
+ * ステータスを表示する
+ * @param type ステータスタイプ ('empty')
+ */
+function showStatus(type: string) {
     if (type === 'empty') {
         results.innerHTML = `<li class="sp-empty">
             <i class="fa-regular fa-face-frown-open"></i>
-            ${locale === 'ja' ? `"${query}" に一致するページが見つかりませんでした` : `No results found for "${query}"`}
+            ${t('search.noResults', locale)}
         </li>`;
         statusEl.hidden = true;
     }
 }
 
+/**
+ * 検索を実行する
+ * @param query 検索クエリ
+ */
 async function runSearch(query: string) {
     await ensureIndex();
     if (!index) return;
@@ -354,9 +395,12 @@ async function runSearch(query: string) {
 }
 
 // ---- イベント ----
-
+/**
+ * 初期化する
+ */
 async function init() {
     const q = getQueryParam();
+    // 検索クエリがある場合、検索を実行する
     if (q) {
         input.value = q;
         clearBtn.hidden = false;
@@ -366,12 +410,18 @@ async function init() {
     }
 }
 
+/**
+ * ページ読み込み時に初期化する
+ */
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
     init();
 }
 
+/**
+ * ページ遷移時に検索を更新する
+ */
 window.addEventListener('popstate', () => {
     const q = getQueryParam();
     input.value = q;
@@ -379,9 +429,13 @@ window.addEventListener('popstate', () => {
     q ? runSearch(q) : showInitial();
 });
 
+/**
+ * 検索入力時に検索を実行する
+ */
 input?.addEventListener('input', () => {
     const q = input.value;
     clearBtn.hidden = !q;
+    // デバウンス処理
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         setQueryParam(q);
@@ -389,6 +443,9 @@ input?.addEventListener('input', () => {
     }, DEBOUNCE_MS);
 });
 
+/**
+ * 検索クリアボタンをクリックしたときの処理
+ */
 clearBtn?.addEventListener('click', () => {
     input.value = '';
     clearBtn.hidden = true;
@@ -397,11 +454,16 @@ clearBtn?.addEventListener('click', () => {
     input.focus();
 });
 
+/**
+ * キーボードショートカットを処理する
+ */
 document.addEventListener('keydown', (e) => {
     const tag = (document.activeElement as HTMLElement)?.tagName;
+    // Ctrl+K または Cmd+K で検索入力にフォーカス
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault(); input?.focus();
     }
+    // / で検索入力にフォーカス
     if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
         e.preventDefault(); input?.focus();
     }

@@ -35,13 +35,16 @@ export function isLocale(lang: string): lang is Locale {
  * @returns 言語
  */
 export function resolveLocale(htmlLang: string, defaultLocale: string): Locale {
+    // HTMLのlang属性がLocale型の場合、それを返す
     if (htmlLang && isLocale(htmlLang)) {
         return htmlLang;
     }
+    // 保存された言語がLocale型の場合、それを返す
     const savedLang = getPreference('lang');
     if (savedLang && isLocale(savedLang)) {
         return savedLang;
     }
+    // それ以外の場合、デフォルト言語を返す
     return defaultLocale as Locale;
 }
 
@@ -60,7 +63,9 @@ function setLocale(lang: Locale) {
  * @returns テキストまたは undefined
  */
 export function getText(key: string | null, i18n = window.snsn?.i18n): string | undefined {
+    // キーがnullの場合、undefinedを返す
     if (!key) return undefined;
+    // i18n データからテキストを取得して返す
     return i18n?.[key];
 }
 
@@ -69,6 +74,7 @@ export function getText(key: string | null, i18n = window.snsn?.i18n): string | 
  */
 export function updateLanguageSelector() {
     const selectLang = document.getElementById('lang-list');
+    // 要素がHTMLSelectElementの場合、値を設定する
     if (selectLang instanceof HTMLSelectElement) {
         selectLang.value = window.snsn?.lang ?? '';
     }
@@ -93,8 +99,10 @@ const handlers: Record<string, (el: Element, text: string) => void> = {
 export function applyTranslations() {
     Object.entries(handlers).forEach(([attr, handler]) => {
         document.querySelectorAll(`[${attr}]`).forEach(function(el) {
+            // 属性値を取得し、存在しない場合は処理をスキップ
             const key: string | null = el.getAttribute(attr);
             if (!key) return;
+            // テキストを取得し、存在するなら設定する
             const text = getText(key);
             if (text !== undefined) {
                 handler(el, text);

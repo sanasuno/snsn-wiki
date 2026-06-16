@@ -71,7 +71,7 @@ const sortedCategories = Object.entries(categoryMap).sort(([a], [b]) =>
 			<section>
 				<a href={`${localeBaseUrl}/category/${encodeURIComponent(cat)}`} class="index-page-category">
 					<i class="fa-solid fa-folder" />
-					{t(`category.${cat}`, locale) !== `category.${cat}` ? t(`category.${cat}`, locale) : cat}
+					{t(`category.${cat}` as any, locale) !== `category.${cat}` ? t(`category.${cat}` as any, locale) : cat}
 					<span>({catPages.length} {t('category.count.page', locale)})</span>
 				</a>
 				<ul class="index-list">

@@ -7,11 +7,13 @@ import { setupLanguageSwitcher } from "@scripts/language";
 import { setupSidebar, setupSidebarToggle } from "@scripts/sidebar";
 import { setupToc, setupTocDrawer } from "@scripts/toc";
 
-// テーマと言語の初期化
+// テーマトグルのセットアップ
 setupThemeToggle();
+
+// 言語のセットアップ
 setupLanguageSwitcher();
 
-// サイドバーのセットアップ
+// サイドバー関連のセットアップ
 setupSidebar();
 setupSidebarToggle();
 

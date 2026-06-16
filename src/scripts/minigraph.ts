@@ -1,21 +1,30 @@
 /**
  * @scripts/minigraph.ts
+ * ミニグラフを表示するスクリプト
  */
 
-// ダークモード判定と色の生成
-
 import * as d3 from 'd3';
-import { defaultLocale, type Locale} from '@i18n/i18n.config';
-import { toBaseSlugFromPath, toRealSlugFromPath } from './slugUtils';
-import { makeColors, getIsDark } from './graphColors';
-
+import { toBaseSlugFromPath } from '@scripts/slugUtils';
+import { makeColors } from '@scripts/graphColors';
 
 const container = document.getElementById('mini-graph-container');
 const currentPath = container?.dataset.currentPath ?? '';
-const locale = (container?.dataset.locale as Locale) ?? defaultLocale;
 const localeBaseUrl = container?.dataset.localeBaseUrl ?? '';
 const noLinkMsg = container?.dataset.noLinkMsg ?? '';
 
+// グラフデータのAPI URL
+const graphApiUrl = `${localeBaseUrl}/api/graph.json`;
+
+/**
+ * ノードインターフェース
+ * 
+ * @interface Node
+ * @property {string} id - ノードのID
+ * @property {number} [x] - ノードのX座標
+ * @property {number} [y] - ノードのY座標
+ * @property {string} label - ノードのラベル
+ * @property {boolean} [exists] - ノードが存在するかどうか
+ */
 interface Node {
   id: string;
   x?: number;
@@ -24,16 +33,15 @@ interface Node {
   exists?: boolean;
 }
 
-const graphApiUrl = `${localeBaseUrl}/api/graph.json`;
-
-
 // メイン関数
 async function initMiniGraph() {
   // 要素の取得と初期化
   const canvas    = document.getElementById('mini-graph-canvas');
   const loading   = document.getElementById('mini-graph-loading');
+  // コンテナまたはキャンバスが存在しない場合は終了
   if (!container || !canvas) return;
   if (!(canvas instanceof HTMLCanvasElement)) return;
+  // コンテキストを取得し、存在しない場合は終了
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
@@ -56,17 +64,20 @@ async function initMiniGraph() {
   // 現在ページに接続しているノードIDを収集（1ホップ）
   const neighborIds = new Set([baseSlug]);
   for (const l of allLinks) {
+    // ソースノードIDとターゲットノードIDを取得
     const s = typeof l.source === 'object' ? l.source.id : l.source;
     const t = typeof l.target === 'object' ? l.target.id : l.target;
+    // ソースが現在ページならターゲットを追加
     if (s === baseSlug) neighborIds.add(t);
+    // ターゲットが現在ページならソースを追加
     if (t === baseSlug) neighborIds.add(s);
   }
 
   // フィルタ
   const nodes = allNodes
-    .filter((n: any) => neighborIds.has(n.id))
-    .map((n: any) => ({ ...n }));
-  const nodeSet = new Set(nodes.map((n: any) => n.id));
+    .filter((n: Node) => neighborIds.has(n.id))
+    .map((n: Node) => ({ ...n }));
+  const nodeSet = new Set(nodes.map((n: Node) => n.id));
   const links = allLinks
     .filter((l: any) => {
       const s = typeof l.source === 'object' ? l.source.id : l.source;
@@ -74,59 +85,73 @@ async function initMiniGraph() {
       return nodeSet.has(s) && nodeSet.has(t);
     })
     .map((l: any) => ({ ...l }));
-
+  // ローディングを非表示
   if (loading) loading.style.display = 'none';
 
   // 孤立ページ（リンクなし）の場合はメッセージ
   if (nodes.length <= 1) {
     container.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;height:100%;
-        font-size:0.8rem;color:var(--color-text-subtle);">
-        <i class="fa-solid fa-link-slash" style="margin-right:6px;"></i>
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:0.8rem;color:var(--color-text-subtle);">
+        <i class="fa-solid fa-link-slash" style="margin-right:6px;" />
         ${noLinkMsg}
       </div>`;
     return;
   }
 
-  // サイズ
+  // サイズ設定
   const setSize = () => {
     const r = container.getBoundingClientRect();
     canvas.width  = r.width;
     canvas.height = r.height;
   };
   setSize();
-  new ResizeObserver(() => { setSize(); sim?.force('center', d3.forceCenter(canvas.width/2, canvas.height/2)); }).observe(container);
+
+  // サイズ変更時に再計算
+  new ResizeObserver(() => {
+    setSize();
+    sim?.force('center', d3.forceCenter(canvas.width/2, canvas.height/2));
+  }).observe(container);
 
   // ノードの描画半径を決める関数
   const R = (n: any) => n.id === baseSlug ? 10 : 7;
 
   // シミュレーションのセットアップ
   let sim = d3.forceSimulation<Node>(nodes)
-    .force('link',   d3.forceLink<Node, d3.SimulationLinkDatum<Node>>(links).id(d => d.id).distance(60).strength(0.6))
-    .force('charge', d3.forceManyBody().strength(-120))
-    .force('center', d3.forceCenter(canvas.width/2, canvas.height/2))
-    .force('col',    d3.forceCollide(d => R(d) + 6))
+    .force('link',   d3.forceLink<Node, d3.SimulationLinkDatum<Node>>(links).id(d => d.id).distance(60).strength(0.6)) // リンクの距離と強さ
+    .force('charge', d3.forceManyBody().strength(-120)) // ノード同士の反発力
+    .force('center', d3.forceCenter(canvas.width/2, canvas.height/2)) // センタリング
+    .force('col',    d3.forceCollide(d => R(d) + 6)) // ノード同士の衝突検出
     .on('tick', draw);
 
   // ドラッグのセットアップ
   let tf = d3.zoomIdentity;
-  const zoom = d3.zoom<HTMLCanvasElement, unknown>().scaleExtent([0.2, 4]).on('zoom', e => { tf = e.transform; draw(); });
+  const zoom = d3.zoom<HTMLCanvasElement, unknown>()
+    .scaleExtent([0.2, 4]) // ズーム範囲
+    .on('zoom', e => { tf = e.transform; draw(); }); // ズーム時の処理
   d3.select(canvas).call(zoom);
 
   // 全ノードが収まるように初期位置を調整
   const fitView = () => {
+    // x座標とy座標を取得
     const xs = nodes.map((n: any) => n.x).filter((v: any) => v != null);
     const ys = nodes.map((n: any) => n.y).filter((v: any) => v != null);
+    // x座標とy座標が存在しない場合は終了
     if (!xs.length) return;
+
+    // パディング
     const p = 32;
+    // x座標とy座標の最小値と最大値を取得
     const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+    // ズームスケールを計算
     const sc = Math.min(
-      (canvas.width -p*2) / ((x1-x0)||1),
-      (canvas.height-p*2) / ((y1-y0)||1),
+      (canvas.width -p*2) / ((x1-x0)||1), // 幅の調整
+      (canvas.height-p*2) / ((y1-y0)||1), // 高さの調整
       2
     );
+    // ズーム変換を適用
     d3.select(canvas).call(
       zoom.transform,
+      // ズーム変換の初期値を設定
       d3.zoomIdentity.translate(
         canvas.width /2 - sc*(x0+x1)/2,
         canvas.height/2 - sc*(y0+y1)/2

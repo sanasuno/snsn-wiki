@@ -61,6 +61,7 @@ const alternateLinks = locales.map((loc) => ({
     showMeta={false}
     isWikiPage={false}
 >
+    <!-- タグページのタイトルと説明 -->
 	<div class="specialpage-title">
         <div class="specialpage-back">
             <a href={`${localeBaseUrl}/tag`}>
@@ -77,6 +78,7 @@ const alternateLinks = locales.map((loc) => ({
 		</div>
 	</div>
 
+    <!-- タグページのコンテンツ -->
     <div class="index-page">
         {sortedPages.length > 0 && (
             <ul>

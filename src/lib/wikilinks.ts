@@ -28,16 +28,20 @@ export function extractWikiLinks(
     existingSlugs?: Set<string>,
     slugMap?: SlugMap
 ): string[] {
+    // スラッグマップとスラッグセットを取得
     const map = slugMap || buildSlugMapSync();
     const slugs = existingSlugs || buildPublishedSlugs();
     const links: string[] = [];
-    const PATTERN = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g;
+
     
     // regexでマッチしたすべてのWikiリンクを処理
     let match: RegExpExecArray | null;
+    const PATTERN = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g; // [[Page Name]] や [[Page Name|表示名]] [[Page Name#section]] などのWikiリンク
     while ((match = PATTERN.exec(body)) !== null) {
+        // ページ名からスラッグを取得
         const pageName = match[1].trim();
         const rawSlug = resolveSlug(pageName, map);
+        // スラッグが存在する場合はそのスラッグを使用、存在しない場合はページ名をslugifyしてスラッグとする
         const baseSlug = slugs.has(`${sourceLocale}/${rawSlug}`) || slugs.has(`${defaultLocale}/${rawSlug}`)
             ? rawSlug
             : slugify(pageName);
@@ -83,10 +87,9 @@ export function remarkWikiLinks(options: { base?: string } = {}) {
             if (!parent || index === undefined) return;
 
             // 関数内をキャプチャする
+            // Wikiリンクパターンにマッチしない場合はスキップ
             const PATTERN = /\[\[([^\]|#]+)(?:#([^\]|]*))?(?:\|([^\]]*))?\]\]/g;
             const text: string = node.value;
-            
-            // パターンにマッチしない場合はスキップ
             if (!PATTERN.test(text)) return;
             
             // パターンのインデックスをリセット
@@ -105,14 +108,13 @@ export function remarkWikiLinks(options: { base?: string } = {}) {
                     });
                 }
 
-                const pageName = m[1].trim();
-                const anchor = m[2]?.trim() || '';
-                const displayText = m[3]?.trim() || pageName;
-                const baseSlug = resolveSlug(pageName, slugMap);
+                const pageName = m[1].trim(); // ページ名
+                const anchor = m[2]?.trim() || ''; // アンカー
+                const displayText = m[3]?.trim() || pageName; // 表示テキスト
+                const baseSlug = resolveSlug(pageName, slugMap); // ベーススラッグ
 
                 let targetLocale = defaultLocale;
                 let exists = false;
-
                 if (existingSlugs.has(`${currentLocale}/${baseSlug}`)) {
                     // 現在のロケールでページが存在する場合
                     targetLocale = currentLocale;

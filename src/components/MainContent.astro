@@ -30,19 +30,30 @@ interface Props {
     showMeta?: boolean;
 }
 
-const { title, localeBaseUrl, locale, currentPath, categories, tags = [], date, updated, isFallbackContent = false, isWikiPage = false, showMeta = true } = Astro.props;
-const startyear = 2026;
-const year = new Date().getFullYear();
+const {
+    title,
+    localeBaseUrl,
+    locale,
+    currentPath,
+    categories,
+    tags = [],
+    date,
+    updated,
+    isFallbackContent = false,
+    isWikiPage = false,
+    showMeta = true
+} = Astro.props;
 
 // メタ情報欄に表示するカテゴリ：末尾の1つのみ（例: ['tech', 'astro'] → 'astro'）
 const leafCategory = categories && categories.length > 0
     ? { name: categories[categories.length - 1], path: categories.join('/') }
     : null;
 
+// パンくずリストの型
 type Crumb = {
-    label: string;
-    href: string;
-    categorySegment?: string | undefined;
+    label: string; // パンくずのラベル
+    href: string; // パンくずのリンク先
+    categorySegment?: string | undefined; // カテゴリセグメント
 }
 
 /**
@@ -54,14 +65,16 @@ type Crumb = {
  * @returns パンくずリスト
  */
 function buildCrumbs(path: string, title: string, localeBaseUrl: string, isWikiPage: boolean): Crumb[] {
+    // ウィキページの場合、カテゴリを抽出してパンくずリストを構築する
     if (isWikiPage) {
         // ウィキページのパスからカテゴリを抽出
+        // 例: /ja/wiki/tech/astro → ['tech', 'astro']
         const wikiPrefix = `${localeBaseUrl}/wiki`;
         const strippedPath = path.startsWith(wikiPrefix) 
             ? path.slice(wikiPrefix.length)
             : path.slice(localeBaseUrl.length);
         const segments = strippedPath.split('/').filter(Boolean);
-        
+        // ルートからカテゴリまでのパンくずリストを構築
         const crumbs: Crumb[] = [
             {
                 label: t('nav.home', locale),
@@ -70,44 +83,49 @@ function buildCrumbs(path: string, title: string, localeBaseUrl: string, isWikiP
         ]
         let categoryAccumulated = '';
 
-        // カテゴリを積み上げながらパンくずリストを構築
         segments.forEach((segment, index) => {
-            const isLast = index === segments.length - 1;
+            const isLast = index === segments.length - 1; // 最後のセグメントかどうか
+            // カテゴリを積み上げながらパンくずリストを構築
             categoryAccumulated += (categoryAccumulated ? '/' : '') + segment;
             crumbs.push({
-                label: isLast ? title : segment,
-                href: isLast ? path : `${localeBaseUrl}/category/${categoryAccumulated}`,
-                categorySegment: !isLast ? segment : undefined,
+                label: isLast ? title : segment, // 最後のセグメントはタイトルを表示
+                href: isLast ? path : `${localeBaseUrl}/category/${categoryAccumulated}`, // 最後のセグメントは現在のページのパスを設定
+                categorySegment: !isLast ? segment : undefined, // 最後のセグメント以外はカテゴリセグメントを設定
             });
         });
         return crumbs;
-    } else {
+    } else { // 通常ページの場合
         // ページパスからカテゴリを抽出
+        // 例: /ja/about → []
+        // 例: /ja/services/web-design → ['services']
         const strippedPath = path.startsWith(localeBaseUrl) 
             ? path.slice(localeBaseUrl.length)
             : path;
         const segments = strippedPath.split('/').filter(Boolean);
-
+        // ルートからカテゴリまでのパンくずリストを構築
         const crumbs: Crumb[] = [{
             label: t('nav.home', locale),
             href: localeBaseUrl
         }];
         let accumulated = localeBaseUrl;
         segments.forEach((segment, index) => {
+            // カテゴリを積み上げながらパンくずリストを構築
             accumulated += `/${segment}`;
-            const isLast = index === segments.length - 1;
+            const isLast = index === segments.length - 1; // 最後のセグメントかどうか
             crumbs.push({
-                label: isLast ? title : segment,
-                href: accumulated,
+                label: isLast ? title : segment, // 最後のセグメントはタイトルを表示
+                href: accumulated, // パンくずリストのリンク先
             });
         });
         return crumbs;
     }
 }
 
+// パンくずリストを構築
 const crumbs: Crumb[] = buildCrumbs(currentPath, title, localeBaseUrl, isWikiPage);
 ---
 <main class="main-content" id="main-content">
+    <!-- フォールバックコンテンツ警告 -->
     {isFallbackContent && (
         <div class="fallback-warning">
             <i class="fa-solid fa-triangle-exclamation"></i>
@@ -120,15 +138,15 @@ const crumbs: Crumb[] = buildCrumbs(currentPath, title, localeBaseUrl, isWikiPag
             <nav class="breadcrumb">
                 <ol class="breadcrumbs">
                     {crumbs.map((crumb, index) => {
-                        const isHome = index === 0;
-                        const isLast = index === crumbs.length - 1;
-                        const isCategorySegment = !isLast && !isHome && isWikiPage;
+                        const isHome = index === 0; // ホームページかどうか
+                        const isLast = index === crumbs.length - 1; // 最後のパンくずかどうか
+                        const isCategorySegment = !isLast && !isHome && isWikiPage; // カテゴリセグメントかどうか
                         return (
                             <>
                                 <li class:list={[{ 'breadcrumb__current': isLast }]} aria-current={isLast ? 'page' : undefined}>
-                                    {isHome ? (
+                                    {isHome ? ( // ホームページの場合、最後のセグメントかどうかでリンクの有無を分ける
                                         isLast
-                                            ? <>
+                                            ? <> 
                                                 <i class="fa-solid fa-house" />
                                                 <span>{crumb.label}</span>
                                             </>
@@ -136,22 +154,22 @@ const crumbs: Crumb[] = buildCrumbs(currentPath, title, localeBaseUrl, isWikiPag
                                                 <i class="fa-solid fa-house" />
                                                 <a href={crumb.href}>{crumb.label}</a>
                                             </>
-                                        ) : isLast ? (
+                                        ) : isLast ? ( // 最後のセグメントの場合、リンクなし
                                             <>
                                                 <i class="fa-regular fa-file" />
                                                 <span>{crumb.label}</span>
                                             </>
-                                        ) : isCategorySegment ? (
+                                        ) : isCategorySegment ? ( // カテゴリセグメントの場合、カテゴリページへのリンク
                                             <>
                                                 <!-- カテゴリページへのリンク -->
                                                 <i class="fa-solid fa-folder" />
                                                 <a href={crumb.href}>
-                                                    {t(`category.${crumb.label}`, locale) !== `category.${crumb.label}` 
-                                                        ? t(`category.${crumb.label}`, locale) 
+                                                    {t(`category.${crumb.label}` as any, locale) !== `category.${crumb.label}` 
+                                                        ? t(`category.${crumb.label}` as any, locale) 
                                                         : crumb.label}
                                                 </a>
                                             </>
-                                        ) : (
+                                        ) : ( // その他のセグメントの場合、そのままリンク
                                             <>
                                                 <i class="fa-regular fa-file" />
                                                 <a href={crumb.href}>{crumb.label}</a>
@@ -159,7 +177,7 @@ const crumbs: Crumb[] = buildCrumbs(currentPath, title, localeBaseUrl, isWikiPag
                                         )
                                     }
                                 </li>
-                                {!isLast && (
+                                {!isLast && ( // 最後のセグメント以外には区切り記号を表示
                                     <li class="breadcrumb__separator" aria-hidden="true">
                                         <i class="fa-solid fa-chevron-right" />
                                     </li>
@@ -174,16 +192,18 @@ const crumbs: Crumb[] = buildCrumbs(currentPath, title, localeBaseUrl, isWikiPag
             <!-- メタ情報 -->
             <div class="page-meta">
                 {leafCategory && (
+                    <!-- カテゴリリンク -->
                     <div class="page-category">
                         <a href={`${localeBaseUrl}/category/${leafCategory.path}`}>
                             <i class="fa-regular fa-folder" />
-                            {t(`category.${leafCategory.name}`, locale) !== `category.${leafCategory.name}` 
-                                ? t(`category.${leafCategory.name}`, locale) 
+                            {t(`category.${leafCategory.name}` as any, locale) !== `category.${leafCategory.name}` 
+                                ? t(`category.${leafCategory.name}` as any, locale) 
                                 : leafCategory.name}
                         </a>
                     </div>
                 )}
                 {(date || updated) && (
+                    <!-- 日付情報 -->
                     <div class="page-meta-dates">
                         {date && (
                             <span class="page-date">
@@ -215,14 +235,4 @@ const crumbs: Crumb[] = buildCrumbs(currentPath, title, localeBaseUrl, isWikiPag
             </div>
         )}
     </article>
-    <!-- フッター -->
-    <footer class="site-footer">
-        <div class="site-footer-links">
-            <a href={`${localeBaseUrl}/privacy`}>{t('footer.privacy', locale)}</a>
-            <a href={`${localeBaseUrl}/terms`}>{t('footer.terms', locale)}</a>
-        </div>
-        <div class="site-footer-credit">
-            © {startyear}-{year} {t('site.title', locale)}.
-        </div>
-    </footer>
 </main>

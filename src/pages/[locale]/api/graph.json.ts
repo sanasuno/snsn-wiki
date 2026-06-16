@@ -1,5 +1,5 @@
 /**
- * src/pages/[lang]/api/graph.json.ts
+ * src/pages/[locale]/api/graph.json.ts
  * グラフAPI
  */
 
@@ -10,29 +10,51 @@ import { extractWikiLinks } from "@lib/wikilinks";
 import { toRealSlug, buildSlugMapSync, buildPublishedSlugs } from "@lib/slugmap";
 import { isLocale } from "@scripts/i18n";
 
+/**
+ * グラフノード
+ * 
+ * @property id スラッグ
+ * @property label ページタイトル
+ * @property tags タグ
+ * @property group タグによるグループ色分け用
+ * @property linkCount リンク数
+ * @property exists ページが存在するか
+ */
 export interface GraphNode {
     id: string;
     label: string;
     tags: string[];
-    group: string; // タグによるグループ色分け用
+    group: string;
     linkCount: number;
     exists: boolean;
 }
 
+/**
+ * グラフリンク
+ * 
+ * @property source ソースページのスラッグ
+ * @property target ターゲットページのスラッグ
+ */
 export interface GraphLink {
     source: string;
     target: string;
 }
 
+/**
+ * グラフデータ
+ * 
+ * @property nodes ノード
+ * @property links リンク
+ */
 export interface GraphData {
     nodes: GraphNode[];
     links: GraphLink[];
 }
 
 /**
- * タグからグループ識別子を返す
+ * タグからグループ識別子を返す関数
  * @param tags タグ
- * @returns 
+ * @returns グループ識別子
  */
 function tagToGroup(tags: string[]): string {
     return tags[0] || 'untagged';
@@ -54,11 +76,13 @@ export async function buildGraphData(locale: Locale = defaultLocale): Promise<Gr
         const pLocale = page.id.split('/')[0] || defaultLocale;
         const baseSlug = toRealSlug(page.id);
 
+        // ロケールが一致するか、デフォルトロケールで且つ該当ロケールにページが存在しない場合
+        // → どちらでもいいのでノードに追加する
         const isMatch = pLocale === locale;
         const isFallback = pLocale === defaultLocale && !slugs.has(`${locale}/${baseSlug}`);
-
         if (isMatch || isFallback) {
             if (!nodeMap.has(baseSlug)) {
+                // ノードがまだない場合、新規作成
                 nodeMap.set(baseSlug, {
                     id: baseSlug,
                     label: page.data.title,
@@ -68,6 +92,7 @@ export async function buildGraphData(locale: Locale = defaultLocale): Promise<Gr
                     exists: true,
                 });
             } else if (isMatch) {
+                // 既に存在するが、現在のロケールで上書きする場合
                 const node = nodeMap.get(baseSlug)!;
                 node.label = page.data.title;
                 node.tags = page.data.tags ?? [];
@@ -75,11 +100,9 @@ export async function buildGraphData(locale: Locale = defaultLocale): Promise<Gr
             }
         }
     }
-
+    // リンクの構築
     const links: GraphLink[] = [];
     const linkSet = new Set<string>();
-
-    // リンクの構築
     for (const page of pages) {
         const sourceFullSlug = page.id;
         const sourceBody = page.body ?? '';
@@ -87,27 +110,29 @@ export async function buildGraphData(locale: Locale = defaultLocale): Promise<Gr
         const sourceLocale: Locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
         const sourceBaseSlug = toRealSlug(sourceFullSlug);
 
-        if (sourceLocale !== locale && slugs.has(`${locale}/${sourceBaseSlug}`)) {
-            continue;
-        }
-        
+        // ロケールが一致しない場合、且つ該当ロケールにページが存在する場合はスキップ
+        if (sourceLocale !== locale && slugs.has(`${locale}/${sourceBaseSlug}`)) continue;
+        // ノードが存在しない場合はスキップ
         if (!nodeMap.has(sourceBaseSlug)) continue;
 
         const outboundLinks = extractWikiLinks(sourceBody, sourceLocale, slugs, map);
-
         for (const targetFullSlug of outboundLinks) {
+            // 自己リンクはスキップ
             const targetBaseSlug = toRealSlug(targetFullSlug) || targetFullSlug;
             if (sourceBaseSlug === targetBaseSlug) continue;
-
+            // 重複リンクはスキップ
             const linkKey = `${sourceBaseSlug}→${targetBaseSlug}`;
             if (linkSet.has(linkKey)) continue;
 
+            // リンクを追加
             linkSet.add(linkKey);
             links.push({ source: sourceBaseSlug, target: targetBaseSlug });
 
+            // ソースノードのリンク数を増やす
             const sourceNode = nodeMap.get(sourceBaseSlug);
             if (sourceNode) sourceNode.linkCount++;
 
+            // ターゲットノードが存在しない場合は作成
             if (!nodeMap.has(targetBaseSlug)) {
                 nodeMap.set(targetBaseSlug, {
                     id: targetBaseSlug,
@@ -118,7 +143,7 @@ export async function buildGraphData(locale: Locale = defaultLocale): Promise<Gr
                     exists: false,
                 });
             }
-
+            // ターゲットノードのリンク数を増やす
             const targetNode = nodeMap.get(targetBaseSlug);
             if (targetNode) targetNode.linkCount++;
         }
@@ -130,17 +155,27 @@ export async function buildGraphData(locale: Locale = defaultLocale): Promise<Gr
     };
 }
 
+/**
+ * 静的パスを生成
+ * @returns ロケールごとのパス
+ */
 export async function getStaticPaths() {
     return locales.map(locale => ({ params: { locale } }));
 }
 
+/**
+ * グラフデータを取得
+ * @param パラメータ
+ * @returns グラフデータ
+ */
 export const GET: APIRoute = async({ params }) => {
     const rawLocale = params.locale;
+    // ロケールが存在しない、または無効な場合は404を返す
     if (!rawLocale || !isLocale(rawLocale)) {
         return new Response ('Not Found', { status: 404});
     }
+    // グラフデータを取得し、JSONとして返す
     const data = await buildGraphData(rawLocale);
-
     return new Response(JSON.stringify(data), {
         headers: { 'Content-Type': 'application/json' },
     }); 

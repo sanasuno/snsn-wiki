@@ -8,6 +8,7 @@ import { removeTrailingSlash } from '@scripts/utils';
 import Header from '@components/Header.astro';
 import Sidebar from '@components/Sidebar.astro';
 import MainContent from '@components/MainContent.astro';
+import Footer from '@components/Footer.astro';
 import Toc from '@components/Toc.astro';
 import MiniGraph from '@components/MiniGraph.astro';
 import MermaidRenderer from '@components/MermaidRenderer.astro';
@@ -17,6 +18,7 @@ import 'katex/dist/katex.min.css';
 import '@styles/global.css';
 import '@styles/theme.css';
 
+// プロパティの型定義
 interface Props {
     title: string;
     description?: string;
@@ -32,6 +34,7 @@ interface Props {
     showMeta?: boolean;
 }
 
+// プロパティのデフォルト値設定
 const {
     title,
     description,
@@ -48,23 +51,23 @@ const {
 }: Props = Astro.props;
 
 // 基本URL設定
-const currentPath = removeTrailingSlash(Astro.url.pathname) || '/';
-const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
-const localeBaseUrl = `${baseUrl}/${locale}`;
-const wikiBaseUrl = `${localeBaseUrl}/wiki`;
-const canonicalUrl = Astro.url;
-
+const currentPath = removeTrailingSlash(Astro.url.pathname) || '/'; // 現在のパス
+const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL); // ベースURL
+const localeBaseUrl = `${baseUrl}/${locale}`; // ロケールごとのベースURL
+const wikiBaseUrl = `${localeBaseUrl}/wiki`; // wikiページのベースURL
+const canonicalUrl = Astro.url; // canonical URL
+// デフォルトの代替リンク
 const defaultAlternateLink = alternateLinks.find((link) => link.locale === defaultLocale);
 
 // 目次パネルの表示判定
 const hasTocPanel = isWikiPage;
 
-// OGPでの表示名と説明文
-const siteTitle = t('site.title', locale) ?? t('site.title', defaultLocale);
-const pageTitle = `${title} | ${siteTitle}`;
-const siteDescription = t('site.description', locale) ?? t('site.description', defaultLocale);
-const pageDescription = description ?? siteDescription;
-const ogpImageUrl = new URL('/ogp.png', Astro.site).href;
+// OGPで表示する名前と説明文
+const siteTitle = t('site.title', locale) ?? t('site.title', defaultLocale); // サイトタイトル
+const siteDescription = t('site.description', locale) ?? t('site.description', defaultLocale); // サイト説明
+const pageTitle = `${title} | ${siteTitle}`; // ページタイトル
+const pageDescription = description ?? siteDescription; // ページ説明
+const ogpImageUrl = new URL('/ogp.png', Astro.site).href; // OGP画像URL
 ---
 <!DOCTYPE html>
 <html lang={locale} data-lang={locale} data-default-locale={defaultLocale}>
@@ -88,6 +91,7 @@ const ogpImageUrl = new URL('/ogp.png', Astro.site).href;
                 )
             ))
         }
+
         <!-- OGP -->
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
@@ -100,15 +104,18 @@ const ogpImageUrl = new URL('/ogp.png', Astro.site).href;
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
         <meta name="twitter:image" content={ogpImageUrl} />
+        
         <!-- Google Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Noto+Sans+JP:wght@100..900&family=Noto+Serif+JP:wght@200..900&display=swap" rel="stylesheet">
+        
         <!-- テーマ初期化 -->
         <script is:inline>
             (function() {
                 const savedTheme = localStorage.getItem('theme');
                 if (savedTheme === 'dark' || savedTheme === 'light') {
+                    // 保存されたテーマがある場合、そのテーマを使用
                     document.documentElement.setAttribute('data-theme', savedTheme);
                 } else if (!savedTheme) {
                     // テーマ未設定の場合はOSの設定を優先
@@ -117,6 +124,7 @@ const ogpImageUrl = new URL('/ogp.png', Astro.site).href;
                 }
             })();
         </script>
+
         <!-- 言語選択初期化 -->
         <script>
             import { initI18n } from '@scripts/i18n';
@@ -131,6 +139,7 @@ const ogpImageUrl = new URL('/ogp.png', Astro.site).href;
                 localeBaseUrl={localeBaseUrl} 
                 currentPath={currentPath}
             />
+
             <!-- サイドバー -->
             <Sidebar 
                 locale={locale} 
@@ -138,23 +147,32 @@ const ogpImageUrl = new URL('/ogp.png', Astro.site).href;
                 wikiBaseUrl={wikiBaseUrl}
                 currentPath={currentPath}
             />
+            
+            <!-- メインパネル -->
+            <main class="main-panel">
+                <!-- メインコンテンツ -->
+                <MainContent 
+                    title={title} 
+                    locale={locale}
+                    localeBaseUrl={localeBaseUrl} 
+                    currentPath={currentPath}
+                    categories={categories}
+                    tags={tags}
+                    date={date}
+                    updated={updated}
+                    isFallbackContent={isFallbackContent}
+                    isWikiPage={isWikiPage}
+                    showMeta={showMeta}
+                >
+                    <slot />
+                </MainContent>
 
-            <!-- メインコンテンツ -->
-            <MainContent 
-                title={title} 
-                locale={locale}
-                localeBaseUrl={localeBaseUrl} 
-                currentPath={currentPath}
-                categories={categories}
-                tags={tags}
-                date={date}
-                updated={updated}
-                isFallbackContent={isFallbackContent}
-                isWikiPage={isWikiPage}
-                showMeta={showMeta}
-            >
-                <slot />
-            </MainContent>
+                <!-- フッター -->
+                <Footer
+                    locale={locale}
+                    localeBaseUrl={localeBaseUrl}
+                />
+            </main>
 
             <!-- 目次パネル -->
             {hasTocPanel && (

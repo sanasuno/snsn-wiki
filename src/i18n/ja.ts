@@ -5,7 +5,7 @@
 
 export const ja = {
   // ここに日本語の翻訳を追加
-  'lang.ja': '日本語',
+  'lang.name': '日本語',
   'lang.label': '言語',
   'lang.list': '言語を選択',
 
@@ -29,9 +29,11 @@ export const ja = {
   'search.description': 'Wikiページのタイトルと本文を検索します',
   'search.placeholder': 'ページを検索…',
   'search.noResults':   '結果が見つかりませんでした',
+  'search.indexError':  'インデックスの読み込みに失敗しました',
   'search.loading':     '読み込み中…',
   'search.hint':        'で移動　Enterで開く　Escで閉じる',
   'search.countlabel':  '件',
+  'search.seeAllResults': 'すべての結果を見る',
   
   // サイドバー
   'sidebar.toggle': 'サイドバー切り替え',
@@ -55,6 +57,7 @@ export const ja = {
   'category.description': 'カテゴリ一覧',
   'category.subcategories': 'サブカテゴリ',
   'category.pages': 'ページ',
+  'category.document': 'ドキュメント',
 
   // タグ
   'tag.title': 'タグ一覧',

@@ -1,6 +1,6 @@
 /**
  * src/content.config.ts
- * Astroのコンテンツ設定ファイル
+ * wikiコンテンツのスキーマを定義するファイル
  */
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';

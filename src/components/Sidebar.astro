@@ -24,19 +24,25 @@ interface Props {
 
 const { localeBaseUrl, wikiBaseUrl, locale, currentPath } = Astro.props;
 
-
-
-// 現在のパスが指定されたパスと一致するかチェック
+/**
+ * 現在のパスが指定されたパスと一致するかチェックする関数
+ * @param path パス
+ * @returns 一致するか
+ */
 function isCurrentPath(path: string): boolean {
     const route = removeTrailingSlash(path);
     return currentPath === route;
 }
-// 現在のページIDが指定されたページIDと一致するかチェック
+/**
+ * 現在のページIDが指定されたページIDと一致するかチェックする関数
+ * @param pageId ページID
+ * @returns 一致するか
+ */
 function isCurrentPageId(pageId: string): boolean {
     return isCurrentPath(getRoute(pageId, wikiBaseUrl));
 }
 
-// 全ページを取得
+// draftとhiddenでない全ページを取得
 const allPages = await getCollection("wiki", (p) => !p.data.draft && !p.data.hidden);
 
 // カテゴリ別にページをグループ化
@@ -44,16 +50,19 @@ const pages = getUniquePagesByLocale(allPages, locale);
 const byCategory: Record<string, typeof pages> = {};
 for (const page of pages) {
     const category: string[] = getCategoryFromId(page.id) || [];
+    // autoGroupByLeafCategoryが有効かつカテゴリがある場合、リーフカテゴリのみをグループ化
     if (autoGroupByLeafCategory && category.length > 0) {
-        // リーフカテゴリのみをグループ化
+        // リーフカテゴリを取得
         const leafCat = category[category.length - 1] ?? '';
+        // リーフカテゴリが存在しない場合は空文字列を使用
         if (!byCategory[leafCat]) {
             byCategory[leafCat] = [];
         }
         byCategory[leafCat].push(page);
     } else {
-        // すべてのカテゴリをグループ化
+        // カテゴリがない場合またはautoGroupByLeafCategoryが無効な場合、すべてのカテゴリをグループ化
         const categoryKey = category.join('/');
+        // カテゴリキーが存在しない場合は空配列を作成
         if (!byCategory[categoryKey]) {
             byCategory[categoryKey] = [];
         }
@@ -65,27 +74,29 @@ for (const page of pages) {
 // スラッグからページをマッピング
 const slugMap: Record<string, (typeof pages)[0]> = {};
 for (const page of pages) {
+    // ページIDからベーススラッグを取得
     const baseSlug = getBaseSlug(page.id);
     slugMap[baseSlug] = page;
 }
 
+// 既にレンダリングされたカテゴリを追跡するSet
 const renderedCategories = new Set<string>();
 
+// ソーターオブジェクト
 type WikiPage = typeof allPages[0];
 const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
-    title: (a, b) => a.data.title.localeCompare(b.data.title),
-    order: (a, b) => (a.data.order ?? 0) - (b.data.order ?? 0),
-    date: (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0),
-    updated: (a, b) => (b.data.updated?.getTime() ?? 0) - (a.data.updated?.getTime() ?? 0),
+    title: (a, b) => a.data.title.localeCompare(b.data.title), // タイトルでソート
+    order: (a, b) => (a.data.order ?? 0) - (b.data.order ?? 0), // orderでソート
+    date: (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0), // 日付でソート
+    updated: (a, b) => (b.data.updated?.getTime() ?? 0) - (a.data.updated?.getTime() ?? 0), // 更新日でソート
 };
 
 ---
-
 <aside class="sidebar" id="sidebar">
     <nav aria-label={t("sidebar.navigation", locale)}>
         {sidebarNavigation.map(section => {
             const defaultCollapsed = section.collapsed ?? false;
-            const sectionTitle = t(section.titleKey, locale);
+            const sectionTitle = t(`${section.titleKey}` as any, locale);
             const storageKey = `snsn-sidebar-${section.titleKey}`;
 
             if (section.items) {
@@ -100,7 +111,8 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                         <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
                             {section.items.map(item => {
                                 let href = item.href;
-                                let label = item.i18nKey ? t(item.i18nKey || '', locale) : '';
+                                let label = item.i18nKey ? t(item.i18nKey as any, locale) : '';
+                                // slugが指定されている場合、ページのルートを取得してhrefを更新
                                 if (item.slug) {
                                     const page = slugMap[removeTrailingSlash(item.slug)];
                                     if (page) {
@@ -110,14 +122,13 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                         }
                                     }
                                 } else if (href && !item.external) {
-                                    // 相対パスの場合
-                                    href = 
-                                        href === '/' 
-                                            ? (localeBaseUrl || '/') 
-                                            : `${localeBaseUrl}${href}`;
+                                    // 相対パスの場合、localeBaseUrlを付加して正規化
+                                    href = href === '/' 
+                                        ? (localeBaseUrl || '/') 
+                                        : `${localeBaseUrl}${href}`;
                                 }
+                                // href または label が不足している場合はスキップ
                                 if (!href || !label) {
-                                    // href または label が不足している場合はスキップ
                                     return null;
                                 }
                                 return ( 
@@ -137,10 +148,12 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                 // カテゴリ指定あり、アイテム指定なしの場合
                 // 合致するカテゴリのページを収集
                 const categoryPages = byCategory[section.category] || [];
-
+                // ページが存在しない場合はスキップ
                 if (categoryPages.length === 0) {
                     return null;
                 }
+                
+                // カテゴリを記録
                 renderedCategories.add(section.category);
                 
                 // ソート
@@ -177,8 +190,8 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
 
         <!-- 未知のカテゴリを自動追加 -->
         {autoAddUnknownCategories && Object.entries(byCategory).map(([category, categoryPages]) => {
+            // すでにレンダリングされたカテゴリはスキップ
             if (renderedCategories.has(category)) {
-                // すでにレンダリングされたカテゴリはスキップ
                 return null;
             }
             const storageKey = `snsn-sidebar-${category}`;
@@ -191,8 +204,8 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                         <i class="fa-solid fa-folder fa-fw" />
                         {category === '' 
                             ? t('home.title', locale) 
-                            : (t(`category.${category}`, locale) !== `category.${category}` 
-                                ? t(`category.${category}`, locale) 
+                            : (t(`category.${category}` as any, locale) !== `category.${category}` 
+                                ? t(`category.${category}` as any, locale) 
                                 : category)}
                         <i class="fa-solid fa-chevron-down sidebar-chevron" />
                     </button>

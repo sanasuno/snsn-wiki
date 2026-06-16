@@ -7,7 +7,10 @@
 <script type="module">
     import mermaid from 'mermaid'
 
-    // テーマを取得する
+    /**
+     * テーマを取得する関数
+     * @returns {string} テーマ名
+     */
     function getTheme() {
         const t = document.documentElement.getAttribute('data-theme');
         if (t === 'dark') return 'dark';
@@ -15,9 +18,14 @@
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
     }
 
-    // コードブロックからソースを抽出
+    /**
+     * コードブロックからソースを抽出する関数
+     * @param {HTMLElement} pre - コードブロック要素
+     * @returns {string} コードソース
+     */
     function extractSource(pre) {
         const lines = pre.querySelectorAll('.line');
+        // .line要素が存在する場合、それらのテキストコンテンツを結合する
         if (lines.length > 0) {
             return Array.from(lines).map(l => l.textContent).join('\n');
         }
@@ -26,7 +34,9 @@
 
     let counter = 0;
 
-    // すべてのMermaid図をレンダリングする
+    /**
+     * すべてのMermaid図をレンダリングする関数
+     */
     async function renderAll() {
         mermaid.initialize({
             startOnLoad: false,
@@ -39,6 +49,7 @@
             const source = extractSource(pre);
             const id = `mermaid-${counter++}`;
             try {
+                // Mermaid図をレンダリングする
                 const { svg } = await mermaid.render(id, source);
                 const wrapper = document.createElement('div');
                 wrapper.className = 'mermaid';
@@ -46,6 +57,7 @@
                 wrapper.innerHTML = svg;
                 pre.parentNode?.replaceChild(wrapper, pre);
             } catch (error) {
+                // エラーが発生した場合、エラーメッセージを表示する
                 const msg = document.createElement('pre');
                 msg.className = 'mermaid-error';
                 msg.textContent = `Mermaid rendering failed: ${error.message}`;
@@ -55,7 +67,9 @@
         }
     }
 
-    // Mermaid図をレンダリングする
+    /**
+     * Mermaid図をレンダリングする関数
+     */
     async function renderer() {
         mermaid.initialize({
             startOnLoad: false,
@@ -69,6 +83,7 @@
             if (!source) continue;
             const id = `mermaid-${counter++}`;
             try {
+                // Mermaid図をレンダリングする
                 const { svg } = await mermaid.render(id, source);
                 const next = document.createElement('div');
                 next.className = 'mermaid';

@@ -12,6 +12,13 @@
  */
 import type { Locale } from "@i18n/i18n.config";
 import type { CollectionEntry } from "astro:content";
+
+/**
+ * ロケールに基づいたベーススラッグごとのユニークページを取得する
+ * @param pages - 全ページ
+ * @param locale - 現在のロケール
+ * @returns ベーススラッグごとのユニークページ
+ */
 export function getUniquePagesByLocale(
     pages: CollectionEntry<'wiki'>[],
     locale: Locale

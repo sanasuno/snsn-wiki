@@ -10,15 +10,15 @@ import * as path from 'path';
 import { parseFrontmatter } from 'astro/markdown';
 
 /**
- * ページ名をURLスラッグに変換する
+ * ページ名をURLスラッグに変換する関数
  * URLエンコード対応
  * @param text ページ名
  * @returns URLスラッグ
  */
 export function slugify(text: string): string {
     return text
-        .trim()
-        .toLowerCase()
+        .trim() // 先頭と末尾の空白を削除
+        .toLowerCase() // 小文字に変換
         .replace(/[^\p{L}\p{N}\s-]/gu, '') // 特殊文字を削除
         .replace(/[\s_-]+/g, '-') // スペースとアンダースコアをハイフンに置換
         .replace(/--+/g, '-') // 連続するハイフンを1つに
@@ -26,7 +26,7 @@ export function slugify(text: string): string {
 }
 
 /**
- * ファイルパスからディレクトリ込みのスラッグを生成する
+ * ファイルパスからディレクトリ込みのスラッグを生成する関数
  * @param filePath ファイルパス
  * @returns ディレクトリ込みのスラッグ
  */
@@ -34,15 +34,13 @@ export function pathToSlug(filePath: string): string {
     return path
         .relative(process.cwd(), filePath) // プロジェクトルートからの相対パス
         .replace(/\.(md|mdx)$/, '') // 拡張子を削除
-        .split('/')
+        .split('/') // パスを分割
         .map(part => slugify(part)) // 各部分をスラッグ化
         .join('/');
 }
 
-export type SlugMap = Record<string, string> // 正規化テキスト → 実スラッグ
-
 /**
- * 実スラッグ（ロケールプレフィックスなし）への変換
+ * フルスラッグから実スラッグ（ロケールプレフィックスなし）へ変換する関数
  * @param fullSlug 完全なスラッグ（例: ja/recipes/pasta）
  * @returns 実スラッグ（例: recipes/pasta）
  */
@@ -53,12 +51,20 @@ export function toRealSlug(fullSlug: string): string {
     if (parts.length < 2) {
         return '';
     }
+    // プレフィックスを削除して実スラッグを返す
     return parts.slice(1).join('/');
 }
 
 /**
- * テキストから実スラッグに解決する
+ * スラッグマップ型
+ * 正規化テキスト → 実スラッグ
+ */
+export type SlugMap = Record<string, string>;
+
+/**
+ * テキストから実スラッグに解決する関数
  * @param text テキスト
+ * @param map スラッグマップ
  * @returns 実スラッグ
  */
 export function resolveSlug(text: string, map: SlugMap): string {
@@ -67,7 +73,7 @@ export function resolveSlug(text: string, map: SlugMap): string {
 }
 
 /**
- * Wikiファイルをスキャンしてスラッグマップを生成する
+ * Wikiファイルをスキャンしてスラッグマップを生成する関数
  * @param dir スキャンするディレクトリ
  * @param slugs 既存のスラッグセット
  * @param prefix プレフィックス（再帰呼び出し用）
@@ -144,6 +150,10 @@ let _cache: SlugmapCache | null = null;
 const CACHE_PATH = path.resolve(process.cwd(), '.node_modules/.cache/snsn-wiki-slugmap.json');
 const WIKI_DIR = path.resolve(process.cwd(), 'src/content/wiki');
 
+/**
+ * キャッシュファイルの最終更新時刻を取得する関数
+ * @returns キャッシュファイルの最終更新時刻（ミリ秒）
+ */
 function getCacheMtime(): number {
     try {
         return fs.statSync(CACHE_PATH).mtimeMs;
@@ -152,6 +162,11 @@ function getCacheMtime(): number {
     }
 }
 
+/**
+ * Wikiディレクトリの最新更新時刻を取得する関数
+ * @param dir Wikiディレクトリのパス
+ * @returns Wikiディレクトリの最新更新時刻（ミリ秒）
+ */
 function getWikiLatestMtime(dir: string): number {
     let latest = 0;
     if (!fs.existsSync(dir)) return latest;
@@ -170,6 +185,10 @@ function getWikiLatestMtime(dir: string): number {
     return latest;
 }
 
+/**
+ * キャッシュを構築する関数
+ * @returns キャッシュ
+ */
 function buildCache(): SlugmapCache {
     // キャッシュがあれば返す
     if (_cache) {
@@ -183,9 +202,8 @@ function buildCache(): SlugmapCache {
     if (cacheMtime > wikiMtime && fs.existsSync(CACHE_PATH)) {
         try {
             const raw = fs.readFileSync(CACHE_PATH, 'utf-8');
-            const map = JSON.parse(raw) as SlugMap;
-            const slugs = new Set(Object.values(map));
-            _cache = { map, slugs };
+            const { map, slugs: slugArr } = JSON.parse(raw) as { map: SlugMap; slugs: string[] };
+            _cache = { map, slugs: new Set(slugArr) };
             return _cache;
         } catch (error) {
             console.error('Error reading cache file:', error);
@@ -216,7 +234,7 @@ function buildCache(): SlugmapCache {
         const localeMap = scanWikiFiles(localeDir, allLocaleSlugs, locale, false);
         Object.assign(map, localeMap);
 
-        // slugsは公開ページのみ
+        // slugsは公開ページのみのスラッグを収録
         const publishedLocaleSlugs = new Set<string>();
         scanWikiFiles(localeDir, publishedLocaleSlugs, locale, true);
         for (const slug of publishedLocaleSlugs) {
@@ -227,7 +245,10 @@ function buildCache(): SlugmapCache {
         // キャッシュディレクトリを作成
         fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
         // キャッシュを書き込み
-        fs.writeFileSync(CACHE_PATH, JSON.stringify(map, null, 2));
+        fs.writeFileSync(CACHE_PATH, JSON.stringify({
+            map,
+            slugs: [...slugs],
+        }, null, 2));
     } catch (e) {
         console.error('Failed to create cache directory:', e);
     }
