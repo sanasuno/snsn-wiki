@@ -1116,7 +1116,7 @@ body {
     overflow: hidden;
 }
 
-#graph-canvas {
+.graph-canvas {
     display: block;
 }
 

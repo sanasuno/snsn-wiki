@@ -17,7 +17,7 @@ const { locale, localeBaseUrl }: Props = Astro.props;
     data-locale-base-url={localeBaseUrl}
     data-err-fetch={t('graph.error.fetch', locale)}
     data-err-no-nodes={t('graph.error.noNodes', locale)}>
-    <canvas id="graph-canvas" />
+    <canvas class="graph-canvas" id="graph-canvas" />
 
     <!-- ツールチップ -->
     <div class="graph-tooltip" id="graph-tooltip">

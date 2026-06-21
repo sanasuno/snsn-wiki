@@ -111,7 +111,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                         <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
                             {section.items.map(item => {
                                 let href = item.href;
-                                let label = item.i18nKey ? tDynamic("sidebar", item.i18nKey, locale) : '';
+                                let label = tDynamic("category", item.i18nKey, locale) ?? item.i18nKey ?? '';
                                 // slugが指定されている場合、ページのルートを取得してhrefを更新
                                 if (item.slug) {
                                     const page = slugMap[removeTrailingSlash(item.slug)];
