@@ -65,6 +65,142 @@ const { locale, localeBaseUrl }: Props = Astro.props;
         </div>
     </div>
 </div>
+
+<style>
+    /* -------- グラフページ -------- */
+    .graph-container {
+        width: 100%;
+        height: calc(100vh - var(--header-height) - 80px);
+        min-height: 400px;
+        position: relative;
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+
+    .graph-canvas {
+        display: block;
+        position: absolute;
+        inset: 0;
+    }
+
+    .graph-tooltip {
+        position: absolute;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        pointer-events: none;
+        box-shadow: var(--shadow-lg);
+        opacity: 0;
+        transition: opacity 0.15s;
+        max-width: 200px;
+        z-index: 10;
+    }
+
+    .graph-tooltip.visible {
+        opacity: 1;
+    }
+
+    .graph-tooltip-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .graph-tooltip-tags {
+        color: var(--color-text-muted);
+        font-size: 0.75rem;
+    }
+
+    .graph-controls {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .graph-button {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        color: var(--color-text-muted);
+        font-size: 1rem;
+        transition: all var(--transition);
+    }
+
+    .graph-button:hover {
+        background: var(--color-bg-secondary);
+        color: var(--color-text);
+    }
+
+    .graph-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+        pointer-events: none;
+    }
+
+    .graph-loading i {
+        margin-right: 8px;
+    }
+
+    .graph-legend {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 0.72rem;
+        color: var(--color-text-muted);
+    }
+
+    .graph-legend div {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .legend-node-sample {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #6366f1;
+    }
+
+    .legend-current {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #f59e0b;
+    }
+
+    .legend-missing {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #e5e7eb;
+        border: 1.5px dashed #9ca3af;
+    }
+</style>
+
 <script>
   import "@scripts/graphpage"
 </script>

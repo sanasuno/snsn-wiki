@@ -111,12 +111,17 @@ async function main() {
   // サイズ設定
   const setSize = () => {
     const r = container.getBoundingClientRect();
-    canvas.width  = r.width;
-    canvas.height = r.height;
+    const w = Math.round(r.width);
+    const h = Math.round(r.height);
+    if (canvas.width === w && canvas.height === h) return false;
+    canvas.width  = w;
+    canvas.height = h;
+    return true;
   };
   setSize();
   const ro = new ResizeObserver(() => {
-    setSize(); 
+    const changed = setSize();
+    if (!changed) return;
     sim?.force('center', d3.forceCenter(canvas.width/2, canvas.height/2)); 
     draw(); 
   });

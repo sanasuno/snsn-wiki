@@ -55,13 +55,12 @@ export function t(key: TranslationKey, locale: Locale = defaultLocale): string {
 
 /**
  * 動的な翻訳キーから翻訳された文字列を返す関数
- * @param prefix 翻訳キーのプレフィックス
  * @param name 翻訳キーの名前
  * @param locale ロケール
  * @returns 翻訳された文字列
  */
-export function tDynamic(prefix: string, name: string, locale: Locale = defaultLocale) {
-  const key = `${prefix}.${name}` as TranslationKey;
+export function tDynamic(name: string, locale: Locale = defaultLocale) {
+  const key = `${name}` as TranslationKey;
   const translated = t(key, locale);
   return translated !== key ? translated : name;
 }

@@ -96,7 +96,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
     <nav aria-label={t("sidebar.navigation", locale)}>
         {sidebarNavigation.map(section => {
             const defaultCollapsed = section.collapsed ?? false;
-            const sectionTitle = tDynamic("sidebar", section.titleKey, locale);
+            const sectionTitle = tDynamic(section.titleKey, locale);
             const storageKey = `snsn-sidebar-${section.titleKey}`;
 
             if (section.items) {
@@ -111,7 +111,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                         <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
                             {section.items.map(item => {
                                 let href = item.href;
-                                let label = tDynamic("category", item.i18nKey, locale) ?? item.i18nKey ?? '';
+                                let label = item.i18nKey ? tDynamic(item.i18nKey, locale) : '';
                                 // slugが指定されている場合、ページのルートを取得してhrefを更新
                                 if (item.slug) {
                                     const page = slugMap[removeTrailingSlash(item.slug)];
@@ -204,8 +204,8 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                         <i class="fa-solid fa-folder fa-fw" />
                         {category === '' 
                             ? t('home.title', locale) 
-                            : (tDynamic("category", category, locale) !== `category.${category}` 
-                                ? tDynamic("category", category, locale) 
+                            : (tDynamic(`category.${category}`, locale) !== `category.${category}` 
+                                ? tDynamic(`category.${category}`, locale) 
                                 : category)}
                         <i class="fa-solid fa-chevron-down sidebar-chevron" />
                     </button>
