@@ -9,7 +9,7 @@ import { locales, defaultLocale, type Locale} from '@i18n/i18n.config';
 import { extractWikiLinks } from "@lib/wikilinks";
 import { toRealSlug, buildSlugMapSync, buildPublishedSlugs } from "@lib/slugmap";
 import { isLocale } from "@scripts/i18n";
-import type { GraphNode, GraphLink, GraphData } from "@lib/graphTypes";
+import type { GraphNode, GraphLink, GraphData } from "@typeDefs/graph";
 
 
 /**

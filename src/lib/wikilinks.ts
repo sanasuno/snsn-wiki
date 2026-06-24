@@ -65,6 +65,9 @@ export function extractWikiLinks(
 // WikiLink 変換（remark プラグイン）
 // ==============================
 
+let _slugMapCache: SlugMap | null = null;
+let _publishedSlugsCache: Set<string> | null = null;
+
 /**
  * [[Page Name]] 記法をHTMLリンクに変換するremarkプラグイン
  * @param options オプション
@@ -72,8 +75,8 @@ export function extractWikiLinks(
  */
 export function remarkWikiLinks(options: { base?: string } = {}) {
     const base = options.base?.replace(/\/$/, '') ?? '';
-    const slugMap = buildSlugMapSync();
-    const existingSlugs = buildPublishedSlugs();
+    const slugMap = _slugMapCache ??= buildSlugMapSync();
+    const existingSlugs = _publishedSlugsCache ??= buildPublishedSlugs();
 
     // remarkプラグインを返す
     return (tree: Root, file: VFile) => {

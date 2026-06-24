@@ -942,6 +942,8 @@ body {
 
 #mini-graph-canvas {
     display: block;
+    position: absolute;
+    inset: 0;
 }
 
 /* コードブロック コピーボタン */

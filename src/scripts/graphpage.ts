@@ -6,7 +6,7 @@
 import * as d3 from 'd3';
 import { savePreference, getPreference } from '@scripts/storage';
 import { makeColors } from '@scripts/graphColors';
-import type { GraphNode, GraphLink } from '@lib/graphTypes';
+import type { GraphNode, GraphLink } from '@typeDefs/graph';
 
 const container = document.getElementById('graph-container'); // グラフコンテナ
 const localeBaseUrl = container?.dataset.localeBaseUrl ?? ''; // ロケールベースURL

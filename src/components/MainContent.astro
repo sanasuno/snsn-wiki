@@ -110,7 +110,9 @@ function buildCrumbs(path: string, title: string, localeBaseUrl: string, isWikiP
         // ページパスからカテゴリを抽出
         // 例: /ja/about → []
         // 例: /ja/services/web-design → ['services']
-        const strippedPath = stripWikiPrefix(path, localeBaseUrl, localeBaseUrl);
+        const strippedPath = path.startsWith(localeBaseUrl)
+            ? path.slice(localeBaseUrl.length)
+            : path;
         const segments = strippedPath.split('/').filter(Boolean);
         // ルートからカテゴリまでのパンくずリストを構築
         const crumbs: Crumb[] = [{

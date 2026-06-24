@@ -65,9 +65,7 @@ async function initMiniGraph() {
   // グラフデータの取得
   let allData;
   try {
-    const r = await fetchGraphData(graphApiUrl);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    allData = await r.json();
+    allData = await fetchGraphData(graphApiUrl);
   } catch (e: any) {
     if (loading) loading.style.display = 'none';
     return;
@@ -124,10 +122,25 @@ async function initMiniGraph() {
   setSize();
 
   // サイズ変更時に再計算
-  new ResizeObserver(() => {
+  const ro = new ResizeObserver(() => {
     setSize();
     sim?.force('center', d3.forceCenter(canvas.width/2, canvas.height/2));
-  }).observe(container);
+  });
+  ro.observe(container);
+
+  // テーマ監視
+  const themeObserver = new MutationObserver(() => draw());
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme']
+  });
+
+  // ページ遷移時にクリーンアップ
+  document.addEventListener('astro:before-swap', () => {
+    ro.disconnect();
+    themeObserver.disconnect();
+    sim.stop();
+  }, { once: true });
 
   // ノードの描画半径を決める関数
   const R = (n: any) => n.id === baseSlug ? 10 : 7;

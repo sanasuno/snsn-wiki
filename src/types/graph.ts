@@ -1,5 +1,5 @@
 /**
- * @lib/graphTypes.ts
+ * @types/graph.ts
  * グラフデータの型定義
  */
 

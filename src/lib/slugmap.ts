@@ -7,7 +7,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseFrontmatter } from 'astro/markdown';
 import { slugify, toRealSlug, resolveSlug, type SlugMap } from './slugCore';
 import { parseNormalizedFrontmatter } from './frontmatterUtils';
 
