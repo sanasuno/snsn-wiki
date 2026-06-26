@@ -2,7 +2,7 @@
  * @lib/locale.ts
  * ロケール判定ユーティリティ
  */
-import { translations, type Locale } from "@i18n/i18n.config";
+import { translations, type Locale } from "../i18n/i18n.config";
 
 /**
  * ロケールかどうかを判定する
