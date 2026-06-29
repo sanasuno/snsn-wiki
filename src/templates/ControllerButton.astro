@@ -52,7 +52,7 @@ const CONTROLLER_BTNS: Record<string, Record<string, ButtonDef>> = {
     },
 };
 
-const def = CONTROLLER_BTNS[platform.toUpperCase()]?.[button];
+const def = CONTROLLER_BTNS[platform]?.[button];
 ---
 {def
     ? (

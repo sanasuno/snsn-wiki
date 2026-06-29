@@ -35,7 +35,7 @@ const { id } = Astro.props
         transform: translateX(-50%);
         width: max-content;
         max-width: 260px;
-        background: var(--color-surface);
+        background-color: var(--color-bg-hover);
         border: 1px solid var(--color-border);
         border-radius: var(--radius);
         padding: 8px 12px;
@@ -63,3 +63,21 @@ const { id } = Astro.props
         display: block;
     }
 </style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll<HTMLElement>('.fn-ref').forEach(ref => {
+        const id = ref.querySelector<HTMLElement>('.fn-ref-link')?.dataset.fnId;
+        if (!id) return;
+        const fnItem = document.getElementById(`fn-${id}`);
+        const popup = ref.querySelector<HTMLElement>('.fn-popup');
+        if (!fnItem || !popup) return;
+        // バックリンクを除いたテキストを取得
+        const fnText = fnItem.querySelector<HTMLElement>('.footnote-text');
+        if (fnText) {
+            const clone = fnText.cloneNode(true) as HTMLElement;
+            clone.querySelector('.footnote-back')?.remove();
+            popup.textContent = clone.textContent?.trim() ?? '';
+        }
+    });
+});
+</script>

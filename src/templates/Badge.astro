@@ -4,14 +4,14 @@ interface Props {
     color?: string
     href?: string
 }
-const { label, color, href } = Astro.props
+const { label, color = '#667eea', href } = Astro.props
 ---
 {href ? (
-    <a href={href} class={`badge badge-${color}`} style={`--badge-color: ${color || '#667eea'}`}>
+    <a href={href} class={`badge badge-${color}`} style={`--badge-color: ${color}`}>
         {label}
     </a>
 ) : (
-    <span class={`badge badge-${color}`} style={`--badge-color: ${color || '#667eea'}`}>
+    <span class={`badge badge-${color}`} style={`--badge-color: ${color}`}>
         {label}
     </span>
 )}

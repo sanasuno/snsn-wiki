@@ -137,8 +137,8 @@ function buildCrumbs(path: string, title: string, localeBaseUrl: string, isWikiP
 const crumbs: Crumb[] = buildCrumbs(currentPath, title, localeBaseUrl, isWikiPage);
 ---
 <main class="main-content" id="main-content">
-    <!-- フォールバックコンテンツ警告 -->
     {isFallbackContent && (
+        <!-- フォールバックコンテンツ警告 -->
         <div class="fallback-warning">
             <i class="fa-solid fa-triangle-exclamation"></i>
             <span>{t('fallback.warning', locale)}</span>

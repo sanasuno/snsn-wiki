@@ -62,13 +62,12 @@ const { term, desc } = Astro.props
 </style>
 
 <script>
-    import { removeTrailingSlash } from "@scripts/utils";
+    import {tooltips} from "@data/tooltips.ts"
     document.addEventListener('DOMContentLoaded', function() {
         (function() {
             var autoTips = document.querySelectorAll('.tooltip-auto');
             if (autoTips.length === 0) return;
-            const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
-            fetch(baseUrl + '/data/tooltips.json')
+            fetch(tooltips)
                 .then(function(response) {
                     return response.ok
                         ? response.json()

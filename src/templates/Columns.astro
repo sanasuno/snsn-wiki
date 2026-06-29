@@ -4,7 +4,7 @@ interface Props {
 }
 const { cols } = Astro.props
 ---
-<div class="columns" style={cols ? `--cols:${cols}` : undefined}>
+<div class="columns" style={cols ? `grid-template-columns: repeat(${cols}, 1fr)` : undefined}>
     <slot />
 </div>
 <style>

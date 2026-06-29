@@ -14,6 +14,8 @@ import Danger from '@templates/Danger.astro';
 import Badge from '@templates/Badge.astro';
 import Details from '@templates/Details.astro';
 import Tooltip from '@templates/Tooltip.astro';
+import Ref from '@templates/Ref.astro';
+import Fn from '@templates/Fn.astro';
 import ControllerButton from '@templates/ControllerButton.astro';
 import Keyboard from '@templates/Keyboard.astro';
 import Columns from '@templates/Columns.astro';
@@ -100,6 +102,20 @@ import Infobox from '@templates/Infobox.astro';
 
 <Tooltip term="WikiLink" desc="ページ名を二重角括弧で囲んで作るページ間リンク。" />
 <Tooltip term="frontmatter" />
+
+---
+
+## ref・fn — 脚注
+
+本文中に参照番号を挿入し、ページ末尾に注釈を置きます。
+
+```mdx
+本文中<Ref id="1" />にここで参照番号が付きます。
+
+<Fn id="1">これが脚注の内容です。</Fn>
+```
+
+本文中<Ref id="1" />にここで参照番号が付きます。
 
 ---
 
@@ -196,3 +212,7 @@ Markdown を書くだけでページが生成されます。
 </Columns>
 
 ---
+
+## 注釈
+
+<Fn id="1">これが脚注の内容です。本文中の番号にホバーするとポップアップで表示されます。「↩」で参照元に戻れます。</Fn>

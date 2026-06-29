@@ -18,11 +18,15 @@ const icons: Record<Props['type'], string> = {
 <style>
     .callout {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         padding: 8px 12px;
         margin: 1.25em 0;
         border-radius: 0.5rem;
         gap: 4px;
+    }
+    .callout > i {
+        flex-shrink: 0;
+        margin-top: 0.2em;
     }
     .callout-note {
         background-color: #e3f2fd;
