@@ -68,41 +68,45 @@ export function extractWikiLinks(
 /**
  * [[Page Name]] 記法をHTMLリンクに変換するremarkプラグイン
  * @param options オプション
- * @param options.base ベースパス（オプション）
+ * @param options.base ベースパス（オプション、例: '/wiki'）
  */
 export function remarkWikiLinks(options: { base?: string } = {}) {
+    // 末尾のスラッシュを除去してベースパスを正規化
     const base = options.base?.replace(/\/$/, '') ?? '';
+    // ビルド時に同期的にスラッグマップと公開済みスラッグの情報を取得
     const slugMap = buildSlugMapSync();
     const existingSlugs = buildPublishedSlugs();
 
-    // remarkプラグインを返す
+    // Unified / Remark のプラグイン関数を返す
     return (tree: Root, file: VFile) => {
-        // 現在のファイルのロケールを取得
+        // 現在処理しているMarkdownファイルの絶対パスを取得
         const filePath = file?.path || file?.history?.[0] || '';
+        // ファイルパスから現在のロケール（言語コード、例: 'ja' または 'en'）を抽出
         const match = filePath.match(/src[\\\/]content[\\\/]wiki[\\\/]([^\\\/]+)/);
         const rawLocale = match?.[1];
         const currentLocale = (rawLocale && isLocale(rawLocale)) ? rawLocale : defaultLocale;
 
-        // テキストノードを走査してWikiリンクを変換
+        // mdast（Markdown抽象構文木）内のすべての 'text' ノードを走査
         visit(tree, 'text', (node: any, index: number | undefined, parent: any) => {
-            // 親ノードやインデックスが存在しない場合はスキップ
+            // 親ノードやインデックスが存在しない場合は処理できないためスキップ
             if (!parent || index === undefined) return;
 
-            // 関数内をキャプチャする
-            // Wikiリンクパターンにマッチしない場合はスキップ
+            // [[Page Name]] 形式のパターン
             const PATTERN = new RegExp(WIKILINK_PATTERN_SOURCE, 'g');
             const text: string = node.value;
+            // 該当するテキスト内にWikiリンクが1つも含まれていない場合はスキップ
             if (!PATTERN.test(text)) return;
             
-            // パターンのインデックスをリセット
+            // 正規表現の検索位置インデックスを初期化
             PATTERN.lastIndex = 0;
 
             const newNodes: any[] = [];
             let lastIndex = 0;
             let m: RegExpExecArray | null;
-            // パターンにマッチするすべてのリンクを処理
+
+            // マッチするすべてのWikiLink記法を順に処理
             while ((m = PATTERN.exec(text)) !== null) {
-                // マッチした部分の前のテキストを追加
+                // WikiLinkの直前にあるプレーンテキストを新規テキストノードとして追加
                 if (m.index > lastIndex) {
                     newNodes.push({
                         type: 'text',
@@ -110,32 +114,36 @@ export function remarkWikiLinks(options: { base?: string } = {}) {
                     });
                 }
 
-                const pageName = m[1].trim(); // ページ名
-                const anchor = m[2]?.trim() || ''; // アンカー
-                const displayText = m[3]?.trim() || pageName; // 表示テキスト
-                const baseSlug = resolveSlug(pageName, slugMap); // ベーススラッグ
+                const pageName = m[1].trim(); // リンク先ページ名（またはエイリアス名）
+                const anchor = m[2]?.trim() || ''; // # 以降の目次アンカー
+                const displayText = m[3]?.trim() || pageName; // 表示テキスト（|の右側、なければページ名）
+                const baseSlug = resolveSlug(pageName, slugMap); // ページ名から実際のスラッグを逆引き
 
                 let targetLocale = defaultLocale;
                 let exists = false;
+
+                // リンク先の存在チェックとロケール判定
                 if (existingSlugs.has(`${currentLocale}/${baseSlug}`)) {
-                    // 現在のロケールでページが存在する場合
+                    // 現在のページのロケールにリンク先ページが存在する場合
                     targetLocale = currentLocale;
                     exists = true;
                 } else if (existingSlugs.has(`${defaultLocale}/${baseSlug}`)) {
-                    // デフォルトロケールでページが存在する場合
+                    // 現在のロケールにはないが、デフォルトロケールに存在する場合（フォールバック）
                     targetLocale = defaultLocale;
                     exists = true;
                 }
 
+                // 目次アンカーがある場合はスラッグ化してハッシュを構築
                 const hash = anchor ? `#${slugify(anchor)}` : '';
                 const href = `${base}/${targetLocale}/wiki/${baseSlug}${hash}`;
                 
-                // リンクノードを追加
+                // HTMLのAタグに相当する 'link' ノードを生成して追加
                 newNodes.push({
                     type: 'link',
                     url: href,
                     data: {
                         hProperties: {
+                            // リンク先が存在しない場合は 'wikilink-missing' クラスを付与し、スタイル（例: 赤文字）で表現可能にする
                             class: exists ? 'wikilink' : 'wikilink wikilink-missing',
                             'data-page': baseSlug,
                         },
@@ -146,10 +154,11 @@ export function remarkWikiLinks(options: { base?: string } = {}) {
                     }],
                 });
 
+                // マッチした部分の末尾までインデックスを進める
                 lastIndex = m.index + m[0].length;
             }
 
-            // マッチしなかった残りのテキストを追加
+            // 最後のWikiLinkの後ろにある残りのプレーンテキストを追加
             if (lastIndex < text.length) {
                 newNodes.push({
                     type: 'text',
@@ -157,9 +166,10 @@ export function remarkWikiLinks(options: { base?: string } = {}) {
                 });
             }
 
-            // ノードを置換
+            // 親ノードの子供リストにある元の 'text' ノードを、分割・生成した新しいノード群で置換する
             if (newNodes.length > 0) {
                 parent.children.splice(index, 1, ...newNodes);
+                // 置換後のツリー走査で無限ループを防ぐため、追加した分のノード数をスキップする
                 return [SKIP, index + newNodes.length];
             }
         });

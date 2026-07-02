@@ -196,20 +196,24 @@ function buildCache(): SlugmapCache {
     const map: SlugMap = {};
     const slugs = new Set<string>();
 
-    // ディレクトリが存在しない場合は空のキャッシュを返す
-    if (!fs.existsSync(WIKI_DIR)) {
-        // ロケールを取得
+    // ディレクトリが存在する場合にのみスキャン処理を実行
+    // 元のコードは !fs.existsSync(WIKI_DIR) となっており、存在する場合にスキャンされないバグがあったため修正
+    if (fs.existsSync(WIKI_DIR)) {
+        // 各言語用のディレクトリ（ja, enなど）を取得
         const localeDirs = fs.readdirSync(WIKI_DIR, { withFileTypes: true })
             .filter(dir => dir.isDirectory())
             .map(dir => dir.name);
-        // ロケールごとにスキャン
+        
+        // ロケールごとにディレクトリ内をスキャン
         for (const localeDir of localeDirs) {
             const fullLocaleDir = path.join(WIKI_DIR, localeDir);
-            // 全ページ（draft/hidden含む）のslugを収録
+            
+            // 全ページ（下書き/非公開含む）のスラッグマップを構築
             const allLocaleSlugs = new Set<string>();
             const localeMap = scanWikiFiles(fullLocaleDir, allLocaleSlugs, localeDir, false);
             Object.assign(map, localeMap);
-            // 公開ページのみのスラッグを収録
+            
+            // 公開ページ（draft: false かつ hidden: false）のみのスラッグ集合を構築
             const publishedLocaleSlugs = new Set<string>();
             scanWikiFiles(fullLocaleDir, publishedLocaleSlugs, localeDir, true);
             for (const slug of publishedLocaleSlugs) {
@@ -217,19 +221,22 @@ function buildCache(): SlugmapCache {
             }
         }
     }
+    
     try {
-        // キャッシュディレクトリを作成
+        // キャッシュファイルの保存先ディレクトリを作成（存在しない場合のみ）
         fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
-        // キャッシュを書き込み
+        
+        // 生成したマップとスラッグリストを JSON 形式でキャッシュに保存
         fs.writeFileSync(CACHE_PATH, JSON.stringify({
             map,
             slugs: [...slugs],
             fileListKey
         }, null, 2));
     } catch (e) {
-        console.error('Failed to create cache directory:', e);
+        console.error('[slugmap] Failed to write cache file:', e);
     }
 
+    // メモリ上のキャッシュを更新して返す
     _cache = { map, slugs, mtime: wikiMtime, fileListKey };
     return _cache;
 }

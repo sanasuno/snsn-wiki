@@ -1,43 +1,57 @@
-# Astro Starter Kit: Minimal
+# snsn-wiki
 
-```sh
-npm create astro@latest -- --template minimal
-```
+`snsn-wiki` は、Astro をベースに構築された高速でモダンなパーソナル多言語 Wiki システムです。
+Markdown / MDX で記述されたドキュメントを解析し、双方向リンクの構築、関係性グラフの可視化、高速な全文検索などを提供します。
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+---
 
-## 🚀 Project Structure
+## 🚀 主な機能
 
-Inside of your Astro project, you'll see the following folders and files:
+- 🔗 **双方向リンク (WikiLink)**: `[[ページ名]]` や `[[ページ名|表示名]]` で簡単にページ間をリンクできます。リンク先が存在しない場合はデッドリンクとして赤く表示されます。
+- 🌐 **多言語対応 (i18n)**: 日本語 (`ja`) や英語 (`en`) などの複数言語に対応し、言語別のルーティングやフォールバック表示を提供します。
+- 📊 **関係性グラフビュー (D3.js)**: ページ間のリンク構造を Canvas/D3.js を使用して可視化します。タグに応じたカラー表示やリンク先が存在しないページの可視化にも対応しています。
+- 🔍 **高速全文検索**: ビルド前にドキュメントをスキャンして検索インデックスを生成し、ブラウザ上でデバウンス処理付きの高速なインクリメンタル検索を提供します。
+- 🛠️ **MDX カスタムコンポーネント**: コールアウト（Note、Tip、Dangerなど）、タブレイアウト、折りたたみ、キーボードキー表示、ツールチップ、脚注など、多数の専用コンポーネントが標準で利用可能です。
+- 🧮 **数式サポート**: Katex インテグレーションにより、インライン数式 `$E=mc^2$` やブロック数式が標準で美しく描画されます。
+- 🧜 **Mermaid ダイアグラム**: ダイアグラムやフローチャートを Markdown 内で記述して直接レンダリングできます。
+
+---
+
+## 📁 プロジェクトのディレクトリ構造
+
+本プロジェクトは Astro の一般的なディレクトリ構造を採用しており、MDX 固有のコンポーネントは `src/components/mdx/` 配下に整理されています。
 
 ```text
 /
-├── public/
+├── public/                     # 静的アセット（ファビコン、ビルドされた検索インデックス等）
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── components/             # UIコンポーネント
+│   │   └── mdx/                # MDXで利用するカスタムコンポーネント（Note, Tabsなど）
+│   ├── content/                # コンテンツフォルダ
+│   │   └── wiki/               # Wikiのコンテンツデータ（ja, en などのロケール別）
+│   ├── data/                   # 静的設定データ（ナビボックス、定義済ツールチップ等）
+│   ├── i18n/                   # 多言語対応の翻訳キーおよび設定
+│   ├── layouts/                # ページのベースレイアウトおよびサイドバー設定
+│   ├── lib/                    # スラッグ解決やWikiLink構文解析、インデックスビルダなどの主要ロジック
+│   ├── pages/                  # ルーティング用Astroページ、APIエンドポイント
+│   ├── scripts/                # クライアントサイドの動作スクリプト（グラフ描画、検索等）
+│   ├── styles/                 # グローバルCSS、テーマデザイン定義
+│   └── types/                  # TypeScript用の型定義
+├── package.json
+├── tsconfig.json               # パスエイリアス設定（@components, @templates 等）
+└── astro.config.ts             # Astro全体の統合設定
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+---
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## 🧞 実行コマンド
 
-Any static assets, like images, can be placed in the `public/` directory.
+すべてのコマンドはプロジェクトのルートディレクトリから実行します。
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| コマンド | 説明 |
+| :--- | :--- |
+| `npm install` | 依存パッケージのインストール |
+| `npm run dev` | ローカル開発サーバーの起動 (`http://localhost:4321`) |
+| `npm run prebuild` | 検索インデックスのビルド (`public/search-index.[locale].json`) |
+| `npm run build` | 本番用静的サイトのビルド (`dist/` ディレクトリに出力されます) |
+| `npm run preview` | ビルドされた静的ファイルをローカルでプレビュー起動 |

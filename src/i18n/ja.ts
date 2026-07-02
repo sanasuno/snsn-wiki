@@ -58,6 +58,7 @@ export const ja = {
   'category.subcategories': 'サブカテゴリ',
   'category.pages': 'ページ',
   'category.document': 'ドキュメント',
+  'category.code': 'コード解説',
 
   // タグ
   'tag.title': 'タグ一覧',

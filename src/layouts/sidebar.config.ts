@@ -64,11 +64,38 @@ export type NavigationSection = {
     autoSort?: SortMode;
 };
 
-export const autoAddUnknownCategories = true; // true にすると、明示されていない全カテゴリをサイドバー末尾に自動追加する
-export const autoGroupByLeafCategory = true; // true にすると、カテゴリを葉カテゴリ単位でグループ化する
+/**
+ * サイドバーに表示しきれていない未定義カテゴリの自動処理設定
+ * true に設定すると、以下の `sidebarNavigation` 配列で明示的に定義されていない
+ * すべてのカテゴリを、自動でサイドバーの末尾にセクションとして追加します。
+ */
+export const autoAddUnknownCategories = true;
 
+/**
+ * 自動追加されるカテゴリの階層表現設定
+ * true に設定すると、深い階層（例: "parent/child/leaf"）を持つカテゴリについて、
+ * 末尾の葉カテゴリ（"leaf"）単位でグループ化した形でサイドバーに出力します。
+ */
+export const autoGroupByLeafCategory = true;
+
+/**
+ * サイドバーナビゲーション全体の構成定義
+ * 各セクションはオブジェクト形式で定義され、手動リンク (`items`) または
+ * 指定カテゴリの自動収集 (`category` と `autoSort`) のいずれか一方を設定します。
+ * 
+ * 設定例 (新しいカテゴリセクションを手動で追加したい場合):
+ * ```ts
+ * {
+ *   titleKey: 'sidebar.mySection', // i18n 設定にある翻訳キー
+ *   icon: 'fa-solid fa-gear',      // 表示したい Font Awesome アイコンクラス
+ *   collapsed: false,              // 初期ロード時に展開しておく場合は false
+ *   category: 'my-category',       // 記事の frontmatter 等で設定したカテゴリフォルダ名
+ *   autoSort: 'order',             // order メタデータ値順で並べ替え
+ * }
+ * ```
+ */
 export const sidebarNavigation: NavigationSection[] = [
-    // -------- クイックリンク（手動） --------
+    // -------- クイックリンク（手動による固定ナビゲーション一覧） --------
     {
         titleKey: 'sidebar.quickLinks',
         icon: 'fa-solid fa-bolt',
@@ -84,14 +111,14 @@ export const sidebarNavigation: NavigationSection[] = [
         ],
     },
 
-    // -------- サンプル（自動収集） --------
+    // -------- サンプルセクション（自動収集リンク一覧） --------
     {
         titleKey: 'sidebar.sampleAuto',
         icon: 'fa-solid fa-book',
         collapsed: true,
-        category: 'sample', // src/content/wiki/ 以下の category="sample" のページを収集
-        autoSort: 'title', // 'title' | 'order' | 'date' | 'updated' のうちいずれかを指定、デフォルト: 'title'
+        category: 'sample', // src/content/wiki/sample/ 配下にあるドキュメントファイルを自動スキャンして表示
+        autoSort: 'title', // ソート基準。'title' | 'order' | 'date' | 'updated' から選べます。デフォルトは 'title'
     },
 
-    // -------- ここにセクションを追加 --------
+    // -------- ここにセクションを追加可能 --------
 ] satisfies NavigationSection[];

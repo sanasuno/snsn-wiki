@@ -7,8 +7,8 @@ date: 2026-06-23
 ---
 ## このファイルについて
 
-`astro.config.ts`は、Astroプロジェクト全体の設定ファイルです。
-本来、Astroではこのファイルに直接設定を記述する必要がありますが、snsn-wikiでは、設定すべき項目を別ファイルに記述し、それを読み込むことで、設定の可読性と保守性を向上させています。
+`astro.config.ts` は、Astro プロジェクト全体の設定ファイルです。
+本プロジェクト固有の多言語ルーティング、MDX インテグレーション、数式サポート（Remark/Rehype）、および双方向リンク（WikiLink）解析用カスタムプラグインなどを定義しています。
 
 ## インポート
 
@@ -21,16 +21,17 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { remarkWikiLinks } from './src/lib/wikilinks';
 ```
-Astroでは [[tsconfig|tsconfig.json]] でエイリアスを設定できますが、`astro.config.ts` は `tsconfig.json` の影響を受けません。  
+
+Astro では `tsconfig.json` でパスエイリアスを設定できますが、`astro.config.ts` 自体はビルド実行前の段階で動くため、`tsconfig.json` のパスエイリアスの影響を受けません。  
 このため、`astro.config.ts` では、インポートの際に相対パスで指定する必要があります。
-- `defineConfig` - Astro設定の型チェックと補完を提供するヘルパー関数です。
-- `locales` - 利用可能なロケール配列です。
-- `defaultLocale` - デフォルトロケールとして指定したロケールです。
-- `mdx` - MDXを利用できるようにするインテグレーションです。
+- `defineConfig` - Astro 設定の型チェックと補完を提供するヘルパー関数です。
+- `locales` - 利用可能なロケール配列（`['ja', 'en']` 等）です。
+- `defaultLocale` - デフォルトロケールとして指定したロケール（`'ja'`）です。
+- `mdx` - MDX を利用できるようにするインテグレーションです。
 - `sitemap` - サイトマップを生成するインテグレーションです。
-- `remarkMath` - 数式を利用できるようにするRemarkプラグインです。
-- `rehypeKatex` - 数式を利用できるようにするRehypeプラグインです。
-- `remarkWikiLinks` - Wikiリンクを利用できるようにする独自のRemarkプラグインです。
+- `remarkMath` - 数式を利用できるようにする Remark プラグインです。
+- `rehypeKatex` - 数式を利用できるようにする Rehype プラグインです。
+- `remarkWikiLinks` - Wikiリンクを利用できるようにする独自の Remark プラグインです。
 
 ## SITE_URLの設定
 
@@ -49,4 +50,68 @@ if (process.env.NODE_ENV !== 'development' && SITE_URL === DEFAULT_SITE_URL) {
   throw new Error('[astro.config] SITE_URL must be configured in production');
 }
 ```
-環境変数から `SITE_URL` を読み込み、ない場合はデフォルト値（`http://localhost:4321`）を使用してURLオブジェクトに変換します。
+
+環境変数 `SITE_URL` を読み込み、本番環境で適切な URL が設定されているかを検証します。これにより GitHub Pages やカスタムドメインへのデプロイ時にサイトマップや OGP などの絶対URLが正しく解決されます。
+
+## BASE_PATHの設定
+
+``` ts
+// .envファイルからBASE_PATHを読み込み、ない場合は'/'を使用する
+const rawBasePath = process.env.BASE_PATH || '/';
+if (!rawBasePath.startsWith('/')) {
+  // BASE_PATHが/で始まらない場合、エラーを投げる
+  throw new Error('[astro.config] BASE_PATH must start with /');
+}
+// BASE_PATHの末尾の/を削除する
+const BASE_PATH = rawBasePath.replace(/\/+$/, '') || '/';
+```
+
+GitHub Pages 等でサブディレクトリ配下（例: `https://username.github.io/repo-name/`）にデプロイされる際、パスが壊れるのを防ぐための設定です。末尾のスラッシュを正規化して環境変数 `BASE_PATH` を安全に読み込んでいます。
+
+## Astro設定オプション
+
+```ts
+export default defineConfig({
+  integrations: [
+    mdx(),
+    sitemap({
+      i18n: {
+        defaultLocale,
+        locales: Object.fromEntries(locales.map((loc) => [loc, loc]))
+      }
+    })
+  ],
+  site: SITE_URL,
+  base: BASE_PATH,
+  i18n: {
+    locales,
+    defaultLocale,
+    routing: {
+      prefixDefaultLocale: true
+    }
+  },
+  markdown: {
+    remarkPlugins: [
+      [remarkWikiLinks, { base: BASE_PATH === '/' ? '' : BASE_PATH}],
+      remarkMath
+    ],
+    rehypePlugins: [
+      rehypeKatex
+    ]
+  }
+});
+```
+
+### 主な設定項目
+1. **`integrations`**: MDX のサポートと、多言語対応の XML サイトマップ自動生成インテグレーションを登録しています。
+2. **`site` / `base`**: ドメインのベースURLとサブパスを指定し、アセット読み込みの基準パスとします。
+3. **`i18n`**:
+   - `locales`: 登録されたすべてのロケール。
+   - `defaultLocale`: 基本言語ロケール。
+   - `routing.prefixDefaultLocale: true`: デフォルトロケールであっても `/ja/` や `/en/` のように言語プレフィックスを URL に必須化します。これにより、言語選択が明示的にルーティングされます。
+4. **`markdown`**:
+   - **`remarkPlugins`**:
+     - `remarkWikiLinks`: [[WikiLink]] を解析して HTML リンク（Aタグ）に変換する自作プラグイン。ベースパスをオプションで渡しています。
+     - `remarkMath`: LaTeX数式の構文木抽出。
+   - **`rehypePlugins`**:
+     - `rehypeKatex`: 抽出された数式を KaTeX CSS/HTML にレンダリング変換。

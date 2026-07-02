@@ -72,7 +72,11 @@ export function tDynamic(name: string, locale: Locale = defaultLocale) {
  * @returns 翻訳された文字列
  */
 export function tCategory(name: string, locale: Locale = defaultLocale): string {
-  return tDynamic(`category.${name}`, locale);
+  const translatedCategory = tDynamic(`category.${name}`, locale);
+  if (translatedCategory === `category.${name}`) {
+    return name;
+  }
+  return translatedCategory;
 }
 
 /**

@@ -37,30 +37,39 @@ const PUBLIC_DIR   = path.resolve(__dirname, '../../../public'); // publicディ
  * @param md Markdown テキスト
  * @returns プレーンテキスト
  */
+/**
+ * Markdown 本文から各種装飾記法やコードブロックなどを除去し、
+ * 検索インデックスに適したプレーンテキストに変換する
+ * @param md 変換前の Markdown テキスト
+ * @returns プレーンテキスト
+ */
 function mdToText(md: string): string {
     return md
-        // コードブロック除去
+        // 複数行のコードブロック (```...```) を除去
         .replace(/```[\s\S]*?```/g, '')
+        // インラインコード ( `code` ) を除去
         .replace(/`[^`]+`/g, '')
-        // WikiLink [[target|label]] → label or target
+        // WikiLink [[ページ名|表示ラベル]] を 表示ラベル ($2) に変換
         .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
+        // WikiLink [[ページ名]] を ページ名 ($1) に変換
         .replace(/\[\[([^\]]+)\]\]/g, '$1')
-        // 画像除去
+        // マークダウンの画像埋め込み (![alt](url)) を除去
         .replace(/!\[.*?\]\(.*?\)/g, '')
-        // リンク → テキスト
+        // マークダウンの通常のハイパーリンク ([label](url)) を label ($1) に変換してURLテキストを除去
         .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-        // HTML タグ除去
+        // HTMLタグ (<script>や<div>など) を丸ごと除去
         .replace(/<[^>]+>/g, '')
-        // 見出し記号除去
+        // 行頭の見出し記号 (#) とそれに続く空白を除去
         .replace(/^#{1,6}\s+/gm, '')
-        // 強調記号除去
+        // 太字・斜体などの強調記号 (* や _) を除去して中身のテキスト ($1) を残す
         .replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, '$1')
-        // 水平線除去
+        // 3つ以上のハイフン・アスタリスクによる水平線を除去
         .replace(/^[-*_]{3,}\s*$/gm, '')
-        // リスト記号除去
+        // リスト（箇条書き）の行頭記号 (- または * または +) を除去
         .replace(/^[\s]*[-*+]\s+/gm, '')
+        // 連番リストの行頭番号 (1. など) を除去
         .replace(/^[\s]*\d+\.\s+/gm, '')
-        // 余分な空白・改行を圧縮
+        // 3つ以上の連続する改行を2つの改行に圧縮して余分な空白行を削除
         .replace(/\n{3,}/g, '\n\n')
         .trim();
 }
@@ -70,24 +79,24 @@ function mdToText(md: string): string {
 // ----------------------------------------
 
 /**
- * ディレクトリを再帰的に走査し、Markdown ファイルのパス一覧を返す
- * @param dir 走査するディレクトリパス
- * @param baseDir ベースディレクトリ（相対パス計算用）
- * @returns Markdown ファイルのパス配列
+ * 指定ディレクトリ配下を再帰的に走査し、すべてのMarkdown/MDXファイルの絶対パス一覧を収集する
+ * @param dir 走査対象のディレクトリパス
+ * @param baseDir ベースとなるディレクトリ（相対パス計算などに使用）
+ * @returns Markdown/MDXファイルの絶対パスの配列
  */
 function walkDir(dir: string, baseDir: string): string[] {
-    // ディレクトリが存在しない場合は空の配列を返す
+    // ディレクトリが存在しない場合はエラーを避け空の配列を返す
     if (!fs.existsSync(dir)) return [];
 
-    // ディレクトリ内のファイルを走査
     const results: string[] = [];
+    // ディレクトリ直下のエントリを同期的に取得
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-            // サブディレクトリを再帰的に走査
+            // サブディレクトリの場合はさらに再帰的に探索
             results.push(...walkDir(full, baseDir));
         } else if (/\.(md|mdx)$/.test(entry.name)) {
-            // Markdown ファイルを追加
+            // Markdown/MDXファイルが見つかった場合はパスを追加
             results.push(full);
         }
     }
@@ -99,41 +108,44 @@ function walkDir(dir: string, baseDir: string): string[] {
 // ----------------------------------------
 
 /**
- * 指定されたロケールの検索エントリを構築する
- * @param locale ロケール
- * @returns 検索エントリの配列
+ * 特定のロケールディレクトリ以下からWikiページを収集し、検索エンジン用のデータ構造（SearchEntry）の配列を構築する
+ * @param locale ロケールコード（'ja', 'en' など）
+ * @returns 検索インデックス用エントリの配列
  */
 function buildEntries(locale: Locale): SearchEntry[] {
-    const localeDir = path.join(CONTENT_ROOT, locale); //ロケールディレクトリパス
-    const files = walkDir(localeDir, localeDir); //ロケールディレクトリ内のファイルを走査した結果
+    const localeDir = path.join(CONTENT_ROOT, locale); // 対象ロケールのコンテンツルートパス
+    const files = walkDir(localeDir, localeDir); // 該当ロケール以下のすべてのMarkdownファイルパスを取得
 
     const entries: SearchEntry[] = [];
     for (const filePath of files) {
-        // ファイルを読み込み、FrontMatterと本文に分割
+        // ファイルを同期的に読み込み
         const raw = fs.readFileSync(filePath, 'utf-8');
+        // frontmatterと本文テキストを分離・抽出
         const { meta, body } = parseNormalizedFrontmatter(raw);
 
-        // draft / hidden は除外
+        // 下書き（draft）および非公開（hidden）に設定されているページは検索対象外とする
         if (meta.draft || meta.hidden) continue;
 
-        // タイトルを取得（FrontMatterのtitleまたはファイル名）
+        // タイトルは frontmatter の title を優先し、前提ファイル名（拡張子除く）を使用する
         const title = (meta.title as string | undefined) ?? path.basename(filePath, path.extname(filePath));
 
-        // ファイルパスからスラグを算出
+        // ロケールディレクトリからの相対パスを利用して、URL構築用のクリーンなスラッグを生成
         const relPath = path.relative(localeDir, filePath);
         const slug = relPath
-            .replace(/\\/g, '/') // Windowsのパス区切りを統一
+            .replace(/\\/g, '/') // OS間（特にWindows）のパス区切り文字の違いをスラッシュに統一
             .replace(/\.mdx?$/, '') // 拡張子を削除
-            .replace(/(^|\/)index$/, '') // indexを削除
-            .replace(/\/$/, '') // 末尾のスラッシュを削除
-            .split('/') // スラッシュで分割
-            .filter(Boolean) // 空文字を削除
-            .map(slugify) // スラグ化
-            .join('/'); // スラッシュで結合
+            .replace(/(^|\/)index$/, '') // 階層トップ用の index ファイルの場合はスラッグから index を取り除く
+            .replace(/\/$/, '') // 末尾のスラッシュを除去
+            .split('/') // フォルダ階層ごとに分割
+            .filter(Boolean) // 空文字のセグメントを除外
+            .map(slugify) // 各セグメントをURLフレンドリーな文字列に変換
+            .join('/'); // 再びスラッシュで結合
 
-        const url = `${BASE_PATH}/${locale}/wiki${slug ? `/${slug}` : ''}`; // URLを構築
-        const plainText = mdToText(body); // 本文をテキストに変換
-        const excerpt = plainText.slice(0, 300).replace(/\s+/g, ' ').trim(); // 本文の先頭300文字を抜粋
+        // 実際のアクセス先となるサイト相対のURLを組み立てる (例: /ja/wiki/getting-started)
+        const url = `${BASE_PATH}/${locale}/wiki${slug ? `/${slug}` : ''}`;
+        const plainText = mdToText(body); // 本文をプレーンテキストにクリーンアップ
+        // 検索一覧のプレビュー表示用として、本文の先頭300文字を抜粋し、改行や余分な空白を一続きの半角スペースに丸める
+        const excerpt = plainText.slice(0, 300).replace(/\s+/g, ' ').trim();
 
         entries.push({ url, title, excerpt, body: plainText });
     }

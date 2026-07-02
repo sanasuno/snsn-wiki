@@ -58,6 +58,7 @@ export const en = {
   'category.subcategories': 'Subcategories',
   'category.pages': 'Pages',
   'category.document': 'Document',
+  'category.code': 'Code Explanation',
 
   // Tags
   'tag.title': 'Tag List',

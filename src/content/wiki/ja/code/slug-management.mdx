@@ -1,0 +1,56 @@
+---
+title: スラッグ管理とキャッシュシステム
+description: slugmap.tsにおける同期スキャン、キャッシュ生成、およびバグ修正の解説
+tags:
+  - コード解説
+  - アーキテクチャ
+date: 2026-07-03
+---
+
+`src/lib/slug/slugmap.ts` は、Wiki 内の各ページ（Markdown / MDX）の物理パス、フロントマターの `title`（タイトル）、および `aliases`（エイリアス・別名）を相互に紐付ける「スラッグ解決マップ（SlugMap）」の構築とキャッシュ管理を担っています。
+
+---
+
+## 1. なぜ独自の同期スキャンとキャッシュが必要か？
+
+Astro では通常、`getCollection()` などの非同期（Async）API を使用してコンテンツファイルを読み込みます。
+しかし、マークダウン内の `[[WikiLink]]` 構文を HTML リンクに変換する **Remark プラグイン**（`remarkWikiLinks`）は、Astro のビルドプロセス中で**完全に同期的（Sync）**に動作しなければならないという制約があります。
+
+Unified/Remark のパース処理の中で非同期 API を呼び出すことはできないため、以下のアーキテクチャを採用しています。
+
+1. **ビルド前またはビルド初期の同期的なファイル走査**:
+   Astro コレクション API を通さず、Node.js の `fs.readdirSync` や `fs.readFileSync` を用いて `src/content/wiki/` 配下を直接同期スキャンします。
+2. **高速なキャッシュの読み書き**:
+   スキャン結果（スラッグとタイトルの対応マップ）を `.node_modules/.cache/snsn-wiki-slugmap.json` にキャッシュファイルとして保存します。
+3. **次回ビルド・パース時の高速化**:
+   ファイル数やファイルの更新日時（mtime）に変更がない場合は、キャッシュファイルを同期的にロードするだけでマップの復元が完了し、ビルド処理を高速化します。
+
+---
+
+## 2. スラッグマップの構造
+
+`SlugMap` は、URLフレンドリーに標準化（slugify）された文字列をキーとし、実際の物理スラッグ（言語ディレクトリを除いた部分）を値に持つ辞書オブジェクトです。
+
+```typescript
+export type SlugMap = {
+    [key: string]: string; // キー: 標準化されたタイトルやエイリアス -> 値: 実際の物理スラッグ
+}
+```
+
+例えば、以下のような frontmatter を持つファイル `src/content/wiki/ja/sample/getting-started.mdx` がスキャンされた場合：
+```yaml
+title: はじめに
+aliases:
+  - チュートリアル
+  - クイックスタート
+```
+
+スラッグマップには以下のようなキーと値のペアが登録されます：
+- `getting-started` -> `sample/getting-started` (ファイル名由来)
+- `はじめに` (slugify されたキー) -> `sample/getting-started` (タイトル由来)
+- `チュートリアル` (slugify されたキー) -> `sample/getting-started` (別名由来)
+- `クイックスタート` (slugify されたキー) -> `sample/getting-started` (別名由来)
+
+これにより、Markdown 本文中で `[[はじめに]]`、`[[チュートリアル]]`、`[[getting-started]]` のいずれを記述しても、すべて正しく同一の `sample/getting-started` スラッグに解決されます。
+
+---

@@ -1,0 +1,325 @@
+---
+title: カスタムコンポーネントガイド
+description: MDXで利用可能なすべてのカスタムコンポーネントのリファレンス
+tags:
+  - ガイド
+  - コンポーネント
+date: 2026-07-03
+---
+import Note from '@templates/Note.astro';
+import Tip from '@templates/Tip.astro';
+import Warning from '@templates/Warning.astro';
+import Danger from '@templates/Danger.astro';
+import Badge from '@templates/Badge.astro';
+import Details from '@templates/Details.astro';
+import Tooltip from '@templates/Tooltip.astro';
+import Ref from '@templates/Ref.astro';
+import Fn from '@templates/Fn.astro';
+import ControllerButton from '@templates/ControllerButton.astro';
+import Keyboard from '@templates/Keyboard.astro';
+import Columns from '@templates/Columns.astro';
+import Col from '@templates/Col.astro';
+import Tabs from '@templates/Tabs.astro';
+import Tab from '@templates/Tab.astro';
+import Navbox from '@templates/Navbox.astro';
+import Infobox from '@templates/Infobox.astro';
+import Include from '@templates/Include.astro';
+import Datatable from '@templates/Datatable.astro';
+
+`snsn-wiki` では、MDX ドキュメント内で表現を豊かにするための専用カスタムコンポーネント（Astro コンポーネント）が多数提供されています。
+これらは `src/components/mdx/` 配下に配置されており、MDXファイルの冒頭で `@templates/` からインポートして使用します。
+
+---
+
+## 1. コールアウト (警告・ヒントボックス)
+
+文章中の特定の注意を引くためのボックス表示です。用途に合わせて4種類が用意されています。
+
+### ノート (Note)
+補足説明や一般的なメモに使用します。
+```mdx
+import Note from '@templates/Note.astro';
+
+<Note>これは補足的なノート情報です。</Note>
+```
+<Note>これは補足的なノート情報です。</Note>
+
+### ヒント (Tip)
+おすすめの使い方やアドバイスなどに使用します。
+```mdx
+import Tip from '@templates/Tip.astro';
+
+<Tip>ヒント：ショートカットキーを利用すると便利です。</Tip>
+```
+<Tip>ヒント：ショートカットキーを利用すると便利です。</Tip>
+
+### 警告 (Warning)
+注意が必要な制限事項などに使用します。
+```mdx
+import Warning from '@templates/Warning.astro';
+
+<Warning>警告：設定ファイルを書き換える前に必ずバックアップを取ってください。</Warning>
+```
+<Warning>警告：設定ファイルを書き換える前に必ずバックアップを取ってください。</Warning>
+
+### 危険 (Danger)
+不可逆な操作や重大なリスクが存在する場合に使用します。
+```mdx
+import Danger from '@templates/Danger.astro';
+
+<Danger>危険：この操作を行うと保存されていないデータが完全に消失します。</Danger>
+```
+<Danger>危険：この操作を行うと保存されていないデータが完全に消失します。</Danger>
+
+---
+
+## 2. バッジ (Badge)
+
+インラインで表示できる小さな色付きラベルです。
+
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `label` | `string` | バッジに表示する文字列。 |
+| `color` | `string` | バッジの色。 `blue`, `green`, `red`, `yellow`, `gray`, `purple` またはカラーコードが指定可能。 |
+
+```mdx
+import Badge from '@templates/Badge.astro';
+
+状態：<Badge label="進行中" color="blue" /> / <Badge label="完了" color="green" />
+```
+状態：<Badge label="進行中" color="blue" /> / <Badge label="完了" color="green" />
+
+---
+
+## 3. 折りたたみ (Details)
+
+クリックして内容を展開・折りたたむことができるアコーディオンパネルです。
+
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `summary` | `string` | 折りたたみヘッダーに表示するタイトルテキスト。 |
+
+```mdx
+import Details from '@templates/Details.astro';
+
+<Details summary="詳細なログを確認する">
+ここに折りたたまれる詳細なコンテンツが入ります。
+マークダウン記法も使用できます。
+</Details>
+```
+<Details summary="詳細なログを確認する">
+ここに折りたたまれる詳細なコンテンツが入ります。
+マークダウン記法も使用できます。
+</Details>
+
+---
+
+## 4. ツールチップ (Tooltip)
+
+テキストにカーソルをホバーした際、説明用のポップアップを表示します。
+`desc` を省略した場合、`src/data/tooltips.ts` から定義されている用語を自動解決します。
+
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `term` | `string` | 画面上に表示する用語テキスト。 |
+| `desc` | `string` | ホバー時にポップアップ表示する説明文。省略時は自動解決。 |
+
+```mdx
+import Tooltip from '@templates/Tooltip.astro';
+
+これは <Tooltip term="WikiLink" desc="二重角括弧で定義するリンク" /> の解説です。
+```
+これは <Tooltip term="WikiLink" desc="二重角括弧で定義するリンク" /> の解説です。
+
+---
+
+## 5. 脚注 (Ref / Fn)
+
+本文中に参照用の注記番号を付け、ページの最下部などに注釈コンテンツを記述します。
+
+### Ref (参照点)
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `id` | `string` | 脚注を紐付けるID。 |
+
+### Fn (注釈コンテンツ)
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `id` | `string` | 参照点（Ref）のIDと一致させるID。 |
+
+```mdx
+import Ref from '@templates/Ref.astro';
+import Fn from '@templates/Fn.astro';
+
+本文中にこのように参照を挿入します<Ref id="demo1" />。
+
+... (ページ下部など)
+<Fn id="demo1">これが「demo1」に対応する脚注の説明文です。</Fn>
+```
+
+---
+
+## 6. コントローラーボタン (ControllerButton)
+
+ゲーム機のコントローラーボタンをアイコンとしてインライン表示します。
+
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `platform` | `string` | プラットフォーム名 (`PS`, `XB`, `NS`)。 |
+| `button` | `string` | ボタンシンボル (`A`, `B`, `X`, `Y`, `○`, `×`, `十字上` など)。 |
+
+```mdx
+import ControllerButton from '@templates/ControllerButton.astro';
+
+決定は <ControllerButton platform="NS" button="A" /> ボタン、キャンセルは <ControllerButton platform="PS" button="×" /> ボタンを押します。
+```
+決定は <ControllerButton platform="NS" button="A" /> ボタン、キャンセルは <ControllerButton platform="PS" button="×" /> ボタンを押します。
+
+---
+
+## 7. キーボード入力 (Keyboard)
+
+キーボードのショートカットなどのキー配置をインラインで装飾表示します。
+
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `keys` | `string` | キー名。 `+` で繋ぐと複数キーが並んで表示されます (例: "Ctrl+C")。 |
+
+```mdx
+import Keyboard from '@templates/Keyboard.astro';
+
+コピーは <Keyboard keys="Ctrl+C" /> 、貼り付けは <Keyboard keys="Ctrl+V" /> を使用します。
+```
+コピーは <Keyboard keys="Ctrl+C" /> 、貼り付けは <Keyboard keys="Ctrl+V" /> を使用します。
+
+---
+
+## 8. カラムレイアウト (Columns / Col)
+
+画面を左右などに分割して複数カラムのグリッドレイアウトを作成します。
+
+```mdx
+import Columns from '@templates/Columns.astro';
+import Col from '@templates/Col.astro';
+
+<Columns>
+<Col>
+### 左側の見出し
+左カラムに表示されるコンテンツです。
+</Col>
+<Col>
+### 右側の見出し
+右カラムに表示されるコンテンツです。
+</Col>
+</Columns>
+```
+
+---
+
+## 9. タブレイアウト (Tabs / Tab)
+
+タブを切り替えて複数のコンテンツ（テキストやコードブロック）を表示します。
+
+### Tab
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `label` | `string` | タブメニューに表示するラベルテキスト。 |
+
+````mdx
+import Tabs from '@templates/Tabs.astro';
+import Tab from '@templates/Tab.astro';
+
+<Tabs>
+<Tab label="npm">
+```bash
+npm install
+```
+</Tab>
+<Tab label="yarn">
+```bash
+yarn install
+```
+</Tab>
+</Tabs>
+````
+
+---
+
+## 10. トランスクルージョン (Include)
+
+他のWikiページの内容を、現在のページにそのまま動的インクルードして埋め込みます。
+
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `slug` | `string` | インクルードしたいWikiファイルのスラッグ名。 |
+
+```mdx
+import Include from '@templates/Include.astro';
+
+<Include slug="getting-started" />
+```
+
+---
+
+## 11. ナビゲーションボックス (Navbox)
+
+`src/data/navboxes.ts` に定義された共通のナビゲーションメニュー用カードを埋め込みます。
+
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `id` | `string` | `navboxes.ts` に登録されているナビボックスID。 |
+
+```mdx
+import Navbox from '@templates/Navbox.astro';
+
+<Navbox id="sample" />
+```
+
+---
+
+## 12. 情報ボックス (Infobox)
+
+ページの右端などにフロート表示される、キーと値のペアでまとめられたプロフィール風のサマリーテーブルです。
+
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `title` | `string` | ボックス全体のタイトル。 |
+| `image` | `string` | 画像アセットのURL (オプション)。 |
+| `fields` | `array` | `{ label: string, value: string }` の配列。 |
+
+```mdx
+import Infobox from '@templates/Infobox.astro';
+
+<Infobox
+  title="プロジェクト概要"
+  fields={[
+    { label: "種類", value: "Wikiシステム" },
+    { label: "ベース", value: "Astro v6" },
+    { label: "作成者", value: "Antigravity" }
+  ]}
+/>
+```
+
+---
+
+## 13. データテーブル (Datatable)
+
+CSV/JSONファイルなどのデータソースから動的にグリッドテーブルを描画します。
+
+| 属性名 | 型 | 説明 |
+| --- | --- | --- |
+| `src` | `string` | 読み込むデータファイルのパス。 |
+| `cols` | `array` | 表示する列の定義オブジェクトの配列。 |
+
+```mdx
+import Datatable from '@templates/Datatable.astro';
+
+<Datatable
+  src="/src/data/books.json"
+  cols={[
+    { key: "title", label: "書名" },
+    { key: "author", label: "著者" },
+    { key: "price", label: "価格" }
+  ]}
+/>
+```
