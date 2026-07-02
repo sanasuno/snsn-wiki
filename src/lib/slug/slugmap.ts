@@ -8,7 +8,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { slugify, toRealSlug, resolveSlug, type SlugMap } from './slugCore';
-import { parseNormalizedFrontmatter } from './frontmatterUtils';
+import { parseNormalizedFrontmatter } from '../frontmatterUtils';
 
 export { slugify, toRealSlug, resolveSlug, type SlugMap };
 
@@ -94,6 +94,8 @@ export function scanWikiFiles(dir: string, slugs: Set<string>, prefix: string = 
 interface SlugmapCache {
     map: SlugMap;
     slugs: Set<string>;
+    mtime: number;
+    fileListKey: string;
 }
 
 // キャッシュ
@@ -156,61 +158,83 @@ function getWikiFileCount(dir: string): number {
 }
 
 /**
+ * Wikiディレクトリ内のMD/MDXファイルのパスを再帰的に取得する関数
+ * @param dir Wikiディレクトリのパス
+ * @param prefix プレフィックス（階層パス）
+ * @returns MD/MDXファイルのパスの配列
+ */
+function listWikiFiles(dir: string, prefix = ''): string[] {
+    if (!fs.existsSync(dir)) return [];
+    const out: string[] = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            out.push(...listWikiFiles(fullPath, rel));
+        } else if (/\.(md|mdx)$/.test(entry.name)) {
+            out.push(rel);
+        }
+    }
+    return out.sort();
+}
+
+/**
  * キャッシュを構築する関数
  * @returns キャッシュ
  */
 function buildCache(): SlugmapCache {
+    const wikiMtime = getWikiLatestMtime(WIKI_DIR);
+    const fileList = listWikiFiles(WIKI_DIR);
+    const fileListKey = fileList.join('|');
+
     // キャッシュがあれば返す
-    if (_cache) return _cache;
+    if (_cache && _cache.mtime === wikiMtime && _cache.fileListKey === fileListKey) {
+        return _cache;
+    }
     // キャッシュとWikiの更新日時を取得
     const cacheMtime = getCacheMtime();
-    const wikiMtime = getWikiLatestMtime(WIKI_DIR);
+
     // キャッシュがwikiより新しい場合、キャッシュを返す
     if (cacheMtime > wikiMtime && fs.existsSync(CACHE_PATH)) {
         try {
             const raw = fs.readFileSync(CACHE_PATH, 'utf-8');
-            const { map, slugs: slugArr, fileCount } = JSON.parse(raw) as { map: SlugMap; slugs: string[]; fileCount?: number };
-            const currentFileCount = getWikiFileCount(WIKI_DIR);
-            // ファイル数が変更されている場合は再構築
-            if (fileCount !== undefined && fileCount === currentFileCount) {
-                _cache = { map, slugs: new Set(slugArr) };
+            const { map, slugs: slugArr, fileListKey: cachedKey } =
+                JSON.parse(raw) as { map: SlugMap; slugs: string[]; fileListKey: string };
+            // ファイルリストが変更されている場合は再構築
+            if (cachedKey === fileListKey) {
+                _cache = { map, slugs: new Set(slugArr), mtime: wikiMtime, fileListKey };
                 return _cache;
             }
-            console.log('File count has changed, rebuilding cache');
+            console.log('[slugmap] File count has changed, rebuilding cache');
         } catch (error) {
             console.error('Error reading cache file:', error);
         }
     }
     
     // wikiディレクトリをスキャン
-    const wikiDir = path.resolve(process.cwd(), 'src/content/wiki');
     const map: SlugMap = {};
     const slugs = new Set<string>();
 
     // ディレクトリが存在しない場合は空のキャッシュを返す
-    if (!fs.existsSync(wikiDir)) {
-        _cache = { map, slugs };
-        return _cache;
-    }
-
-    // ロケールを取得
-    const locales = fs.readdirSync(wikiDir, { withFileTypes: true })
-        .filter(dir => dir.isDirectory())
-        .map(dir => dir.name);
-    
-    for (const locale of locales) {
-        const localeDir = path.join(wikiDir, locale);
-
-        // mapは全ページ（draft/hidden含む）のtitle/aliasを収録
-        const allLocaleSlugs = new Set<string>();
-        const localeMap = scanWikiFiles(localeDir, allLocaleSlugs, locale, false);
-        Object.assign(map, localeMap);
-
-        // slugsは公開ページのみのスラッグを収録
-        const publishedLocaleSlugs = new Set<string>();
-        scanWikiFiles(localeDir, publishedLocaleSlugs, locale, true);
-        for (const slug of publishedLocaleSlugs) {
-            slugs.add(`${locale}/${slug}`);
+    if (!fs.existsSync(WIKI_DIR)) {
+        // ロケールを取得
+        const locales = fs.readdirSync(WIKI_DIR, { withFileTypes: true })
+            .filter(dir => dir.isDirectory())
+            .map(dir => dir.name);
+        // ロケールごとにスキャン
+        for (const locale of locales) {
+            // ロケールディレクトリパスを取得
+            const localeDir = path.join(WIKI_DIR, locale);
+            // 全ページ（draft/hidden含む）のslugを収録
+            const allLocaleSlugs = new Set<string>();
+            const localeMap = scanWikiFiles(localeDir, allLocaleSlugs, locale, false);
+            Object.assign(map, localeMap);
+            // 公開ページのみのスラッグを収録
+            const publishedLocaleSlugs = new Set<string>();
+            scanWikiFiles(localeDir, publishedLocaleSlugs, locale, true);
+            for (const slug of publishedLocaleSlugs) {
+                slugs.add(`${locale}/${slug}`);
+            }
         }
     }
     try {
@@ -220,13 +244,13 @@ function buildCache(): SlugmapCache {
         fs.writeFileSync(CACHE_PATH, JSON.stringify({
             map,
             slugs: [...slugs],
-            fileCount: getWikiFileCount(WIKI_DIR)
+            fileListKey
         }, null, 2));
     } catch (e) {
         console.error('Failed to create cache directory:', e);
     }
 
-    _cache = { map, slugs };
+    _cache = { map, slugs, mtime: wikiMtime, fileListKey };
     return _cache;
 }
 

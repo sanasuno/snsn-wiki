@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { locales, type Locale} from '../../i18n/i18n.config';
 import { parseNormalizedFrontmatter } from '../frontmatterUtils';
 import type { SearchEntry } from '../../types/search';
+import { slugify } from '../slug/slugCore';
 
 // ----------------------------------------
 // 設定
@@ -124,7 +125,11 @@ function buildEntries(locale: Locale): SearchEntry[] {
             .replace(/\\/g, '/') // Windowsのパス区切りを統一
             .replace(/\.mdx?$/, '') // 拡張子を削除
             .replace(/(^|\/)index$/, '') // indexを削除
-            .replace(/\/$/, ''); // 末尾のスラッシュを削除
+            .replace(/\/$/, '') // 末尾のスラッシュを削除
+            .split('/') // スラッシュで分割
+            .filter(Boolean) // 空文字を削除
+            .map(slugify) // スラグ化
+            .join('/'); // スラッシュで結合
 
         const url = `${BASE_PATH}/${locale}/wiki${slug ? `/${slug}` : ''}`; // URLを構築
         const plainText = mdToText(body); // 本文をテキストに変換

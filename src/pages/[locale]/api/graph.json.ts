@@ -7,7 +7,7 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { locales, defaultLocale, type Locale} from '@i18n/i18n.config';
 import { extractWikiLinks } from "@lib/wikilinks";
-import { toRealSlug, buildSlugMapSync, buildPublishedSlugs } from "@lib/slugmap";
+import { toRealSlug, buildSlugMapSync, buildPublishedSlugs } from "@lib/slug/slugmap";
 import { isLocale } from "@lib/locale";
 import type { GraphNode, GraphLink, GraphData } from "@typeDefs/graph";
 

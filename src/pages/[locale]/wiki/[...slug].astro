@@ -20,28 +20,40 @@ interface Props {
 
 export async function getStaticPaths() {
     const pages = await getCollection('wiki', (page) => !page.data.draft && !page.data.hidden);
-    
-    // baseSlug ごとに各言語のページ情報を集計
     const pagesByBaseSlug: Record<string, Record<string, CollectionEntry<'wiki'>>> = {};
+    const routeSlugOwners: Record<string, Set<string>> = {};
     pages.forEach(page => {
         const parts = page.id.split('/');
         const rawLocale = parts[0];
         // ロケールでない場合はスキップ
         if (!isLocale(rawLocale)) return;
-        
+        // ロケールを取得
         const locale = rawLocale;
+        // ベーススラッグを取得
         const baseSlug = parts.slice(1).join('/');
+        // ページを登録
         if (!pagesByBaseSlug[baseSlug]) {
             pagesByBaseSlug[baseSlug] = {};
         }
         pagesByBaseSlug[baseSlug][locale] = page;
+        // ルートスラッグを決定
+        const routeSlug = baseSlug === '' || baseSlug === 'index'
+            ? '(root)'
+            : baseSlug.replace(/\/index$/, '');
+        (routeSlugOwners[routeSlug] ??= new Set()).add(baseSlug);
     });
+    // ルートスラッグの所有者を検証
+    for (const [routeSlug, owners] of Object.entries(routeSlugOwners)) {
+        if (owners.size > 1) {
+            throw new Error (
+                `[wiki routing] Multiple owners for route slug '${routeSlug}': ${Array.from(owners).join(', ')}`
+            );
+        }
+    }
 
     const paths: GetStaticPathsResult = [];
-
     for (const baseSlug of Object.keys(pagesByBaseSlug)) {
         const availableLocales = pagesByBaseSlug[baseSlug];
-
         // すべてのロケールについてルートを生成
         for (const locale of locales) {
             // ルート直下は undefinedにする

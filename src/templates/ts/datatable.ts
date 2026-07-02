@@ -1,4 +1,4 @@
-import { buildSlugMapSync } from "@lib/slugmap";
+import { buildSlugMapSync } from "@lib/slug/slugmap";
 
 export type ColumnDef = {
     key: string

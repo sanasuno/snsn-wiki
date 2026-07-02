@@ -25,28 +25,48 @@ const { src, id, ...direct } = Astro.props as Props;
 let data: InfoboxData = {}
 
 // キャッシュを使用したJSON読み込み
+type LoadResult = { ok: true; data: any } | { ok: false; error: string }
 const jsonCache = new Map<string, any>();
-function loadJson(src: string): any {
-    if (jsonCache.has(src)) {
-        return jsonCache.get(src);
-    }
+
+/**
+ * JSONファイルを読み込む
+ * @param src JSONファイルのパス
+ * @returns 読み込んだデータまたはエラー
+ */
+function loadJson(src: string): LoadResult {
+    const cached = jsonCache.get(src);
+    if (cached) return cached;
+
     const jsonPath = resolve(process.cwd(), `src/data/${src}.json`)
     if (!existsSync(jsonPath)) {
-        throw new Error(`JSON file not found: ${jsonPath}`);
+        const result: LoadResult = {
+            ok: false,
+            error: `JSON file not found: ${jsonPath}`
+        }
+        jsonCache.set(src, result);
+        return result;
     }
-    let jsonData: unknown = null;
+    let result: LoadResult;
     try {
-        jsonData = JSON.parse(readFileSync(jsonPath, 'utf-8'));
-    } catch (error) {
-        data = { title: `Failed to parse JSON: src/data/${src}.json` }
+        result = {
+            ok: true,
+            data: JSON.parse(readFileSync(jsonPath, 'utf-8'))
+        }
     }
-    jsonCache.set(src, jsonData);
-    return jsonData;
+    catch (error) {
+        result = {
+            ok: false,
+            error: `Failed to parse JSON: src/data/${src}.json`
+        };
+    }
+    jsonCache.set(src, result);
+    return result;
 }
 
 if (src) {
-    const jsonData = loadJson(src)
-    if (jsonData) {
+    const result = loadJson(src)
+    if (result.ok) {
+        const jsonData = result.data;
         if (Array.isArray(jsonData) && id) {
             const found = jsonData.find(item => item.id === id)
             if (found) {
@@ -66,7 +86,7 @@ if (src) {
             data = jsonData
         }
     } else {
-        data = { title: `Invalid data: ${src}.json` }
+        data = { title: result.error }
     }
 }
 

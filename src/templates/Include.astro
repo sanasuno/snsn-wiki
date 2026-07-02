@@ -1,7 +1,8 @@
 ---
 import { getEntry, render } from "astro:content";
-import { resolveSlug } from "@lib/slugCore";
-import { buildSlugMapSync } from "@lib/slugmap";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { resolveSlug } from "@lib/slug/slugCore";
+import { buildSlugMapSync } from "@lib/slug/slugmap";
 import { defaultLocale, locales, type Locale } from "@i18n/i18n.config";
 
 interface Props {
@@ -30,6 +31,8 @@ const currentRouteSlug = typeof Astro.params.slug === "string" && Astro.params.s
 const normalizeWikiSlug = (value: string) => value.replace(/\/index$/, "") || "index";
 const isSelfInclude = normalizeWikiSlug(currentRouteSlug) === normalizeWikiSlug(baseSlug);
 
+const includeChain = new AsyncLocalStorage<Set<string>>();
+
 let entry = isSelfInclude ? undefined : await getEntry('wiki', `${requestedLocale}/${baseSlug}`)
 if (!entry && requestedLocale !== defaultLocale) {
     entry = await getEntry('wiki', `${defaultLocale}/${baseSlug}`)
@@ -53,6 +56,24 @@ if (entry) {
     const entryBaseSlug = resolvedParts.slice(1).join('/');
     wikiUrl = `${baseUrl}/${entryLocale}/wiki/${entryBaseSlug.replace(/\/index$/, "")}`;
 }
+
+function isInChain(fullSlug: string): boolean {
+    return includeChain.getStore()?.has(fullSlug) ?? false;
+}
+
+async function withIncludeChain<T>(fullSlug: string, fn: () => Promise<T>): Promise<T> {
+    const current = includeChain.getStore() ?? new Set<string>();
+    const next = new Set(current);
+    next.add(fullSlug);
+    return includeChain.run(next, fn);
+}
+
+const isCircular = entry && isInChain(entry.id);
+if (entry && !isCircular) {
+    const rendered = await withIncludeChain(entry.id, () => render(entry));
+    Content = rendered.Content;
+    resolvedFullSlug = entry.id;
+}
 ---
 {isSelfInclude && (
     <span class="include-error">
@@ -75,6 +96,12 @@ if (entry) {
             <Content />
         </div>
     </div>
+)}
+
+{isCircular && (
+    <span class="include-error">
+        include skipped circular reference: {slug}
+    </span>
 )}
 
 <style>

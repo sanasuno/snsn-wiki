@@ -7,7 +7,7 @@ import type { Root} from 'mdast';
 import type { VFile } from 'vfile'
 import { defaultLocale, type Locale } from '../i18n/i18n.config';
 import { isLocale } from './locale';
-import { slugify, buildSlugMapSync, buildPublishedSlugs, resolveSlug, type SlugMap } from './slugmap';
+import { slugify, buildSlugMapSync, buildPublishedSlugs, resolveSlug, type SlugMap } from './slug/slugmap';
 
 const WIKILINK_PATTERN_SOURCE = '\\[\\[([^\\]|#]+)(?:#([^\\]|]*))?(?:\\|([^\\]]*))?\\]\\]';
 
@@ -65,9 +65,6 @@ export function extractWikiLinks(
 // WikiLink 変換（remark プラグイン）
 // ==============================
 
-let _slugMapCache: SlugMap | null = null;
-let _publishedSlugsCache: Set<string> | null = null;
-
 /**
  * [[Page Name]] 記法をHTMLリンクに変換するremarkプラグイン
  * @param options オプション
@@ -75,8 +72,8 @@ let _publishedSlugsCache: Set<string> | null = null;
  */
 export function remarkWikiLinks(options: { base?: string } = {}) {
     const base = options.base?.replace(/\/$/, '') ?? '';
-    const slugMap = _slugMapCache ??= buildSlugMapSync();
-    const existingSlugs = _publishedSlugsCache ??= buildPublishedSlugs();
+    const slugMap = buildSlugMapSync();
+    const existingSlugs = buildPublishedSlugs();
 
     // remarkプラグインを返す
     return (tree: Root, file: VFile) => {

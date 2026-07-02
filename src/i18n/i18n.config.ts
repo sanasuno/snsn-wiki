@@ -66,6 +66,16 @@ export function tDynamic(name: string, locale: Locale = defaultLocale) {
 }
 
 /**
+ * カテゴリの翻訳キーから翻訳された文字列を返す関数
+ * @param name カテゴリ名
+ * @param locale ロケール
+ * @returns 翻訳された文字列
+ */
+export function tCategory(name: string, locale: Locale = defaultLocale): string {
+  return tDynamic(`category.${name}`, locale);
+}
+
+/**
  * ロケールに適した日付形式で日付をフォーマットする関数
  * @param date 日付
  * @param locale ロケール
