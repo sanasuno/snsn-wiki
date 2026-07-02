@@ -22,7 +22,7 @@
     .tabs-nav::-webkit-scrollbar {
         display: none;
     }
-    .tab-btn {
+    .tabs :global(.tab-btn) {
         padding: 10px 18px;
         font-size: 0.875rem;
         font-weight: 500;
@@ -34,7 +34,8 @@
         white-space: nowrap;
         transition: all var(--transition);
     }
-    .tab-btn:hover {
+    .tabs :global(.tab-btn:hover),
+    .tabs :global(.tab-btn.active) {
         color: var(--color-accent);
         border-bottom-color: var(--color-accent);
         background-color: var(--color-bg);
