@@ -8,8 +8,66 @@ npm create astro@latest
 ```
 - テンプレート選択は `Use minimal (empty) template` を選択、その他の質問はすべて `yes` でOK。
 
-## 構成
-- 以下のようなフォルダ構成をとります。
+## ディレクトリ構成
+以下のようなディレクトリ構成を準備する。
+
+```
+./
+├─ .gitignore
+├─ asro.config.ts
+├─ LICENSE
+├─ package-lock.json
+├─ package.json
+├─ tsconfig.json
+├─ public/
+│   ├─ favicon.ico
+│   └─ favicon.svg
+└─ src/
+    ├─ assets/
+    ├─ components/
+    ├─ content/
+    │   └─ wiki/
+    │       ├─ ja/
+    │       │   └─ development/
+    │       │       ├─ 00.mdx
+    │       │       ├─ 01.mdx
+    │       │       └─ ...
+    │       └─ en/
+    ├─ data/
+    ├─ i18n/
+    ├─ layouts/
+    ├─ lib/
+    ├─ pages/
+    │   └─ index.astro
+    ├─ scripts/
+    ├─ styles/
+    └─ types/
+
+```
+
+- `tsconfig.json`にエイリアスを設定する。
+
+```json
+{
+    "extends": "astro/tsconfigs/strict",
+    "include": [".astro/types.d.ts", "**/*"],
+    "exclude": ["dist"],
+    "compilerOptions": {
+        "paths": {
+            "@assets/*": ["./src/assets/*"],
+            "@components/*": ["./src/components/*"],
+            "@content/*": ["./src/content/*"],
+            "@data/*": ["./src/data/*"],
+            "@i18n/*": ["./src/i18n/*"],
+            "@layouts/*": ["./src/layouts/*"],
+            "@lib/*": ["./src/lib/*"],
+            "@scripts/*": ["./src/scripts/*"],
+            "@styles/*": ["./src/styles/*"],
+            "typeDefs/*": ["./src/types/*"]
+        }
+    }
+}
+```
 
 ## ライセンス
 - snsn-wikiはMITライセンスなので、`./LICENSE`ファイルにMITライセンスの全文を記述します。
