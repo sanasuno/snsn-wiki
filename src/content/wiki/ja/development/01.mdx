@@ -1,15 +1,18 @@
 ---
-title: 開発記録1
+title: 1 環境構築・URL設定
+order: 1
 tags: [開発記録]
 ---
 ## 環境構築
+以下のコマンドでAstroをインストールします。
+
 ```bash
 npm create astro@latest
 ```
-- テンプレート選択は `Use minimal (empty) template` を選択、その他の質問はすべて `yes` でOK。
+- テンプレートは `Use minimal (empty) template` を選択、その他の質問はすべて `yes` を選択します。
 
 ## ディレクトリ構成
-以下のようなディレクトリ構成を準備する。
+以下のようなディレクトリ構成を準備します。
 
 ```
 ./
@@ -45,7 +48,8 @@ npm create astro@latest
 
 ```
 
-- `tsconfig.json`にエイリアスを設定する。
+### エイリアス
+`tsconfig.json`にエイリアスを設定します。
 
 ```json
 {
@@ -70,4 +74,62 @@ npm create astro@latest
 ```
 
 ## ライセンス
-- snsn-wikiはMITライセンスなので、`./LICENSE`ファイルにMITライセンスの全文を記述します。
+snsn-wikiはMITライセンスなので、`./LICENSE`にMITライセンスの全文を記述します。
+
+## URL設定
+Astroでは、`astro.config.ts`に`site`（ドメインのURL）と`base`（サイトのルートパス）の値を設定することで、サイトのURLを管理します。  
+しかし、今回は、環境変数に設定した値を読み取って設定する方式にします。これにより、マルチ環境デプロイや、Github Pagesでリポジトリ名を変更したときの対応が容易になります。
+
+まずは、環境変数を読み取るために、Node.jsの型定義をインストールします。
+
+```sh
+npm install @types/node --save-dev
+```
+
+### site
+環境変数として`SITE_URL`にドメインのURLを指定し、それを読み取って`defineConfig`に設定します。  
+`SITE_URL`に指定した値がURLオブジェクトに変換できない場合は、エラーを投げます。
+`SITE_URL`が設定されていない場合、開発環境では`http://localhost:4321`を代わりに使用し、本番環境ではエラーを投げます。
+
+```ts
+const devSiteUrl = 'http://localhost:4321';
+let site: string;
+try {
+    site = new URL(process.env.SITE_URL ?? devSiteUrl).toString().replace(/\/+$/, '');
+} catch {
+    throw new Error('[astro.config] SITE_URL is a invalid URL');
+}
+if (process.env.PROD === 'true' && site === devSiteUrl) {
+    throw new Error('[astro.config] SITE_URL must be configured in production');
+}
+
+export default defineConfig({
+    site
+})
+```
+
+`process.env.SITE_URL`で環境変数から`SITE_URL`を取得し、設定されていない場合は`devSiteUrl`（`http://localhost:4321`）を代わりに使用して、`new URL()`でURLオブジェクトに変換します。  
+ここで変換に失敗した場合、`SITE_URL`が有効なURLでないとみなして、エラーを投げます。  
+さらに、変換したURLオブジェクトを`string`型に変換し、末尾の`/`を削除して、`site`変数に代入します。  
+本番環境で`site`の値が`devSiteUrl`になっている場合、エラーを投げます。  
+- `site`は`try`ブロック内部で宣言されますが、`try-catch`ブロックの後で値を使うので、`let`で宣言し、型注釈をつけています。
+
+### base
+環境変数として`BASE_PATH`にルートパスを指定し、それを読み取って`defineConfig`に設定します。  
+`BASE_PATH`が設定されていない場合、`/`を代わりに使用します。  
+`BASE_PATH`は`/`で始まる必要があります。
+
+```ts
+const basePath = process.env.BASE_PATH ?? '/';
+if (!basePath.startsWith('/')) {
+    throw new Error('[astro.config] BASE_PATH must start with "/"');
+}
+const base = basePath.replace(/\/+$/, '') ?? '/';
+
+export default defineConfig({
+    base
+})
+```
+`process.env.BASE_PATH`で環境変数から`BASE_PATH`を取得し、設定されていない場合は`/`を代わりに使用して`basePath`に代入します。  
+`basePath`が`/`で始まらない場合は、エラーを投げます。
+`basePath`末尾の`/`を削除して、`base`変数に代入します。削除した結果、値が`null`になった場合は、代わりに`/`を使用します。
