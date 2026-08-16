@@ -3,6 +3,7 @@
  * Astroの設定ファイル
  */
 import { defineConfig } from 'astro/config';
+import { locales, defaultLocale } from '@i18n/i18n.config';
 
 // siteの設定
 const devSiteUrl = 'http://localhost:4321';
@@ -31,5 +32,12 @@ const base = basePath.replace(/\/+$/, '') ?? '/';
 // https://astro.build/config
 export default defineConfig({
     site,
-    base
+    base,
+    i18n: {
+        locales,
+        defaultLocale,
+        routing: {
+            prefixDefaultLocale: true
+        }
+    }
 });
