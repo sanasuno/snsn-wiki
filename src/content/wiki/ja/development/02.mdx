@@ -4,3 +4,91 @@ order: 2
 tags: [開発記録]
 ---
 ## i18nについて
+snsn-wikiでは、i18n（国際化）に対応しています。  
+機能としては、ヘッダー内の言語選択用のトグルボタンによって言語を切り替え、ヘッダーやサイドバーなど各種ナビゲーションが対象の言語に翻訳され、記事の内容が対象の言語のものになります。  
+関連ファイルの構成は以下のようにします。
+- `i18n`ディレクトリに各言語用の翻訳ファイルおよびi18n用設定ファイルである`i18n.config.ts`を配置します。
+-- 翻訳ファイルはすべてのサイトで利用される翻訳をまとめたデフォルトのものと、ユーザーが翻訳を自由に追加できるカスタム翻訳用ファイルの2種類を各言語に用意します。
+- ウィキページは、`content/wiki/`ディレクトリ直下に、各言語ごとのディレクトリを作り、その中にmdxファイルを配置していきます。
+- 特別ページ（`pages`下に置かれるページ）は、各単語の翻訳を用意するだけで、ページの内容はほぼ固定なので、動的ルーティングを用いて`pages/[locale]`配下に配置します。
+-- `index.astro`や`404.astro`など、`pages`直下に置く必要のあるページは、現在の言語選択状況に従ってリダイレクトされるようにします。
+
+## 翻訳ファイル
+デフォルトの翻訳ファイル(`ja.ts`など)と、ユーザーがサイトに応じて翻訳を追加するためのカスタム翻訳ファイル(`ja.custom.ts`など)の2種類が存在します。  
+これは、snsn-wiki本体の更新によって、ユーザーの追加した翻訳に影響が及ばないようにするためです。  
+翻訳ファイルは、`[key]: [value]`の形式で定義され、それらを各言語ごとにまとめて出力します。
+
+## i18n.config.ts
+`i18n.config.ts`は、i18n関連の設定を記述するファイルです。  
+利用可能なロケールの一覧、デフォルトロケール、関連する型定義、翻訳関数などが含まれます。
+
+### 翻訳ファイルのインポート
+`i18n`ディレクトリ配下にある翻訳ファイルをインポートし、すべてまとめて`translations`オブジェクトに格納します。
+
+```ts
+import { ja } from "./ja";
+import { en } from "./en";
+import { eo } from "./eo";
+export const translations = {
+    ja,
+    en,
+    eo
+} as const;
+```
+
+### ロケール型
+`translations`オブジェクトのキーを`Locale`型として定義します。
+
+```ts
+export type Locale = keyof typeof translations;
+```
+
+### デフォルトロケール
+サイトのデフォルトロケールを決定します。デフォルトロケールは、主に各種翻訳やページ遷移のフォールバックとして使われます。  
+デフォルトロケールは、`Locale`型の要素である必要があります。
+
+```ts
+export const defaultLocale: Locale = 'ja';
+```
+
+### 利用可能なロケールと翻訳キー
+`locales`は、利用可能なロケールの配列を、`TranslationKey`は、翻訳キーの型を定義します。  
+`TranslationKey`は、`defaultLocale`の翻訳キーを型として使用するため、デフォルトロケールに指定したロケールには、すべての翻訳キーが存在する必要があります。
+
+```ts
+export const locales = Object.keys(translations) as Locale[];
+export type TranslationKey = keyof typeof translations[typeof defaultLocale];
+```
+
+### 翻訳関数
+`t`関数は、与えられた翻訳キーとロケールから、翻訳された文字列を取得する関数です。  
+`locale`パラメータを省略した場合、`defaultLocale`が使用されます。  
+指定されたロケールに翻訳キーが存在しない場合、`defaultLocale`の翻訳キーが使用されます。
+
+```ts
+export function t(key: TranslationKey, locale: Locale = defaultLocale): string {
+    return (translations[locale] as Record<string, string>)?.[key]
+        ?? (translations[defaultLocale] as Record<string, string>)?.[key];
+}
+```
+
+## defineConfig
+`astro.config.ts`の`defineConfig`に、`i18n.config.ts`で設定した`locales`と`defaultLocale`を渡します。  
+また、全言語のURLの取り扱いを統一するため、`prfixDefaultLocale`は`true`に設定します。
+
+```ts
+import { locales, defaultLocale } from '@i18n/i18n.config';
+
+export default defineConfig({
+    i18n: {
+        locales,
+        defaultLocale,
+        routing: {
+            prefixDefaultLocale: true
+        }
+    }
+});
+```
+
+- `astro.config.ts`では、エイリアスを利用できないため、`i18n.config.ts`およびそこでインポートされる各翻訳ファイルはエイリアスを使用できないことに注意が必要です。
+

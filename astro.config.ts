@@ -3,7 +3,9 @@
  * Astroの設定ファイル
  */
 import { defineConfig } from 'astro/config';
-import { locales, defaultLocale } from '@i18n/i18n.config';
+import mdx from '@astrojs/mdx';
+import { locales, defaultLocale } from './src/i18n/i18n.config';
+
 
 // siteの設定
 const devSiteUrl = 'http://localhost:4321';
@@ -39,5 +41,7 @@ export default defineConfig({
         routing: {
             prefixDefaultLocale: true
         }
-    }
+    },
+
+    integrations: [mdx()]
 });

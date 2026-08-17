@@ -1,0 +1,53 @@
+---
+title: 3 ウィキページ作成
+order: 3
+tags: [開発記録]
+---
+では、いよいよウィキページの作成に取り掛かっていきます。  
+
+## mdx
+まずは、mdxファイルを取り扱うためのインテグレーションを追加します。  
+mdxによって、markdown内でjsxやコンポーネントを利用できるようになります。
+
+```sh
+npx astro add mdx
+```
+
+## コレクションローダー
+ウィキページ用のコレクションローダーを`content.config.ts`として作成し、`src`直下に配置します。  
+
+```ts
+import { defineCollection } from "astro:content";
+import { glob } from "astro/loaders";
+import { z } from "astro/zod";
+
+const wiki = defineCollection({
+    loader: glob({ base: './src/content/wiki', pattern: '**/*.{md,mdx}'}),
+    schema: z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        order: z.number().default(0),
+        aliases: z.array(z.string()).default([]),
+        tags: z.array(z.string()).default([]),
+        date: z.coerce.date().optional(),
+        updated: z.coerce.date().optional(),
+        draft: z.boolean().default(false),
+        subpage: z.boolean().default(false),
+    }),
+});
+
+export const collections = {
+    wiki,
+};
+```
+
+以下、各項目の説明です。
+- `title`: ページのタイトル（必須）
+- `description`: ページの説明（任意）
+- `order`: ページの表示順（数値が小さい方が上に表示される）（任意、デフォルト0）
+- `aliases`: ページの別名（任意）
+- `tags`: ページのタグ（任意）
+- `date`: ページの作成日（YYYY-MM-DD形式）（任意）
+- `updated`: ページの更新日（YYYY-MM-DD形式）（任意）
+- `draft`: ドラフトフラグ（true/false）（任意、デフォルトfalse）
+- `subpage`: サブページフラグ（true/false）（任意、デフォルトfalse）

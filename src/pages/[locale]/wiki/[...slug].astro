@@ -1,0 +1,12 @@
+---
+/**
+ * ./src/pages/[locale]/wiki/[...slug].astro
+ * ウィキページの動的ルーティング用ページ
+ */
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+    const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+    
+    return [];
+}
