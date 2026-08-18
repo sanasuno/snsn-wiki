@@ -6,6 +6,6 @@
 import { enCustom } from "./en.custom";
 
 export const en = {
-    ...enCustom,
-    'lang.name': 'English'
+    'lang.name': 'English',
+    ...enCustom
 } as const;

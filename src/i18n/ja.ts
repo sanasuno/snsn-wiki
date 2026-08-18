@@ -6,6 +6,6 @@
 import { jaCustom } from "./ja.custom";
 
 export const ja = {
-    ...jaCustom,
-    'lang.name': '日本語'
+    'lang.name': '日本語',
+    ...jaCustom
 } as const;

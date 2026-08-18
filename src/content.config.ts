@@ -22,6 +22,4 @@ const wiki = defineCollection({
     }),
 });
 
-export const collections = {
-    wiki,
-};
+export const collections = { wiki };

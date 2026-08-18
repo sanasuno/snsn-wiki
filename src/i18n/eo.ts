@@ -6,6 +6,6 @@
 import { eoCustom } from "./eo.custom";
 
 export const eo = {
-    ...eoCustom,
-    'lang.name': 'Esperanto'
+    'lang.name': 'Esperanto',
+    ...eoCustom
 } as const;

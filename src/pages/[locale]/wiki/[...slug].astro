@@ -3,10 +3,69 @@
  * ./src/pages/[locale]/wiki/[...slug].astro
  * ウィキページの動的ルーティング用ページ
  */
-import { getCollection } from 'astro:content';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import type { GetStaticPathsResult } from 'astro';
+import { devideId } from '@lib/locale';
+import { locales, defaultLocale, type Locale } from '@i18n/i18n.config';
+
+interface Props {
+    page: CollectionEntry<'wiki'>;
+    locale: Locale;
+    baseSlug: string;
+    isFallback: boolean;
+}
 
 export async function getStaticPaths() {
-    const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+    const pagesByBaseSlug: Record<string, Record<string, CollectionEntry<'wiki'>>> = {};
+    const routeKeyOwners: Record<string, Set<string>> = {};
+    const pages = await getCollection('wiki', (page) => !page.data.draft);
     
-    return [];
+    for (const page of pages) {
+        const { locale, baseSlug } = devideId(page.id);
+        if (!pagesByBaseSlug[baseSlug]) {
+            pagesByBaseSlug[baseSlug] = {};
+        }
+        pagesByBaseSlug[baseSlug][locale] = page;
+        
+        const routeKey = page.id.replace(/\/index$/, '');
+        
+        if (!routeKeyOwners[routeKey]) {
+            routeKeyOwners[routeKey] = new Set();
+        }
+        routeKeyOwners[routeKey].add(baseSlug);
+    }
+
+    for (const [routeKey, owners] of Object.entries(routeKeyOwners)) {
+        if (owners.size > 1) {
+            throw new Error(`[wiki routing] Multiple owners for route slug "${routeKey}": ${Array.from(owners).join(', ')}`);
+        }
+    }
+
+    const paths: GetStaticPathsResult = [];
+    for (const baseSlug of Object.keys(pagesByBaseSlug)) {
+        const availablePages = pagesByBaseSlug[baseSlug];
+        for (const locale of locales) {
+            const slug = (baseSlug === 'index' || baseSlug === '') 
+                ? undefined
+                : baseSlug.replace(/\/index$/, '');
+            const isFallback = !availablePages[locale];
+            const page = availablePages[locale] ?? availablePages[defaultLocale] ?? Object.values(availablePages)[0];
+
+            paths.push({
+                params: { locale, slug },
+                props: {
+                    page,
+                    locale,
+                    baseSlug,
+                    isFallback,
+                }
+            })
+        }
+    }
+    return paths;
 }
+
+const { page, locale, baseSlug, isFallback } = Astro.props;
+const { Content } = await render(page);
+---
+<Content />
