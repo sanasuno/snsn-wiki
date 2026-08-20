@@ -1,7 +1,8 @@
 ---
-title: 2 i18n設定
+title: 開発記録2 i18n設定
 order: 2
 tags: [開発記録]
+date: 2026-08-17
 ---
 ## i18nについて
 snsn-wikiでは、i18n（国際化）に対応しています。  
@@ -60,7 +61,7 @@ export const locales = Object.keys(translations) as Locale[];
 export type TranslationKey = keyof typeof translations[typeof defaultLocale];
 ```
 
-### 翻訳関数
+### t()
 `t`関数は、与えられた翻訳キーとロケールから、翻訳された文字列を取得する関数です。  
 `locale`パラメータを省略した場合、`defaultLocale`が使用されます。  
 指定されたロケールに翻訳キーが存在しない場合、`defaultLocale`の翻訳キーが使用されます。

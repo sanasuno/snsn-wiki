@@ -4,8 +4,7 @@
  * ウィキページの動的ルーティング用ページ
  */
 import { getCollection, render, type CollectionEntry } from 'astro:content';
-import type { GetStaticPathsResult } from 'astro';
-import { devideId } from '@lib/locale';
+import { divideId } from '@lib/locale';
 import { locales, defaultLocale, type Locale } from '@i18n/i18n.config';
 
 interface Props {
@@ -16,12 +15,12 @@ interface Props {
 }
 
 export async function getStaticPaths() {
+    const pages = await getCollection('wiki', (page) => !page.data.draft);
     const pagesByBaseSlug: Record<string, Record<string, CollectionEntry<'wiki'>>> = {};
     const routeKeyOwners: Record<string, Set<string>> = {};
-    const pages = await getCollection('wiki', (page) => !page.data.draft);
     
     for (const page of pages) {
-        const { locale, baseSlug } = devideId(page.id);
+        const { locale, baseSlug } = divideId(page.id);
         if (!pagesByBaseSlug[baseSlug]) {
             pagesByBaseSlug[baseSlug] = {};
         }
@@ -41,7 +40,7 @@ export async function getStaticPaths() {
         }
     }
 
-    const paths: GetStaticPathsResult = [];
+    const paths: { params: { locale: Locale; slug: string | undefined }; props: Props }[] = [];
     for (const baseSlug of Object.keys(pagesByBaseSlug)) {
         const availablePages = pagesByBaseSlug[baseSlug];
         for (const locale of locales) {

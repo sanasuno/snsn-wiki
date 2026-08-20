@@ -1,9 +1,14 @@
 ---
-title: 3 ウィキページ作成
+title: 開発記録3 ウィキページ作成
 order: 3
 tags: [開発記録]
+date: 2026-08-18
 ---
-では、いよいよウィキページの作成に取り掛かっていきます。  
+では、いよいよウィキページの作成に取り掛かっていきます。
+
+## 構成
+`./src/content/wiki/[locale]`配下に各記事のmdxファイルを配置し、コレクションローダーで収集したものを、`./src/pages/[locale]/wiki/[...slug].astro`でページに変換します。  
+
 
 ## mdx
 まずは、mdxファイルを取り扱うためのインテグレーションを追加します。  
@@ -15,6 +20,7 @@ npx astro add mdx
 
 ## コレクションローダー
 ウィキページ用のコレクションローダーを`content.config.ts`として作成し、`src`直下に配置します。  
+`./src/content/wiki`配下にある、`.md`または`.mdx`ファイルを収集し、`wiki`コレクションとして利用できるように定義します。
 
 ```ts
 import { defineCollection } from "astro:content";
@@ -41,7 +47,7 @@ export const collections = {
 };
 ```
 
-以下、各項目の説明です。
+以下、schemaの各項目の説明です。
 - `title`: ページのタイトル（必須）
 - `description`: ページの説明（任意）
 - `order`: ページの表示順（数値が小さい方が上に表示される）（任意、デフォルト0）
@@ -53,3 +59,17 @@ export const collections = {
 - `subpage`: サブページフラグ（true/false）（任意、デフォルトfalse）
 
 ## 動的ルーティング
+`./src/pages/[locale]/wiki/[...slug].astro`を作成し、動的ルート用のページとします。   
+- ファイル名に`[...slug]`のレストパラメータ形式を採用することで、任意の深さにマッチします。  
+`getStaticPaths()`関数で`locale`と`slug`を出力することで、対応するページのパスを生成します。  
+
+### getStaticPaths()
+`getStaticPaths()`関数では、パス生成のために各ページの`locale`と`slug`を出力する必要があります。  
+
+
+```ts
+const pages = await getCollection('wiki', (page) => !page.data.draft);
+const pagesByBaseSlug: Record<string, Record<string, CollectionEntry<'wiki'>>> = {};
+const routeKeyOwners: Record<string, Set<string>> = {};
+```
+

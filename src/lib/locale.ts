@@ -20,7 +20,7 @@ export function isLocale(value: string): value is Locale {
  * @returns ロケールとベーススラッグのオブジェクト
  * @throws Invalid id formatエラー
  */
-export function devideId(id: string): {locale: Locale, baseSlug: string} {
+export function divideId(id: string): {locale: Locale, baseSlug: string} {
     const parts = id.split('/');
     if (isLocale(parts[0])) {
         return {
@@ -28,5 +28,5 @@ export function devideId(id: string): {locale: Locale, baseSlug: string} {
             baseSlug: parts.slice(1).join('/')
         };
     }
-    throw new Error('Invalid id format');
+    throw new Error(`[Invalid id format] ${id}`);
 }
