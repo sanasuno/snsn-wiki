@@ -6,6 +6,7 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { divideId } from '@lib/locale';
 import { locales, defaultLocale, type Locale } from '@i18n/i18n.config';
+import MainLayout from '@layouts/MainLayout.astro';
 
 interface Props {
     page: CollectionEntry<'wiki'>;
@@ -67,4 +68,10 @@ export async function getStaticPaths() {
 const { page, locale, baseSlug, isFallback } = Astro.props;
 const { Content } = await render(page);
 ---
+<MainLayout
+    title={page.data.title}
+    description={page.data.description || ''}
+    locale={locale}
+>
 <Content />
+</MainLayout>

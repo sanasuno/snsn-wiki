@@ -1,0 +1,39 @@
+---
+/**
+ * @layouts/MainLayout.astro
+ * サイト全体のレイアウト定義ファイル
+ */
+
+import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
+
+interface Props {
+    title: string;
+    description?: string;
+    locale?: Locale;
+}
+
+const {
+    title,
+    description,
+    locale = defaultLocale
+} = Astro.props;
+
+const siteTitle = t('site.title', locale);
+const siteDescription = t('site.description', locale);
+
+const pageTitle = `${title} | ${siteTitle}`;
+const pageDescription = description ?? siteDescription;
+---
+<!DOCTYPE html>
+<html lang={locale}>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription}>
+        <meta name="generator" content="snsn-wiki">
+    </head>
+    <body>
+        <slot />
+    </body>
+</html>
