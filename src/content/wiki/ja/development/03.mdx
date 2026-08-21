@@ -66,6 +66,9 @@ export const collections = {
 ### getStaticPaths()
 `getStaticPaths()`関数では、パス生成のために各ページの`locale`と`slug`を出力する必要があります。  
 
+まず、`getCollection()`関数を用いて、`wiki`コレクションから`draft`フラグが`false`のページを収集します。  
+次に、収集した各ページの`id`をもとに`locale`と`baseSlug`を抽出し、`pagesByBaseSlug`に格納します。  
+さらに、URL衝突の検証を行うために、URL上の位置を`routeKey`として抽出し、`routeKeyOwners`に格納します。  
 
 ```ts
 const pages = await getCollection('wiki', (page) => !page.data.draft);
@@ -73,3 +76,113 @@ const pagesByBaseSlug: Record<string, Record<string, CollectionEntry<'wiki'>>> =
 const routeKeyOwners: Record<string, Set<string>> = {};
 ```
 
+#### divideId
+`id`から`locale`と`baseSlug`を抽出する関数を、`@lib/locale.ts`に作成します。  
+`id`は`./src/content/wiki`配下のファイルパスを表します。  
+このディレクトリの下に各ロケールごとのディレクトリがあるので、`id`を`/`で分割し、最初の要素を`locale`、残りを`baseSlug`として抽出します。  
+また、`locale`が`locales`に含まれていることを確認する必要があるので、この部分を別の関数として切り出します。
+
+```ts
+import { locales } from "@i18n/i18n.config"
+export function isLocale(value: string): value is Locale {
+    return locales.includes(value as Locale)
+}
+```
+
+```ts
+import { type Locale } from "@i18n/i18n.config"
+export function divideId(id: string): {locale: Locale, baseSlug: string} {
+    const parts = id.split('/');
+    if (isLocale(parts[0])) {
+        return {
+            locale: parts[0],
+            baseSlug: parts.slice(1).join('/')
+        };
+    }
+    throw new Error(`[Invalid id format] ${id}`);
+}
+```
+
+#### ページデータ格納
+`locale`と`baseSlug`を取得したら、`pagesByBaseSlug`に`baseSlug`と`locale`をキーとして、ページデータを`pagesByBaseSlug`に格納します。  
+さらに、URL衝突の検証用に、実際のURLの位置を`routeKey`として、`routeKeyOwners`に格納します。  
+実際のURLでは、`index`ファイル名のページは省略されるため、`page.id`末尾の`/index`を削除します。  
+`routeKey`をキー、`baseSlug`を値として`routeKeyOwners`に格納します。これにより、異なる`baseSlug`（＝異なるファイル）が同じ`routeKey`を持つ場合、URLが衝突することがわかります。
+
+```ts
+for (const page of pages) {
+    const { locale, baseSlug } = divideId(page.id);
+    if (!pagesByBaseSlug[baseSlug]) {
+        pagesByBaseSlug[baseSlug] = {};
+    }
+    pagesByBaseSlug[baseSlug][locale] = page;
+    
+    const routeKey = page.id.replace(/\/index$/, '');
+    
+    if (!routeKeyOwners[routeKey]) {
+        routeKeyOwners[routeKey] = new Set();
+    }
+    routeKeyOwners[routeKey].add(baseSlug);
+}
+```
+
+#### ルート検証
+すべてのページについてこの操作が完了したら、URL検証を行います。  
+`routeKeyOwners`に格納した各`routeKey`について、`routeKeyOwners[routeKey]`のサイズが1より大きい場合、つまり異なる`baseSlug`が同じ`routeKey`を持つ場合、URLが衝突しているので、エラーを投げます。
+
+```ts
+for (const [routeKey, baseSlugs] of Object.entries(routeKeyOwners)) {
+    if (baseSlugs.size > 1) {
+        throw new Error(`[URL collision detected] ${routeKey}`);
+    }
+}
+```
+
+#### paths
+URL検証が完了したら、`pagesByBaseSlug`に格納したデータから、各ページのURLパス構築に必要な`locale`および`baseSlug`の取得、フォールバック判定を`paths`に格納していきます。  
+まず、各`baseSlug`について、利用可能なロケールのページを取得し、`availablePages`に格納します。  
+さらに、各`locale`について、`baseSlug`が`index`または`''`（空文字）の場合、`baseSlug`を`''`（空文字）に、その他の場合は末尾の`/index`を削除して`slug`に格納します。  
+`availablePages`に対応する`locale`のページが存在しない場合は`isFallback`を`true`に、存在する場合は`isFallback`を`false`に設定します。  
+`availablePages`に`locale`が存在する場合はそのページを、`locale`が存在せず`defaultLocale`が存在する場合は`defaultLocale`のページを、`locale`も`defaultLocale`も存在しない場合、存在するうちの最初のページを`page`に設定します。  
+最後に、`paths`の`params`に`locale`と`slug`を、`props`に`page`、`locale`、`baseSlug`、`isFallback`を格納します。
+
+```ts
+const paths: { params: { locale: Locale; slug: string | undefined }; props: Props }[] = [];
+for (const baseSlug of Object.keys(pagesByBaseSlug)) {
+    const availablePages = pagesByBaseSlug[baseSlug];
+    for (const locale of locales) {
+        const slug = (baseSlug === 'index' || baseSlug === '') 
+            ? undefined
+            : baseSlug.replace(/\/index$/, '');
+        const isFallback = !availablePages[locale];
+        const page = availablePages[locale] ?? availablePages[defaultLocale] ?? Object.values(availablePages)[0];
+
+        paths.push({
+            params: { locale, slug },
+            props: {
+                page,
+                locale,
+                baseSlug,
+                isFallback,
+            }
+        })
+    }
+}
+```
+
+#### 出力
+`paths`を出力します。
+
+```ts
+return paths;
+```
+
+## ページレンダー
+`render()`関数を用いて、`page`を出力します。
+
+```astro
+---
+const { Content } = await render(page);
+---
+<Content />
+```
