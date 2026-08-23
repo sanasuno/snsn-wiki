@@ -11,7 +11,7 @@ interface Props {
     title: string;
     description?: string;
     locale?: Locale;
-    alternateLinks?: { locale: Locale, url: string }[];
+    alternateLinks?: { locale: Locale, href: string }[];
 }
 
 const {
@@ -45,7 +45,8 @@ const pageDescription = description ?? siteDescription;
         <link rel="icon" href={`${baseUrl}/favicon.svg`} type="image/svg+xml" />
         <link rel="sitemap" href={`${baseUrl}/sitemap-index.xml`} />
         <link rel="canonical" href={canonicalUrl.href} />
-        {defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.url, Astro.site).href} hreflang="x-default" />}
+        {defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.site).href} hreflang="x-default" />}
+        {alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.site).href} hreflang={link.locale} />)}
     </head>
     <body>
         <slot />
