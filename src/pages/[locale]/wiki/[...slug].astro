@@ -75,7 +75,7 @@ const { Content } = await render(page);
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 const alternateLinks = locales.map(locale => ({
     locale,
-    href: new URL(`${baseUrl}/${locale}/wiki/${baseSlug}`, Astro.site).toString()
+    href: removeTrailingSlash(new URL(`${baseUrl}/${locale}/wiki/${baseSlug}`, Astro.site).toString())
 }))
 ---
 <MainLayout
@@ -85,5 +85,5 @@ const alternateLinks = locales.map(locale => ({
     alternateLinks={alternateLinks}
 >
     <Content />
-    {new URL(`${baseUrl}/${locale}/wiki/${baseSlug}`, Astro.site).toString()}
+    {alternateLinks.find(link => link.locale === locale)?.href}
 </MainLayout>
