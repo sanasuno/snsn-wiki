@@ -15,18 +15,29 @@ export function isLocale(value: string): value is Locale {
 }
 
 /**
- * IDをロケールとベーススラッグに分割する関数
+ * IDをロケールと生のベーススラッグに分割する関数
  * @param id ID (例: "en/example-page")
- * @returns ロケールとベーススラッグのオブジェクト
+ * @returns ロケールと生のベーススラッグのオブジェクト
  * @throws Invalid id formatエラー
  */
-export function divideId(id: string): {locale: Locale, baseSlug: string} {
+export function divideId(id: string): {locale: Locale, rawBaseSlug: string} {
     const parts = id.split('/');
     if (isLocale(parts[0])) {
         return {
             locale: parts[0],
-            baseSlug: parts.slice(1).join('/')
+            rawBaseSlug: parts.slice(1).join('/')
         };
     }
     throw new Error(`[Invalid id format] ${id}`);
+}
+
+/**
+ * スラッグを正規化する関数
+ * @param slug 正規化するスラッグ
+ * @returns 正規化されたスラッグ
+ */
+export function normalizeSlug(slug: string): string {
+    return slug === 'index'
+        ? ''
+        : slug.replace(/\/index$/, '');
 }

@@ -5,3 +5,60 @@ tags: [開発記録]
 date: 2026-08-21
 ---
 `@layouts/MainLayout.astro`ファイルを作成し、ここにサイト全体のレイアウトを記述していきます。  
+
+## head
+
+```astro
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+```
+
+```astro
+---
+const siteTitle = t('site.title', locale);
+const siteDescription = t('site.description', locale);
+const pageTitle = `${title} | ${siteTitle}`;
+const pageDescription = description ?? siteDescription;
+---
+<title>{pageTitle}</title>
+<meta name="description" content={pageDescription} />
+```
+
+```astro
+<meta name="generator" content="snsn-wiki" />
+```
+
+## ファビコン
+
+```astro
+---
+const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+---
+<link rel="icon" href={`${baseUrl}/favicon.ico`} sizes="48x48" />
+<link rel="icon" href={`${baseUrl}/favicon.svg`} type="image/svg+xml" />
+```
+
+## サイトマップ
+
+```sh
+npx astro add sitemap
+```
+
+```ts
+export default defineConfig({
+    integrations: [
+        mdx(),
+        sitemap({
+            i18n: {
+                defaultLocale,
+                locales: Object.fromEntries(locales.map(locale => [locale, locale]))
+            }
+        })
+    ]
+});
+```
+
+```astro
+<link rel="sitemap" href={`${baseUrl}/sitemap-index.xml`} />
+```
+

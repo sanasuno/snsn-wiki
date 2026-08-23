@@ -3,8 +3,10 @@
  * Astroの設定ファイル
  */
 import { defineConfig } from 'astro/config';
-import mdx from '@astrojs/mdx';
 import { locales, defaultLocale } from './src/i18n/i18n.config';
+
+import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
 
 
 // siteの設定
@@ -43,5 +45,13 @@ export default defineConfig({
         }
     },
 
-    integrations: [mdx()]
+    integrations: [
+        mdx(),
+        sitemap({
+            i18n: {
+                defaultLocale,
+                locales: Object.fromEntries(locales.map(locale => [locale, locale]))
+            }
+        })
+    ]
 });

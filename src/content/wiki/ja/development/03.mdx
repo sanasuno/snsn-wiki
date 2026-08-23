@@ -80,6 +80,7 @@ const routeKeyOwners: Record<string, Set<string>> = {};
 `id`から`locale`と`baseSlug`を抽出する関数を、`@lib/locale.ts`に作成します。  
 `id`は`./src/content/wiki`配下のファイルパスを表します。  
 このディレクトリの下に各ロケールごとのディレクトリがあるので、`id`を`/`で分割し、最初の要素を`locale`、残りを`baseSlug`として抽出します。  
+Astroのルーティングでは、`index.mdx`はルートパスとして扱われるため、`baseSlug`から`index`を削除して正規化する必要があります。  
 また、`locale`が`locales`に含まれていることを確認する必要があるので、この部分を別の関数として切り出します。
 
 ```ts
@@ -91,12 +92,12 @@ export function isLocale(value: string): value is Locale {
 
 ```ts
 import { type Locale } from "@i18n/i18n.config"
-export function divideId(id: string): {locale: Locale, baseSlug: string} {
+export function divideId(id: string): {locale: Locale, rawBaseSlug: string} {
     const parts = id.split('/');
     if (isLocale(parts[0])) {
         return {
             locale: parts[0],
-            baseSlug: parts.slice(1).join('/')
+            rawBaseSlug: parts.slice(1).join('/')
         };
     }
     throw new Error(`[Invalid id format] ${id}`);
@@ -104,25 +105,26 @@ export function divideId(id: string): {locale: Locale, baseSlug: string} {
 ```
 
 #### ページデータ格納
-`locale`と`baseSlug`を取得したら、`pagesByBaseSlug`に`baseSlug`と`locale`をキーとして、ページデータを`pagesByBaseSlug`に格納します。  
+`divideId()`関数を用いて`locale`と`baseSlug`を取得したら、`baseSlug`を`normalizedBaseSlug`に正規化してから、`pagesByBaseSlug`に`normalizedBaseSlug`と`locale`をキーとして、ページデータを`pagesByBaseSlug`に格納します。  
 さらに、URL衝突の検証用に、実際のURLの位置を`routeKey`として、`routeKeyOwners`に格納します。  
 実際のURLでは、`index`ファイル名のページは省略されるため、`page.id`末尾の`/index`を削除します。  
 `routeKey`をキー、`baseSlug`を値として`routeKeyOwners`に格納します。これにより、異なる`baseSlug`（＝異なるファイル）が同じ`routeKey`を持つ場合、URLが衝突することがわかります。
 
 ```ts
 for (const page of pages) {
-    const { locale, baseSlug } = divideId(page.id);
-    if (!pagesByBaseSlug[baseSlug]) {
-        pagesByBaseSlug[baseSlug] = {};
+    const { locale, rawBaseSlug } = divideId(page.id);
+    const normalizedBaseSlug = normalizeSlug(rawBaseSlug);
+    if (!pagesByBaseSlug[normalizedBaseSlug]) {
+        pagesByBaseSlug[normalizedBaseSlug] = {};
     }
-    pagesByBaseSlug[baseSlug][locale] = page;
+    pagesByBaseSlug[normalizedBaseSlug][locale] = page;
     
-    const routeKey = page.id.replace(/\/index$/, '');
+    const routeKey = normalizeSlug(page.id);
     
     if (!routeKeyOwners[routeKey]) {
         routeKeyOwners[routeKey] = new Set();
     }
-    routeKeyOwners[routeKey].add(baseSlug);
+    routeKeyOwners[routeKey].add(rawBaseSlug);
 }
 ```
 
@@ -131,17 +133,17 @@ for (const page of pages) {
 `routeKeyOwners`に格納した各`routeKey`について、`routeKeyOwners[routeKey]`のサイズが1より大きい場合、つまり異なる`baseSlug`が同じ`routeKey`を持つ場合、URLが衝突しているので、エラーを投げます。
 
 ```ts
-for (const [routeKey, baseSlugs] of Object.entries(routeKeyOwners)) {
-    if (baseSlugs.size > 1) {
-        throw new Error(`[URL collision detected] ${routeKey}`);
+for (const [routeKey, owners] of Object.entries(routeKeyOwners)) {
+    if (owners.size > 1) {
+        throw new Error(`[wiki routing] Multiple owners for route slug "${routeKey}": ${Array.from(owners).join(', ')}`);
     }
 }
 ```
 
 #### paths
 URL検証が完了したら、`pagesByBaseSlug`に格納したデータから、各ページのURLパス構築に必要な`locale`および`baseSlug`の取得、フォールバック判定を`paths`に格納していきます。  
-まず、各`baseSlug`について、利用可能なロケールのページを取得し、`availablePages`に格納します。  
-さらに、各`locale`について、`baseSlug`が`index`または`''`（空文字）の場合、`baseSlug`を`''`（空文字）に、その他の場合は末尾の`/index`を削除して`slug`に格納します。  
+まず、各`normalizedBaseSlug`について、利用可能なロケールのページを取得し、`availablePages`に格納します。  
+さらに、各`locale`について、`normalizedBaseSlug`を`slug`に設定します。ただし、`normalizedBaseSlug`が空文字の場合は`slug`を`undefined`に設定します。  
 `availablePages`に対応する`locale`のページが存在しない場合は`isFallback`を`true`に、存在する場合は`isFallback`を`false`に設定します。  
 `availablePages`に`locale`が存在する場合はそのページを、`locale`が存在せず`defaultLocale`が存在する場合は`defaultLocale`のページを、`locale`も`defaultLocale`も存在しない場合、存在するうちの最初のページを`page`に設定します。  
 最後に、`paths`の`params`に`locale`と`slug`を、`props`に`page`、`locale`、`baseSlug`、`isFallback`を格納します。
@@ -151,11 +153,13 @@ const paths: { params: { locale: Locale; slug: string | undefined }; props: Prop
 for (const baseSlug of Object.keys(pagesByBaseSlug)) {
     const availablePages = pagesByBaseSlug[baseSlug];
     for (const locale of locales) {
-        const slug = (baseSlug === 'index' || baseSlug === '') 
+        const slug = baseSlug === ''
             ? undefined
-            : baseSlug.replace(/\/index$/, '');
+            : baseSlug;
         const isFallback = !availablePages[locale];
-        const page = availablePages[locale] ?? availablePages[defaultLocale] ?? Object.values(availablePages)[0];
+        const page = availablePages[locale]
+            ?? availablePages[defaultLocale]
+            ?? Object.values(availablePages)[0];
 
         paths.push({
             params: { locale, slug },

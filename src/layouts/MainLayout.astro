@@ -5,18 +5,27 @@
  */
 
 import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
+import { removeTrailingSlash } from "@lib/path";
 
 interface Props {
     title: string;
     description?: string;
     locale?: Locale;
+    alternateLinks?: { locale: Locale, url: string }[];
 }
 
 const {
     title,
     description,
-    locale = defaultLocale
+    locale = defaultLocale,
+    alternateLinks = []
 } = Astro.props;
+
+const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+
+const canonicalUrl = Astro.url;
+
+const defaultAlternateLink = alternateLinks.find(link => link.locale === defaultLocale);
 
 const siteTitle = t('site.title', locale);
 const siteDescription = t('site.description', locale);
@@ -30,8 +39,13 @@ const pageDescription = description ?? siteDescription;
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription}>
-        <meta name="generator" content="snsn-wiki">
+        <meta name="description" content={pageDescription} />
+        <meta name="generator" content="snsn-wiki" />
+        <link rel="icon" href={`${baseUrl}/favicon.ico`} sizes="48x48" />
+        <link rel="icon" href={`${baseUrl}/favicon.svg`} type="image/svg+xml" />
+        <link rel="sitemap" href={`${baseUrl}/sitemap-index.xml`} />
+        <link rel="canonical" href={canonicalUrl.href} />
+        {defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.url, Astro.site).href} hreflang="x-default" />}
     </head>
     <body>
         <slot />
