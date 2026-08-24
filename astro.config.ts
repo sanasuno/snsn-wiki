@@ -3,7 +3,7 @@
  * Astroの設定ファイル
  */
 import { defineConfig } from 'astro/config';
-import { locales, defaultLocale } from './src/i18n/i18n.config';
+import { t, locales, defaultLocale } from './src/i18n/i18n.config';
 
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
@@ -50,7 +50,7 @@ export default defineConfig({
         sitemap({
             i18n: {
                 defaultLocale,
-                locales: Object.fromEntries(locales.map(locale => [locale, locale]))
+                locales: Object.fromEntries(locales.map(locale => [locale, t('lang.locale', locale)]))
             }
         })
     ]
