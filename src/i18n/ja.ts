@@ -7,5 +7,7 @@ import { jaCustom } from "./ja.custom";
 
 export const ja = {
     'lang.name': '日本語',
+    'lang.locale': 'ja-JP',
+    'lang.locale.ogp': 'ja_JP',
     ...jaCustom
 } as const;

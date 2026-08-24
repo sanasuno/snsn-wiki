@@ -13,8 +13,20 @@ date: 2026-08-21
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 ```
 
+### タイトルとディスクリプション
+
+各ページのタイトルとディスクリプションをpropsから取得し、サイト全体のタイトル及びディスクリプションと組み合わせて記述します。  
+サイト全体のタイトル及びディスクリプションは、i18n翻訳ファイルに記述し、翻訳関数`t()`を通して設定する形式です。  
+タイトルは個別ページのタイトルとサイトタイトルを併記し、ディスクリプションは個別ページのディスクリプションがあればそれを使用、なければサイトディスクリプションを使用します。
+
 ```astro
 ---
+interface Props {
+    title: string;
+    description?: string;
+    locale?: Locale;
+}
+const { title, description, locale = defaultLocale } = Astro.props;
 const siteTitle = t('site.title', locale);
 const siteDescription = t('site.description', locale);
 const pageTitle = `${title} | ${siteTitle}`;
@@ -24,25 +36,48 @@ const pageDescription = description ?? siteDescription;
 <meta name="description" content={pageDescription} />
 ```
 
+### ジェネレーター
+ジェネレーターを記述します。
+
 ```astro
 <meta name="generator" content="snsn-wiki" />
 ```
 
-## ファビコン
+### baseUrl
+ベースURLを環境変数から取得し、末尾のスラッシュを削除して正規化します。
+
+```ts
+const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+```
+
+末尾のスラッシュを削除する処理は、`@lib/path.ts`に定義します。
+
+```ts
+export function removeTrailingSlash(path: string): string {
+    return path.replace(/\/$/, '');
+}
+```
+
+### ファビコン
+ファビコンを`ico`形式と`svg`形式の2種類記述します。  
+`svg`形式が利用できない環境では`ico`形式のファビコンが表示されます。
 
 ```astro
 ---
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 ---
-<link rel="icon" href={`${baseUrl}/favicon.ico`} sizes="48x48" />
-<link rel="icon" href={`${baseUrl}/favicon.svg`} type="image/svg+xml" />
+<link rel="icon" href={new URL(`${baseUrl}/favicon.ico`, Astro.site).href} sizes="48x48" />
+<link rel="icon" href={new URL(`${baseUrl}/favicon.svg`, Astro.site).href} type="image/svg+xml" />
 ```
 
-## サイトマップ
+### サイトマップ
+`sitemap`インテグレーションをインストールします。
 
 ```sh
 npx astro add sitemap
 ```
+
+`astro.config.ts`に`sitemap`インテグレーションの設定を記述します。
 
 ```ts
 export default defineConfig({
@@ -59,6 +94,26 @@ export default defineConfig({
 ```
 
 ```astro
-<link rel="sitemap" href={`${baseUrl}/sitemap-index.xml`} />
+<link rel="sitemap" href={new URL(`${baseUrl}/sitemap-index.xml`, Astro.site).href} />
 ```
 
+### カノニカルURL
+カノニカルURLを記述します。
+
+```astro
+---
+const canonicalUrl = Astro.url;
+---
+<link rel="canonical" href={canonicalUrl.href} />
+```
+
+### 代替言語
+代替言語を記述します。
+
+```astro
+---
+const defaultAlternateLink = alternateLinks.find(link => link.locale === defaultLocale);
+---
+{defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.site).href} hreflang="x-default" />}
+{alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.site).href} hreflang={link.locale} />)}
+```

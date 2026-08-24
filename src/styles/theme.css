@@ -1,0 +1,30 @@
+/* ====================================
+   テーマCSSファイル
+   このファイルにテーマカラーなどのCSS変数を記述します
+   ==================================== */
+
+:root {
+    /* レイアウト寸法 */
+    --content-max-width: 760px;
+
+    /* 背景色 */
+    --color-bg: #f0f0f0;
+
+    /* 文字色 */
+    --color-text: #303030;
+
+    /* トランジション */
+    --transition: all 150ms ease;
+}
+
+:root[data-lang="ja"] {
+    --font-sans: 'Noto Sans JP', sans-serif;
+    --font-serif: 'Noto Serif JP', serif;
+    --font-mono: 'Noto Sans Mono', monospace;
+}
+
+:root[data-lang="en"], :root[data-lang="eo"] {
+    --font-sans: 'Noto Sans JP', sans-serif;
+    --font-serif: 'Noto Serif', serif;
+    --font-mono: 'Noto Sans Mono', monospace;
+}

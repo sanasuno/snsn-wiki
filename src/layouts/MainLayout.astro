@@ -7,6 +7,10 @@
 import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
 import { removeTrailingSlash } from "@lib/path";
 
+import "@styles/global.css";
+import "@styles/theme.css";
+import "@styles/custom.css";
+
 interface Props {
     title: string;
     description?: string;
@@ -34,19 +38,24 @@ const pageTitle = `${title} | ${siteTitle}`;
 const pageDescription = description ?? siteDescription;
 ---
 <!DOCTYPE html>
-<html lang={locale}>
-    <head>
+<html lang={locale} data-lang={locale}>
+    <head prefix="og: http://ogp.me/ns#">
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <meta name="generator" content="snsn-wiki" />
-        <link rel="icon" href={`${baseUrl}/favicon.ico`} sizes="48x48" />
-        <link rel="icon" href={`${baseUrl}/favicon.svg`} type="image/svg+xml" />
-        <link rel="sitemap" href={`${baseUrl}/sitemap-index.xml`} />
+        <link rel="icon" href={new URL(`${baseUrl}/favicon.ico`, Astro.site).href} sizes="48x48" />
+        <link rel="icon" href={new URL(`${baseUrl}/favicon.svg`, Astro.site).href} type="image/svg+xml" />
+        <link rel="sitemap" href={new URL(`${baseUrl}/sitemap-index.xml`, Astro.site).href} />
         <link rel="canonical" href={canonicalUrl.href} />
         {defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.site).href} hreflang="x-default" />}
         {alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.site).href} hreflang={link.locale} />)}
+
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans+Mono:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif+JP:wght@200..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     </head>
     <body>
         <slot />
