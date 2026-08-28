@@ -71,13 +71,13 @@ const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 ```
 
 ### サイトマップ
-`sitemap`インテグレーションをインストールします。
+まず、`sitemap`インテグレーションをインストールします。
 
 ```sh
 npx astro add sitemap
 ```
 
-`astro.config.ts`に`sitemap`インテグレーションの設定を記述します。
+次に、`astro.config.ts`に`sitemap`インテグレーションの設定を記述します。
 
 ```ts
 export default defineConfig({
@@ -117,3 +117,6 @@ const defaultAlternateLink = alternateLinks.find(link => link.locale === default
 {defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.site).href} hreflang="x-default" />}
 {alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.site).href} hreflang={link.locale} />)}
 ```
+
+### Google Fonts
+Google Fonts用のURLを記述します。

@@ -1,0 +1,18 @@
+---
+/**
+ * @layouts/Header.astro
+ * ヘッダーレイアウト
+ */
+import { t, type Locale } from "@i18n/i18n.config";
+
+interface Props {
+    locale: Locale;
+    localeBaseUrl: string;
+}
+const { locale, localeBaseUrl }: Props = Astro.props;
+---
+<header class="site-header">
+    <a href={localeBaseUrl} class="site-title">
+        {t("site.title", locale)}
+    </a>
+</header>

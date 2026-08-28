@@ -7,6 +7,11 @@
 import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
 import { removeTrailingSlash } from "@lib/path";
 
+import Header from "@layouts/Header.astro";
+import Sidebar from "@layouts/Sidebar.astro";
+import MainContent from "@layouts/MainContent.astro";
+import Toc from "@layouts/Toc.astro"
+
 import "@styles/global.css";
 import "@styles/theme.css";
 import "@styles/custom.css";
@@ -16,16 +21,19 @@ interface Props {
     description?: string;
     locale?: Locale;
     alternateLinks?: { locale: Locale, href: string }[];
+    hasToc?: boolean;
 }
 
 const {
     title,
     description,
     locale = defaultLocale,
-    alternateLinks = []
+    alternateLinks = [],
+    hasToc = true
 } = Astro.props;
 
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+const localeBaseUrl = `${baseUrl}/${locale}`;
 
 const canonicalUrl = Astro.url;
 
@@ -39,7 +47,7 @@ const pageDescription = description ?? siteDescription;
 ---
 <!DOCTYPE html>
 <html lang={locale} data-lang={locale}>
-    <head prefix="og: http://ogp.me/ns#">
+    <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{pageTitle}</title>
@@ -58,6 +66,22 @@ const pageDescription = description ?? siteDescription;
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans+Mono:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif+JP:wght@200..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     </head>
     <body>
-        <slot />
+        <div class={`layout${hasToc ? '' : ' no-toc'}`}>
+            <Header
+                locale={locale}
+                localeBaseUrl={localeBaseUrl}
+            />
+            <Sidebar />
+            <main class="main-panel">
+                <MainContent>
+                    <slot />
+                </MainContent>
+            </main>
+            {hasToc && (
+                <aside class="toc-panel">
+                    <Toc />
+                </aside>
+            )}
+        </div>
     </body>
 </html>

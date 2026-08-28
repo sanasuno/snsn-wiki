@@ -83,6 +83,7 @@ const alternateLinks = locales.map(locale => ({
     description={page.data.description || ''}
     locale={locale}
     alternateLinks={alternateLinks}
+    hasToc={page.data.hasToc}
 >
     <Content />
     {alternateLinks.find(link => link.locale === locale)?.href}

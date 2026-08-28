@@ -6,12 +6,21 @@
 :root {
     /* レイアウト寸法 */
     --content-max-width: 760px;
+    --header-height: 56px;
+    --sidebar-width: 260px;
+    --toc-width: 220px;
 
     /* 背景色 */
     --color-bg: #f0f0f0;
 
     /* 文字色 */
     --color-text: #303030;
+
+    /* ボーダー色 */
+    --color-border: #e0e0e0;
+
+    /* アクセント色 */
+    --color-accent: #08824f;
 
     /* トランジション */
     --transition: all 150ms ease;
