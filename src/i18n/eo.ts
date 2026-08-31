@@ -9,5 +9,7 @@ export const eo = {
     'lang.name': 'Esperanto',
     'lang.locale': 'eo',
     'lang.locale.ogp': 'eo',
+
+    'header.theme.toggle': 'baskuligi temon',
     ...eoCustom
 } as const;

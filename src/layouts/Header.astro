@@ -15,4 +15,9 @@ const { locale, localeBaseUrl }: Props = Astro.props;
     <a href={localeBaseUrl} class="site-title">
         {t("site.title", locale)}
     </a>
+    
+    <button class="theme-toggle" id="theme-toggle" aria-label={t("header.theme.toggle", locale)} aria-pressed="false">
+        <i class="fas fa-sun icon-light" aria-hidden="true"></i>
+        <i class="fas fa-moon icon-dark" aria-hidden="true"></i>
+    </button>
 </header>

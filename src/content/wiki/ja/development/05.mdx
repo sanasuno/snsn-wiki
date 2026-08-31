@@ -6,3 +6,16 @@ date: 2026-08-28
 ---
 ## CSS Grid
 CSS Gridを使って、レイアウトの各コンポーネントごとに配置を決定します。  
+`header`、`sidebar`、`main`、`toc`の4つの領域を配置します。
+
+```css
+.layout {
+    display: grid;
+    grid-template-rows: var(--header-height) 1fr;
+    grid-template-columns: var(--sidebar-width) 1fr var(--toc-width);
+    grid-template-areas: 
+        "header header header"
+        "sidebar main toc";
+    min-height: 100vh;
+}
+```

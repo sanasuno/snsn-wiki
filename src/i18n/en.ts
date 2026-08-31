@@ -9,5 +9,7 @@ export const en = {
     'lang.name': 'English',
     'lang.locale': 'en-US',
     'lang.locale.ogp': 'en_US',
+    
+    'header.theme.toggle': 'Toggle theme',
     ...enCustom
 } as const;

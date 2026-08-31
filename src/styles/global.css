@@ -83,6 +83,7 @@ body {
     }
 }
 
+/* ヘッダー */
 .site-header {
     grid-area: header;
     position: sticky;
@@ -100,6 +101,53 @@ body {
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--color-accent);
+}
+
+/* テーマ切り替えボタン */
+.theme-toggle {
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    padding: 5px 9px;
+    gap: 5px;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: all var(--transition);
+}
+
+.theme-toggle:hover {
+    background-color: var(--color-bg-hover);
+    color: var(--color-text);
+    border-color: var(--color-border-hover);
+}
+
+.theme-toggle .icon-light {
+    display: inline;
+}
+
+.theme-toggle .icon-dark {
+    display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-light {
+    display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-dark {
+    display: inline;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .theme-toggle .icon-light {
+        display: none;
+    }
+    :root:not([data-theme]) .theme-toggle .icon-dark {
+        display: inline;
+    }
 }
 
 .main-panel {
