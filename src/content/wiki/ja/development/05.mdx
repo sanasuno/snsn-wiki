@@ -19,3 +19,54 @@ CSS Gridを使って、レイアウトの各コンポーネントごとに配置
     min-height: 100vh;
 }
 ```
+
+目次パネルを表示しない記事では、`.no-toc` クラスが付与され、`toc` 領域が配置されません。
+
+```css
+.layout.no-toc {
+    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-areas:
+        "header header"
+        "sidebar main";
+}
+```
+
+画面幅が1200px以下の場合、目次パネルを配置せず、表示もしません。
+
+```css
+@media(max-width: 1200px) {
+    .layout{
+        grid-template-columns: var(--sidebar-width) 1fr;
+        grid-template-areas:
+            "header header"
+            "sidebar main";
+    }
+    .toc-panel {
+        display: none;
+    }
+}
+```
+
+さらに、画面幅が768px以下の場合、メインコンテンツのみ表示し、サイドバーは`.open`クラスが付与された場合のみ表示されます。
+
+```css
+@media (max-width: 768px) {
+    .layout, .layout.no-toc {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "main";
+    }
+    .sidebar {
+        display: none;
+    }
+    .sidebar.open {
+        display: block;
+        position: fixed;
+        inset: var(--header-height) 0 0 0;
+        width: var(--sidebar-width);
+        z-index: 1000;
+        overflow-y: auto;
+    }
+}
+```

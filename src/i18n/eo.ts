@@ -10,6 +10,7 @@ export const eo = {
     'lang.locale': 'eo',
     'lang.locale.ogp': 'eo',
 
+    'header.sidebar.toggle': 'baskuligi flankan strion',
     'header.theme.toggle': 'baskuligi temon',
     ...eoCustom
 } as const;

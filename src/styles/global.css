@@ -71,12 +71,16 @@ body {
             "main";
     }
     .sidebar {
-        display: none;
-    }
-    .sidebar.open {
         display: block;
         position: fixed;
-        inset: var(--header-height) 0 0 0;
+        top: var(--header-height);
+        left: calc(-1 * var(--sidebar-width));
+        width: var(--sidebar-width);
+        height: calc(100vh - var(--header-height));
+        transition: var(--transition);
+    }
+    .sidebar.open {
+        left: 0;
         width: var(--sidebar-width);
         z-index: 1000;
         overflow-y: auto;
@@ -92,15 +96,57 @@ body {
     height: var(--header-height);
     display: flex;
     align-items: center;
+    gap: 16px;
     padding: 0 20px;
     background-color: var(--color-bg);
     border-bottom: 1px solid var(--color-border);
 }
 
+@media(max-width: 768px) {
+    .site-header {
+        gap: 8px;
+        padding: 0 12px;
+    }
+}
+
+/* サイドバー切り替えボタン */
+.sidebar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+}
+
+@media(max-width: 768px) {
+    .sidebar-toggle {
+        display: block;
+    }
+}
+
+.sidebar-toggle:hover {
+    color: var(--color-text);
+}
+
+.sidebar-toggle i {
+    transition: var(--transition);
+}
+
+.sidebar-toggle i:checked {
+    transform: rotate(180deg);
+}
+
+/* サイトタイトル */
 .site-title {
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--color-accent);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* テーマ切り替えボタン */
@@ -108,6 +154,7 @@ body {
     background: none;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
+    margin-left: auto;
     display: flex;
     align-items: center;
     padding: 5px 9px;
@@ -148,6 +195,11 @@ body {
     :root:not([data-theme]) .theme-toggle .icon-dark {
         display: inline;
     }
+}
+
+.sidebar {
+    grid-area: sidebar;
+    background-color: var(--color-bg);
 }
 
 .main-panel {

@@ -10,6 +10,7 @@ export const en = {
     'lang.locale': 'en-US',
     'lang.locale.ogp': 'en_US',
     
+    'header.sidebar.toggle': 'Toggle sidebar',
     'header.theme.toggle': 'Toggle theme',
     ...enCustom
 } as const;

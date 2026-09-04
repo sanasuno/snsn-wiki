@@ -1,0 +1,234 @@
+---
+title: 開発記事6 ヘッダー
+order: 6
+tags: [開発記録]
+date: 2026-09-04
+---
+## トップリンク
+トップページへのリンクを記述します。  
+サイトタイトルを翻訳関数で制御し、`MainLayout.astro`からインポートした`localBaseUrl`でトップページにリンクします。
+
+```astro
+---
+import { t, type Locale } from "@i18n/i18n.config";
+interface Props {
+    locale: Locale;
+    localeBaseUrl: string;
+}
+const { locale, localeBaseUrl }: Props = Astro.props;
+---
+<header class="site-header">
+    <a href={localeBaseUrl} class="site-title">
+        {t("site.title", locale)}
+    </a>
+</header>
+```
+
+## サイドバー切り替え
+### サイドバー切り替えボタン
+サイドバー切り替え用のボタンを配置します。
+
+```astro
+<button class="sidebar-toggle" id="sidebar-toggle" aria-label={t("header.sidebar.toggle", locale)} aria-pressed="false">
+    <i class="fas fa-bars" aria-hidden="true"></i>
+</button>
+```
+
+### サイドバー切り替えスクリプト
+サイドバー切り替え用のスクリプトを `@scripts/sidebar.ts` に記述します。
+
+```ts
+/**
+ * サイドバー切り替えボタンの状態を設定する関数
+ * @param btn ボタン要素
+ * @param isOpen 開いているかどうか
+ */
+function setSidebarToggleBtnState(btn: HTMLButtonElement, isOpen: boolean) {
+    btn.setAttribute('aria-pressed', isOpen.toString());
+    btn.setAttribute('aria-expanded', isOpen.toString());
+}
+
+/**
+ * サイドバー切り替えを初期化する関数
+ */
+export function sidebarToggle() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle');
+    if (!(sidebarToggleBtn instanceof HTMLButtonElement)) return;
+
+    if (sidebarToggleBtn.dataset.initialized === 'true') return;
+    sidebarToggleBtn.dataset.initialized = 'true';
+
+    const initialOpen = sidebar.classList.contains('open');
+    setSidebarToggleBtnState(sidebarToggleBtn, initialOpen);
+
+    sidebarToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('open');
+        const isOpen = sidebar.classList.contains('open');
+        setSidebarToggleBtnState(sidebarToggleBtn, isOpen);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (
+            e.target instanceof Element &&
+            sidebar.classList.contains('open') &&
+            !sidebar.contains(e.target) &&
+            !sidebarToggleBtn.contains(e.target)
+        ) {
+            sidebar.classList.remove('open');
+            setSidebarToggleBtnState(sidebarToggleBtn, false);
+        }
+    });
+}
+```
+
+`@scripts/main.ts` から `sidebarToggle` 関数を呼び出します。
+
+```ts
+import { sidebarToggle } from "@scripts/sidebar";
+sidebarToggle();
+```
+
+`MainLayout.astro` にスクリプトを追加します。
+
+```astro
+<script>
+    import "@scripts/main";
+</script>
+```
+
+## テーマ切り替え
+### テーマ初期化
+`MainLayout.astro`内に、インラインスクリプトでテーマ初期化処理を記述します。  
+テーマの初期値は、ユーザーが保存したテーマ（`localStorage`）を優先し、存在しない場合はブラウザの設定（`prefers-color-scheme`）から決定します。
+
+```astro
+<script is:inline>
+    (function() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        } else {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        }
+    })();
+</script>
+```
+
+### テーマ切り替えボタン
+テーマ切り替え用のボタンを配置します。
+
+```astro
+<button class="theme-toggle" id="theme-toggle" aria-label={t("header.theme.toggle", locale)} aria-pressed="false">
+    <i class="fas fa-sun icon-light" aria-hidden="true"></i>
+    <i class="fas fa-moon icon-dark" aria-hidden="true"></i>
+</button>
+```
+
+現在のテーマに合わせて、テーマ切り替えボタンのアイコンも切り替えます。
+
+```css
+.theme-toggle .icon-light {
+    display: inline;
+}
+
+.theme-toggle .icon-dark {
+    display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-light {
+    display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-dark {
+    display: inline;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .theme-toggle .icon-light {
+        display: none;
+    }
+    :root:not([data-theme]) .theme-toggle .icon-dark {
+        display: inline;
+    }
+}
+```
+
+### ローカルストレージ操作スクリプト
+`@scripts/localStorage.ts` に、ローカルストレージ操作用の関数を記述します。
+
+#### setLocalStorage
+ローカルストレージに値を保存する関数です。
+
+```ts
+export function setLocalStorage(key: string, value: string): boolean {
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch (error) {
+        console.error(`Failed to set localStorage key: ${key}`, error);
+        return false;
+    }
+}
+```
+
+#### getLocalStorage
+ローカルストレージから値を取得する関数です。
+
+```ts
+export function getLocalStorage(key: string): string | null {
+    try {
+        return localStorage.getItem(key);
+    } catch (error) {
+        console.error(`Failed to get localStorage key: ${key}`, error);
+        return null;
+    }
+}
+```
+
+### テーマ制御スクリプト
+テーマ切り替えボタンの動作を制御するスクリプトを `@scripts/theme.ts` に記述します。
+
+```ts
+import { setLocalStorage } from "@scripts/localStorage";
+export function themeToggle() {
+    const btn = document.getElementById('theme-toggle')
+    if (!btn) return;
+
+    const syncPressedState = () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const isDark = currentTheme === 'dark';
+        btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+    }
+    
+    syncPressedState();
+
+    btn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = currentTheme === 'dark' || (!currentTheme && prefersDark);
+        const nextTheme = isDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        setLocalStorage('theme', nextTheme);
+        syncPressedState();
+    })
+}
+```
+
+`@scripts/main.ts` から `themeToggle` 関数を呼び出します。
+
+```ts
+import { themeToggle } from "@scripts/theme";
+themeToggle();
+```
+
+`MainLayout.astro` にスクリプトを追加します。
+
+```astro
+<script>
+    import "@scripts/main";
+</script>
+```
