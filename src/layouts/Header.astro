@@ -3,13 +3,14 @@
  * @layouts/Header.astro
  * ヘッダーレイアウト
  */
-import { t, type Locale } from "@i18n/i18n.config";
+import { t, locales, type Locale } from "@i18n/i18n.config";
 
 interface Props {
     locale: Locale;
     localeBaseUrl: string;
 }
 const { locale, localeBaseUrl }: Props = Astro.props;
+const showLanguageSwitcher: boolean = locales.length > 1;
 ---
 <header class="site-header">
     <button class="sidebar-toggle" id="sidebar-toggle" aria-label={t("header.sidebar.toggle", locale)} aria-expanded="false" aria-pressed="false" aria-controls="sidebar">
@@ -24,4 +25,18 @@ const { locale, localeBaseUrl }: Props = Astro.props;
         <i class="fas fa-sun icon-light" aria-hidden="true"></i>
         <i class="fas fa-moon icon-dark" aria-hidden="true"></i>
     </button>
+
+    { showLanguageSwitcher && (
+        <div class="language-switcher">
+            <i class="fas fa-language" aria-hidden="true"></i>
+            <select id="language-list" class="language-list" aria-label={t("header.language.select", locale)}>
+                {locales.map((loc) => (
+                    <option value={loc} selected={loc === locale}>
+                        {t("lang.name", loc)}
+                    </option>
+                ))}
+            </select>
+            <i class="fas fa-chevron-down language-arrow" aria-hidden="true"></i>
+        </div>
+    )}
 </header>

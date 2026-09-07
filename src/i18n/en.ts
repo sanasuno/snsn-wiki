@@ -12,5 +12,6 @@ export const en = {
     
     'header.sidebar.toggle': 'Toggle sidebar',
     'header.theme.toggle': 'Toggle theme',
+    'header.language.select': 'Select language',
     ...enCustom
 } as const;

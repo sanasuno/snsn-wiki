@@ -12,5 +12,6 @@ export const ja = {
 
     'header.sidebar.toggle': 'サイドバー切り替え',
     'header.theme.toggle': 'テーマ切り替え',
+    'header.language.select': '言語選択',
     ...jaCustom
 } as const;

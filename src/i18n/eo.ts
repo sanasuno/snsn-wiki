@@ -12,5 +12,6 @@ export const eo = {
 
     'header.sidebar.toggle': 'baskuligi flankan strion',
     'header.theme.toggle': 'baskuligi temon',
+    'header.language.select': 'Elekti lingvon',
     ...eoCustom
 } as const;

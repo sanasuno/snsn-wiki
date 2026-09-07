@@ -130,14 +130,6 @@ body {
     color: var(--color-text);
 }
 
-.sidebar-toggle i {
-    transition: var(--transition);
-}
-
-.sidebar-toggle i:checked {
-    transform: rotate(180deg);
-}
-
 /* サイトタイトル */
 .site-title {
     font-size: 1.1rem;
@@ -160,7 +152,7 @@ body {
     padding: 5px 9px;
     gap: 5px;
     white-space: nowrap;
-    font-size: 0.875rem;
+    font-size: 1rem;
     cursor: pointer;
     color: var(--color-text-muted);
     transition: all var(--transition);
@@ -195,6 +187,49 @@ body {
     :root:not([data-theme]) .theme-toggle .icon-dark {
         display: inline;
     }
+}
+
+/* 言語切り替え */
+.language-switcher {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    gap: 5px;
+    padding: 5px 9px;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.language-switcher:hover {
+    color: var(--color-text);
+}
+
+.language-list {
+    appearance: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0 24px 0 0;
+    font-size: 1rem;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    transition: var(--transition);
+}
+
+.language-list:hover {
+    color: var(--color-text);
+}
+
+.language-arrow {
+    position: absolute;
+    right: 8px;
+    font-size: 0.6rem;
+    pointer-events: none;
 }
 
 .sidebar {
