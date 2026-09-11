@@ -13,5 +13,10 @@ export const en = {
     'header.sidebar.toggle': 'Toggle sidebar',
     'header.theme.toggle': 'Toggle theme',
     'header.language.select': 'Select language',
+    'header.nav.title': 'Navigation',
+    'header.nav.home': 'Home',
+    'header.nav.category': 'Category',
+    'header.nav.tags': 'Tags',
+    'header.nav.graph': 'Graph',
     ...enCustom
 } as const;

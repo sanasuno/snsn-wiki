@@ -3,7 +3,7 @@
  * ロケール関連のユーティリティ関数
  */
 
-import { locales, type Locale } from "@i18n/i18n.config";
+import { locales, translations, defaultLocale, type Locale, type TranslationKey } from "@i18n/i18n.config";
 
 /**
  * 文字列が有効なロケールかどうかを判定する関数
@@ -12,6 +12,10 @@ import { locales, type Locale } from "@i18n/i18n.config";
  */
 export function isLocale(value: string): value is Locale {
     return locales.includes(value as Locale);
+}
+
+export function isTranslationKey(value: string): value is TranslationKey {
+    return Object.values(translations[defaultLocale]).some((translation) => Object.keys(translation).includes(value));
 }
 
 /**

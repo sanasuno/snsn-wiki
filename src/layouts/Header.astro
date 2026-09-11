@@ -4,6 +4,7 @@
  * ヘッダーレイアウト
  */
 import { t, locales, type Locale } from "@i18n/i18n.config";
+import { headerNavItems } from "@layouts/header.nav";
 
 interface Props {
     locale: Locale;
@@ -20,6 +21,19 @@ const showLanguageSwitcher: boolean = locales.length > 1;
     <a href={localeBaseUrl} class="site-title">
         {t("site.title", locale)}
     </a>
+
+    <nav class="header-nav" aria-label={t("header.nav.title", locale)}>
+        {
+            headerNavItems.map((item) => (
+                <a href={localeBaseUrl + item.path}>
+                    <i class={item.icon}></i>
+                    <span class="nav-label" data-i18n={item.i18nKey}>
+                        {t(item.i18nKey, locale)}
+                    </span>
+                </a>
+            ))
+        }
+    </nav>
     
     <button class="theme-toggle" id="theme-toggle" aria-label={t("header.theme.toggle", locale)} aria-pressed="false" aria-controls="theme-preference">
         <i class="fas fa-sun icon-light" aria-hidden="true"></i>

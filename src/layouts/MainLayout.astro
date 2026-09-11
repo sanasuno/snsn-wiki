@@ -79,6 +79,12 @@ const pageDescription = description ?? siteDescription;
                 }
             })();
         </script>
+
+        <!-- i18n初期化スクリプト -->
+        <script>
+            import { initI18n } from "@scripts/i18n";
+            initI18n();
+        </script>
     </head>
     <body>
         <div class={`layout${hasToc ? '' : ' no-toc'}`}>

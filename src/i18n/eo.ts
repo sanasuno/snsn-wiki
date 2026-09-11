@@ -13,5 +13,10 @@ export const eo = {
     'header.sidebar.toggle': 'baskuligi flankan strion',
     'header.theme.toggle': 'baskuligi temon',
     'header.language.select': 'Elekti lingvon',
+    'header.nav.title': 'Navigado',
+    'header.nav.home': 'Hejmo',
+    'header.nav.category': 'Kategorio',
+    'header.nav.tags': 'Etikedoj',
+    'header.nav.graph': 'Grafiko',
     ...eoCustom
 } as const;
