@@ -14,8 +14,14 @@ export function isLocale(value: string): value is Locale {
     return locales.includes(value as Locale);
 }
 
+/**
+ * 文字列が有効な翻訳キーかどうかを判定する関数
+ * @param value 判定する文字列
+ * @returns 有効な翻訳キーであればtrue、そうでなければfalse
+ */
 export function isTranslationKey(value: string): value is TranslationKey {
-    return Object.values(translations[defaultLocale]).some((translation) => Object.keys(translation).includes(value));
+    const translationKeys = Object.values(translations[defaultLocale]).flatMap((translation) => Object.keys(translation));
+    return translationKeys.includes(value);
 }
 
 /**
