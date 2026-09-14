@@ -18,5 +18,7 @@ export const ja = {
     'header.nav.category': 'カテゴリ',
     'header.nav.tags': 'タグ',
     'header.nav.graph': 'グラフ',
+
+    'sidebar.nav.title': 'サイドバー',
     ...jaCustom
 } as const;

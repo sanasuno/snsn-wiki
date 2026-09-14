@@ -18,5 +18,7 @@ export const eo = {
     'header.nav.category': 'Kategorio',
     'header.nav.tags': 'Etikedoj',
     'header.nav.graph': 'Grafiko',
+
+    'sidebar.nav.title': 'Flanka Strio',
     ...eoCustom
 } as const;

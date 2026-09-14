@@ -37,7 +37,9 @@ const {
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 const localeBaseUrl = `${baseUrl}/${locale}`;
 
-const canonicalUrl = Astro.url;
+const currentPath = removeTrailingSlash(Astro.url.pathname) || '/';
+
+const canonicalUrl = new URL(currentPath, Astro.url.origin).href;
 
 const defaultAlternateLink = alternateLinks.find(link => link.locale === defaultLocale);
 
@@ -58,7 +60,7 @@ const pageDescription = description ?? siteDescription;
         <link rel="icon" href={new URL(`${baseUrl}/favicon.ico`, Astro.site).href} sizes="48x48" />
         <link rel="icon" href={new URL(`${baseUrl}/favicon.svg`, Astro.site).href} type="image/svg+xml" />
         <link rel="sitemap" href={new URL(`${baseUrl}/sitemap-index.xml`, Astro.site).href} />
-        <link rel="canonical" href={canonicalUrl.href} />
+        <link rel="canonical" href={canonicalUrl} />
         {defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.site).href} hreflang="x-default" />}
         {alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.site).href} hreflang={link.locale} />)}
 
@@ -91,8 +93,13 @@ const pageDescription = description ?? siteDescription;
             <Header
                 locale={locale}
                 localeBaseUrl={localeBaseUrl}
+                currentPath={currentPath}
             />
-            <Sidebar />
+            <Sidebar
+                locale={locale}
+                localeBaseUrl={localeBaseUrl}
+                currentPath={currentPath}
+            />
             <main class="main-panel">
                 <MainContent>
                     <slot />

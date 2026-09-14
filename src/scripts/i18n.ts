@@ -25,11 +25,12 @@ function resolveLocale(htmlLang: string): Locale {
 
 /**
  * 言語スイッチャーを更新する関数
- */ 
-function updateLanguageSwitcher() {
-    const selected = document.getElementById("language-list") as HTMLSelectElement;
+ */
+function updateLanguageSwitcher(): void {
+    const selected = document.getElementById("language-list") as HTMLSelectElement | null;
     if (!selected) return;
-    const locale = getLocalStorage("locale");
+
+    const locale = document.documentElement.lang || getLocalStorage("locale");
     if (locale) {
         selected.value = locale;
     }
@@ -42,43 +43,52 @@ const handlers: Record<string, (el: Element, text: string) => void> = {
     'data-i18n': (el, text) => {
         el.textContent = text;
     }
-}
+};
 
 /**
  * すべての翻訳を適用する関数
  */
-function applyTranslations() {
+function applyTranslations(): void {
+    const locale = getLocalStorage("locale");
+    if (!locale || !isLocale(locale)) return;
+
     Object.entries(handlers).forEach(([attr, handler]) => {
         const elements = document.querySelectorAll(`[${attr}]`);
-        const locale = getLocalStorage("locale");
-        if (locale && isLocale(locale)) {
-            elements.forEach((el) => {
-                const key = el.getAttribute(attr);
-                if (key && isTranslationKey(key)) {
-                    handler(el, t(key, locale));
-                }
-            });
-        }
+        elements.forEach((el) => {
+            const key = el.getAttribute(attr);
+            if (key && isTranslationKey(key)) {
+                handler(el, t(key, locale));
+            }
+        });
     });
 }
 
 /**
  * i18n UIを更新する関数
  */
-function refreshI18nUI() {
+function refreshI18nUI(): void {
     updateLanguageSwitcher();
     applyTranslations();
 }
 
+let i18nInitialized = false;
+
 /**
  * i18nを初期化する関数
  */
-export function initI18n() {
+export function initI18n(): void {
+    if (i18nInitialized) return;
+    i18nInitialized = true;
+
     const htmlLang = document.documentElement.dataset.lang ?? '';
     const resolvedLocale = resolveLocale(htmlLang);
+
+    // HTML lang 属性と LocalStorage を同期
+    document.documentElement.lang = resolvedLocale;
     setLocalStorage("locale", resolvedLocale);
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', refreshI18nUI);
+        document.addEventListener('DOMContentLoaded', refreshI18nUI, { once: true });
     } else {
         refreshI18nUI();
     }
@@ -87,25 +97,45 @@ export function initI18n() {
 /**
  * 言語スイッチャーのイベントを設定する関数
  */
-export function languageSwitch() {
-    const languageList = document.getElementById("language-list") as HTMLSelectElement;
+export function languageSwitch(): void {
+    const languageList = document.getElementById("language-list") as HTMLSelectElement | null;
     if (!languageList) return;
+
+    // 二重登録防止
+    if (languageList.dataset.languageSwitchInitialized === 'true') return;
+    languageList.dataset.languageSwitchInitialized = 'true';
 
     languageList.addEventListener("change", () => {
         const selectedLocale = languageList.value;
-        if (isLocale(selectedLocale)) {
-            setLocalStorage("locale", selectedLocale);
+
+        // ロケール検証
+        if (!isLocale(selectedLocale)) {
+            console.warn(`Invalid locale: ${selectedLocale}`);
+            return;
         }
-        const altLink = document.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${selectedLocale}"]`);
-        if (altLink && altLink.href) {
+
+        // LocalStorage に保存
+        setLocalStorage("locale", selectedLocale);
+
+        // hreflang リンクで言語ページへナビゲート
+        const altLink = document.querySelector<HTMLLinkElement>(
+            `link[rel="alternate"][hreflang="${selectedLocale}"]`
+        );
+        if (altLink?.href) {
             window.location.href = altLink.href;
             return;
         }
-        const defaultLocaleLink = document.querySelector<HTMLLinkElement>('link[rel="alternate"][hreflang="x-default"]');
-        if (defaultLocaleLink && defaultLocaleLink.href) {
+
+        // x-default へのフォールバック
+        const defaultLocaleLink = document.querySelector<HTMLLinkElement>(
+            'link[rel="alternate"][hreflang="x-default"]'
+        );
+        if (defaultLocaleLink?.href) {
             window.location.href = defaultLocaleLink.href;
             return;
         }
+
+        // 最終手段：ページリロード
         window.location.reload();
-    })
+    });
 }

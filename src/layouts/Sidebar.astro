@@ -1,9 +1,30 @@
 ---
 /**
  * @layouts/Sidebar.astro
- * サイドバーレイアウト
+ * サイドバーコンポーネント
  */
+import { getCollection } from "astro:content";
+import { t, type Locale } from "@i18n/i18n.config";
+import { sidebarNavItems, autoAddUnknownCategories, autoGrupByLeafCategory } from "@layouts/sidebar.nav";
+
+interface Props {
+    locale: Locale;
+    localeBaseUrl: string;
+    currentPath: string;
+}
+const { locale, localeBaseUrl, currentPath }: Props = Astro.props;
+
+const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
 ---
 <aside class="sidebar" id="sidebar">
-    サイドバー
+    <nav aria-label={t("sidebar.nav.title", locale)}>
+        {
+            sidebarNavItems.map((section) => {
+                const defaultCollapsed = section.collapsed ?? false;
+                if (section.category) {
+
+                }
+            })
+        }
+    </nav>
 </aside>

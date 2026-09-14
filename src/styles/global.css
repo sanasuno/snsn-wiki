@@ -141,12 +141,60 @@ body {
     text-overflow: ellipsis;
 }
 
+/* ヘッダーナビゲーション */
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.header-nav a {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: var(--transition);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media(max-width: 768px) {
+    .header-nav a {
+        display: none;
+    }
+}
+
+.header-nav a:hover {
+    background-color: var(--color-bg-hover);
+    color: var(--color-text);
+}
+
+.header-nav a.active {
+    background-color: var(--color-bg-accent);
+    color: var(--color-accent);
+}
+
+.nav-label {
+    margin-left: 4px;
+}
+
+@media(max-width: 1200px) {
+    .nav-label {
+        display: none;
+    }
+}
+
 /* テーマ切り替えボタン */
 .theme-toggle {
     background: none;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
-    margin-left: auto;
     display: flex;
     align-items: center;
     padding: 5px 9px;

@@ -18,5 +18,7 @@ export const en = {
     'header.nav.category': 'Category',
     'header.nav.tags': 'Tags',
     'header.nav.graph': 'Graph',
+    
+    'sidebar.nav.title': 'Sidebar',
     ...enCustom
 } as const;
