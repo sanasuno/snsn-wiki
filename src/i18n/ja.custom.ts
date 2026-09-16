@@ -2,7 +2,7 @@
  * @i18n/ja.custom.ts
  * 日本語カスタム翻訳ファイル
  */
-
+import type { CustomKey } from "./keys.custom";
 export const jaCustom = {
     // サイト設定
     'site.title': 'snsn-wiki',
@@ -15,4 +15,4 @@ export const jaCustom = {
     'sidebar.graph': 'グラフ',
     'sidebar.development': '開発',
     // ここに日本語のカスタム翻訳を追加
-} as const;
+} satisfies Record<CustomKey, string>;

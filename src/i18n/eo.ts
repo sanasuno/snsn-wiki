@@ -4,6 +4,7 @@
  */
 
 import { eoCustom } from "./eo.custom";
+import type { TranslationKey } from "./keys";
 
 export const eo = {
     'lang.name': 'Esperanto',
@@ -21,4 +22,4 @@ export const eo = {
 
     'sidebar.nav.title': 'Flanka Strio',
     ...eoCustom
-} as const;
+} satisfies Record<TranslationKey, string>;

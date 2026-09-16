@@ -20,8 +20,7 @@ export function isLocale(value: string): value is Locale {
  * @returns 有効な翻訳キーであればtrue、そうでなければfalse
  */
 export function isTranslationKey(value: string): value is TranslationKey {
-    const translationKeys = Object.values(translations[defaultLocale]).flatMap((translation) => Object.keys(translation));
-    return translationKeys.includes(value);
+    return Object.hasOwn(translations[defaultLocale], value);
 }
 
 /**

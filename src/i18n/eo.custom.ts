@@ -2,6 +2,7 @@
  * @i18n/eo.custom.ts
  * Esperanta kustoma traduka dosiero
  */
+import type { CustomKey } from "./keys.custom";
 export const eoCustom = {
     // Retaj agordoj
     'site.title': 'snsn-wiki',
@@ -14,4 +15,4 @@ export const eoCustom = {
     'sidebar.graph': 'Grafiko',
     'sidebar.development': 'Programado',
     // Aldonu Esperantajn kustomajn tradukojn ĉi tie
-} as const;
+} satisfies Record<CustomKey, string>;

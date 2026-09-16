@@ -2,6 +2,7 @@
  * @i18n/en.custom.ts
  * English custom translation file
  */
+import type { CustomKey } from "./keys.custom";
 export const enCustom = {
     // Site settings
     'site.title': 'snsn-wiki',
@@ -14,4 +15,4 @@ export const enCustom = {
     'sidebar.graph': 'Graph',
     'sidebar.development': 'Development',
     // Add English custom translations here
-} as const;
+} satisfies Record<CustomKey, string>;

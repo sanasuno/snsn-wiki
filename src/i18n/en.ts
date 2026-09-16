@@ -2,8 +2,8 @@
  * @i18n/en.ts
  * English translation file
  */
-
 import { enCustom } from "./en.custom";
+import type { TranslationKey } from "./keys";
 
 export const en = {
     'lang.name': 'English',
@@ -21,4 +21,4 @@ export const en = {
     
     'sidebar.nav.title': 'Sidebar',
     ...enCustom
-} as const;
+} satisfies Record<TranslationKey, string>;

@@ -4,6 +4,7 @@
  */
 
 import { jaCustom } from "./ja.custom";
+import type { TranslationKey } from "./keys";
 
 export const ja = {
     'lang.name': '日本語',
@@ -21,4 +22,4 @@ export const ja = {
 
     'sidebar.nav.title': 'サイドバー',
     ...jaCustom
-} as const;
+} satisfies Record<TranslationKey, string>;
