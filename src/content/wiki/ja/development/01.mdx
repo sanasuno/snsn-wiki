@@ -78,7 +78,7 @@ npm create astro@latest
 snsn-wikiはMITライセンスなので、`./LICENSE`にMITライセンスの全文を記述します。
 
 ## URL設定
-Astroでは、`astro.config.ts`に`site`（ドメインのURL）と`base`（サイトのルートパス）の値を設定することで、サイトのURLを管理します。  
+Astroでは、`astro.config.ts`に`site`（ドメインのorigin）と`base`（サイトのルートパス）の値を設定することで、サイトのURLを管理します。  
 しかし、今回は、環境変数に設定した値を読み取って設定する方式にします。これにより、マルチ環境デプロイや、Github Pagesでリポジトリ名を変更したときの対応が容易になります。
 
 まずは、環境変数を読み取るために、Node.jsの型定義をインストールします。
@@ -87,26 +87,25 @@ Astroでは、`astro.config.ts`に`site`（ドメインのURL）と`base`（サ�
 npm install @types/node --save-dev
 ```
 
-### site
+### getSiteUrl()
 環境変数として`SITE_URL`にドメインのURLを指定し、それを読み取って`defineConfig`に設定します。  
 `SITE_URL`に指定した値がURLオブジェクトに変換できない場合は、エラーを投げます。
 `SITE_URL`が設定されていない場合、開発環境では`http://localhost:4321`を代わりに使用し、本番環境ではエラーを投げます。
 
 ```ts
 const devSiteUrl = 'http://localhost:4321';
-let site: string;
-try {
-    site = new URL(process.env.SITE_URL ?? devSiteUrl).toString().replace(/\/+$/, '');
-} catch {
-    throw new Error('[astro.config] SITE_URL is a invalid URL');
-}
-if (process.env.PROD === 'true' && site === devSiteUrl) {
-    throw new Error('[astro.config] SITE_URL must be configured in production');
-}
 
-export default defineConfig({
-    site
-})
+function getSiteUrl(): string {
+    const value = process.env.SITE_URL ?? devSiteUrl;
+    try {
+        return new URL(value).toString().replace(/\/+$/, '');
+    } catch (error) {
+        throw new Error(
+            '[astro.config] SITE_URL is an invalid URL',
+            { cause: error }
+        );
+    }
+}
 ```
 
 `process.env.SITE_URL`で環境変数から`SITE_URL`を取得し、設定されていない場合は`devSiteUrl`（`http://localhost:4321`）を代わりに使用して、`new URL()`でURLオブジェクトに変換します。  
