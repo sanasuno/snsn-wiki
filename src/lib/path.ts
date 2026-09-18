@@ -2,6 +2,7 @@
  * @lib/path.ts
  * パス関連のユーティリティ関数
  */
+import { locales, type Locale } from '@i18n/i18n.config';
 
 /**
  * 末尾のスラッシュを削除する関数
@@ -25,4 +26,17 @@ export function isActive(targetPath: string, localeBaseUrl: string, currentPath:
         return currentPath === localeTargetUrl;
     }
     return currentPath === localeTargetUrl || currentPath.startsWith(`${localeTargetUrl}/`);
+}
+
+/**
+ * ページIDからベーススラッグを取得する関数
+ * @param pageId ページID
+ * @returns ベーススラッグ
+ */
+export function getBaseSlug(pageId: string): string {
+    const parts = pageId.split('/');
+    if (parts.length > 1 && locales.includes(parts[0] as Locale)) {
+        return parts.slice(1).join('/');
+    }
+    return pageId;
 }

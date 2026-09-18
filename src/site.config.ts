@@ -4,6 +4,7 @@
  * デプロイ先のオリジンやパスを設定する
  */
 export const siteConfig = {
-    url: 'https://example.com', // 本番サイトのオリジン
+    // url: 'https://example.com', // 本番サイトのオリジン
+    url: 'http://localhost:4321',
     basePath: '/' // 配信パス（サブディレクトリ配信する場合記述、不要なら'/'）
 } as const;

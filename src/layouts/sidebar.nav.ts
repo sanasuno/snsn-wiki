@@ -24,7 +24,7 @@ export type SidebarNavSection = {
 
 export const autoAddUnknownCategories = true;
 
-export const autoGrupByLeafCategory = true;
+export const autoGroupByLeafCategory = true;
 
 export const sidebarNavItems: SidebarNavSection[] = [
     {

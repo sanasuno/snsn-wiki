@@ -18,8 +18,8 @@ interface Props {
 
 export async function getStaticPaths() {
     const pages = await getCollection('wiki', (page) => !page.data.draft);
-    const pagesByBaseSlug: Record<string, Record<string, CollectionEntry<'wiki'>>> = {};
-    const routeKeyOwners: Record<string, Set<string>> = {};
+    const pagesByBaseSlug: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
+    const normalizedIdOwners: Record<string, Set<string>> = {};
     
     for (const page of pages) {
         const { locale, rawBaseSlug } = divideId(page.id);
@@ -29,17 +29,17 @@ export async function getStaticPaths() {
         }
         pagesByBaseSlug[normalizedBaseSlug][locale] = page;
         
-        const routeKey = normalizeSlug(page.id);
+        const normalizedId = normalizeSlug(page.id);
         
-        if (!routeKeyOwners[routeKey]) {
-            routeKeyOwners[routeKey] = new Set();
+        if (!normalizedIdOwners[normalizedId]) {
+            normalizedIdOwners[normalizedId] = new Set();
         }
-        routeKeyOwners[routeKey].add(rawBaseSlug);
+        normalizedIdOwners[normalizedId].add(rawBaseSlug);
     }
 
-    for (const [routeKey, owners] of Object.entries(routeKeyOwners)) {
+    for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
         if (owners.size > 1) {
-            throw new Error(`[wiki routing] Multiple owners for route slug "${routeKey}": ${Array.from(owners).join(', ')}`);
+            throw new Error(`[wiki routing] Multiple owners for normalized ID "${normalizedId}": ${Array.from(owners).join(', ')}`);
         }
     }
 
@@ -51,9 +51,15 @@ export async function getStaticPaths() {
                 ? undefined
                 : baseSlug;
             const isFallback = !availablePages[locale];
-            const page = availablePages[locale]
+            const fallbackPage = availablePages[locale]
                 ?? availablePages[defaultLocale]
-                ?? Object.values(availablePages)[0];
+                ?? locales.map((loc) => availablePages[loc]).find(
+                    (p): p is CollectionEntry<'wiki'> => p !== undefined
+                );
+            if (!fallbackPage) {
+                throw new Error(`[wiki routing] No page found for baseSlug "${baseSlug}"`);
+            }
+            const page = fallbackPage;
 
             paths.push({
                 params: { locale, slug },
@@ -73,17 +79,20 @@ const { page, locale, baseSlug, isFallback } = Astro.props;
 const { Content } = await render(page);
 
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
-const alternateLinks = locales.map(locale => ({
-    locale,
-    href: removeTrailingSlash(new URL(`${baseUrl}/${locale}/wiki/${baseSlug}`, Astro.site).toString())
+const alternateLinks = locales.map(altLocale => ({
+    locale: altLocale,
+    href: removeTrailingSlash(new URL(`${baseUrl}/${altLocale}/wiki/${baseSlug}`, Astro.site).toString())
 }))
 ---
 <MainLayout
     title={page.data.title}
-    description={page.data.description || ''}
+    description={page.data.description}
     locale={locale}
     alternateLinks={alternateLinks}
     hasToc={page.data.hasToc}
+    isFallback={isFallback}
+    date={page.data.date}
+    updated={page.data.updated}
 >
     <Content />
 </MainLayout>

@@ -24,6 +24,9 @@ interface Props {
     locale?: Locale;
     alternateLinks?: { locale: Locale, href: string }[];
     hasToc?: boolean;
+    isFallback?: boolean;
+    date?: Date;
+    updated?: Date;
 }
 
 const {
@@ -31,7 +34,10 @@ const {
     description,
     locale = defaultLocale,
     alternateLinks = [],
-    hasToc = true
+    hasToc = true,
+    isFallback = false,
+    date,
+    updated
 } = Astro.props;
 
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);

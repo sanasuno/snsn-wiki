@@ -3,14 +3,15 @@
  * i18n設定ファイル
  */
 
+// 翻訳キーの型をインポート・エクスポートする
+import type { TranslationKey } from "./keys";
+export type { TranslationKey };
+
 // 各言語の翻訳ファイルをインポートしてまとめる
 // ロケール追加時はここに追記する
 import { ja } from "./ja";
 import { en } from "./en";
 import { eo } from "./eo";
-import type { TranslationKey } from "./keys";
-export type { TranslationKey };
-
 export const translations = {
     ja,
     en,

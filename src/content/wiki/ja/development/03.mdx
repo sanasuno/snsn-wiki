@@ -9,7 +9,6 @@ date: 2026-08-18
 ## 構成
 `./src/content/wiki/[locale]`配下に各記事のmdxファイルを配置し、コレクションローダーで収集したものを、`./src/pages/[locale]/wiki/[...slug].astro`でページに変換します。  
 
-
 ## mdx
 まずは、mdxファイルを取り扱うためのインテグレーションを追加します。  
 mdxによって、markdown内でjsxやコンポーネントを利用できるようになります。
@@ -19,7 +18,7 @@ npx astro add mdx
 ```
 
 ## コレクションローダー
-ウィキページ用のコレクションローダーを`content.config.ts`として作成し、`src`直下に配置します。  
+ウィキページ用のコレクションローダーを`./src/content.config.ts`として作成し、`src`直下に配置します。  
 `./src/content/wiki`配下にある、`.md`または`.mdx`ファイルを収集し、`wiki`コレクションとして利用できるように定義します。
 
 ```ts
@@ -38,13 +37,12 @@ const wiki = defineCollection({
         date: z.coerce.date().optional(),
         updated: z.coerce.date().optional(),
         draft: z.boolean().default(false),
+        hasToc: z.boolean().default(true),
         subpage: z.boolean().default(false),
     }),
 });
 
-export const collections = {
-    wiki,
-};
+export const collections = { wiki };
 ```
 
 以下、schemaの各項目の説明です。
@@ -56,6 +54,7 @@ export const collections = {
 - `date`: ページの作成日（YYYY-MM-DD形式）（任意）
 - `updated`: ページの更新日（YYYY-MM-DD形式）（任意）
 - `draft`: ドラフトフラグ（true/false）（任意、デフォルトfalse）
+- `hasToc`: 目次表示フラグ（true/false）（任意、デフォルトtrue）
 - `subpage`: サブページフラグ（true/false）（任意、デフォルトfalse）
 
 ## 動的ルーティング

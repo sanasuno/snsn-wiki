@@ -5,7 +5,10 @@
  */
 import { getCollection } from "astro:content";
 import { t, type Locale } from "@i18n/i18n.config";
-import { sidebarNavItems, autoAddUnknownCategories, autoGrupByLeafCategory } from "@layouts/sidebar.nav";
+import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
+import { getUniquePagesByLocale } from '@lib/content/pages';
+import { getBaseSlug } from '@lib/path';
+import { getCategory } from '@lib/content/category';
 
 interface Props {
     locale: Locale;
@@ -15,6 +18,17 @@ interface Props {
 const { locale, localeBaseUrl, currentPath }: Props = Astro.props;
 
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+const uniquePages = getUniquePagesByLocale(wikiPages, locale);
+const pagesByCategory : Record<string, typeof uniquePages> = {};
+const slugMap : Record<string, (typeof uniquePages)[0]> = {};
+for (const page of uniquePages) {
+    slugMap[getBaseSlug(page.id)] = page;
+    const category: string[] = getCategory(page.id) || [];
+    const key = category.length > 0 && autoGroupByLeafCategory
+        ? category[category.length - 1]
+        : category.join('/');
+    (pagesByCategory[key] ??= []).push(page);
+}
 ---
 <aside class="sidebar" id="sidebar">
     <nav aria-label={t("sidebar.nav.title", locale)}>
@@ -22,7 +36,10 @@ const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
             sidebarNavItems.map((section) => {
                 const defaultCollapsed = section.collapsed ?? false;
                 if (section.category) {
-
+                    const categoryPages = pagesByCategory[section.category] || [];
+                    if (categoryPages.length === 0) {
+                        return null;
+                    }
                 }
             })
         }

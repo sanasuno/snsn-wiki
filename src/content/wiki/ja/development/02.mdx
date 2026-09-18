@@ -1,30 +1,35 @@
 ---
-title: 開発記録2 i18n設定
+title: 開発記録2 翻訳設定
 order: 2
 tags: [開発記録]
 date: 2026-08-17
 ---
 ## i18nについて
 snsn-wikiでは、i18n（国際化）に対応しています。  
-ヘッダー内の言語選択用のトグルボタンによって言語を切り替えることで、ヘッダーやサイドバーなど各種ナビゲーションが対象の言語に翻訳され、記事の内容が対象の言語のものに切り替わります。  
-関連ファイルの構成は以下のようにします。
-- `i18n`ディレクトリに各言語用の翻訳ファイルおよびi18n用設定ファイルである`i18n.config.ts`を配置します。
-- 翻訳ファイルはすべてのサイトで利用される翻訳をまとめたデフォルトのものと、ユーザーが翻訳を自由に追加できるカスタム翻訳用ファイルの2種類を各言語に用意します。
-- ウィキページは、`.src/content/wiki/`ディレクトリ直下に、各言語ごとのディレクトリを作り、その中にmdxファイルを配置していきます。
-- 特別ページ（`pages`下に置かれるページ）は、各単語の翻訳を用意するだけで、ページの内容はほぼ固定なので、動的ルーティングを用いて`pages/[locale]`配下に配置します。
-- `index.astro`や`404.astro`など、`pages`直下に置く必要のあるページは、現在の言語選択状況に従ってリダイレクトされるようにします。
+ここでは、対応するロケールの設定や、翻訳用の関数を作成していきます。
 
 ## 翻訳ファイル
-デフォルトの翻訳ファイル(`ja.ts`など)と、ユーザーがサイトに応じて翻訳を追加するためのカスタム翻訳ファイル(`ja.custom.ts`など)の2種類が存在します。  
+`@i18n/key.ts`および`@i18n/keys.custom.ts`に、使用する翻訳キーをそれぞれ`TranslationKey`型、`CustomKey`型として記述します。`TranslationKey`型は`CustomKey`型を含みます。  
+システム側で使用するものは`keys.ts`に、ユーザーが自分で翻訳内容を変えたり追加したりするものは`keys.custom.ts`に記述します。  
+また、具体的な翻訳を記述する翻訳ファイルも、`@i18n/ja.ts`と`@i18n/ja.custom.ts`のように分離して記述していきます。  
 これは、snsn-wiki本体の更新によって、ユーザーの追加した翻訳に影響が及ばないようにするためです。  
 翻訳ファイルは、`[key]: [value]`の形式で定義され、それらを各言語ごとにまとめて出力します。
 
 ## i18n.config.ts
 `i18n.config.ts`は、i18n関連の設定を記述するファイルです。  
-利用可能なロケールの一覧、デフォルトロケール、関連する型定義、翻訳関数などが含まれます。
+利用可能なロケールや翻訳の一覧、デフォルトロケール設定、翻訳関数などが含まれます。
+
+### 翻訳キー
+`@i18n/keys.ts`から、翻訳キーの型である`TranslationKey`型をインポートして、そのままエクスポートします。
+
+```ts
+import type { TranslationKey } from "./keys";
+export type { TranslationKey };
+```
 
 ### 翻訳ファイルのインポート
-`i18n`ディレクトリ配下にある翻訳ファイルをインポートし、すべてまとめて`translations`オブジェクトに格納します。
+`i18n`ディレクトリ配下にある翻訳ファイルをインポートし、すべてまとめて`translations`オブジェクトに格納します。  
+ロケールを追加するときは、ここに追記します。
 
 ```ts
 import { ja } from "./ja";
@@ -45,31 +50,33 @@ export type Locale = keyof typeof translations;
 ```
 
 ### デフォルトロケール
-サイトのデフォルトロケールを決定します。デフォルトロケールは、主に各種翻訳やページ遷移のフォールバックとして使われます。  
+サイトのデフォルトロケール`defaultLocale`を決定します。デフォルトロケールは、主に各種翻訳やページ遷移のフォールバックとして使われます。  
 デフォルトロケールは、`Locale`型の要素である必要があります。
 
 ```ts
-export const defaultLocale: Locale = 'ja';
+export const defaultLocale = 'ja' satisfies Locale;
 ```
 
-### 利用可能なロケールと翻訳キー
-`locales`は、利用可能なロケールの配列を、`TranslationKey`は、翻訳キーの型を定義します。  
-`TranslationKey`は、`defaultLocale`の翻訳キーを型として使用するため、デフォルトロケールに指定したロケールには、すべての翻訳キーが存在する必要があります。
+### 利用可能なロケール
+`locales`は、利用可能なロケールの配列を定義します。
 
 ```ts
 export const locales = Object.keys(translations) as Locale[];
-export type TranslationKey = keyof typeof translations[typeof defaultLocale];
 ```
 
 ### t()
 `t`関数は、与えられた翻訳キーとロケールから、翻訳された文字列を取得する関数です。  
 `locale`パラメータを省略した場合、`defaultLocale`が使用されます。  
-指定されたロケールに翻訳キーが存在しない場合、`defaultLocale`の翻訳キーが使用されます。
+指定されたロケールに翻訳が存在しない場合、デフォルトロケールの翻訳を返し、デフォルトロケールにも存在しない場合はキーの値をそのまま返します。
 
 ```ts
 export function t(key: TranslationKey, locale: Locale = defaultLocale): string {
-    return (translations[locale] as Record<string, string>)?.[key]
-        ?? (translations[defaultLocale] as Record<string, string>)?.[key];
+    const current = translations[locale] as Partial<Record<TranslationKey, string>>;
+    if (current[key] !== undefined) {
+        return current[key]!;
+    }
+    const fallback = translations[defaultLocale] as Partial<Record<TranslationKey, string>>;
+    return fallback[key] ?? key;
 }
 ```
 
@@ -91,5 +98,5 @@ export default defineConfig({
 });
 ```
 
-- `astro.config.ts`では、エイリアスを利用できないため、`i18n.config.ts`およびそこでインポートされる各翻訳ファイルはエイリアスを使用できないことに注意が必要です。
+- `astro.config.ts`では、エイリアスを利用できないため、`i18n.config.ts`およびそこからインポートされるファイルは、エイリアスを使用できないことに注意が必要です。
 
