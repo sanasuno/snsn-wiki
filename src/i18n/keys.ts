@@ -2,22 +2,24 @@
  * @i18n/keys.ts
  * 翻訳キースキーマ定義ファイル
  */
-import type { CustomKey } from "./keys.custom";
+import { customKeys } from "./keys.custom";
 
-export type TranslationKey =
-    | CustomKey
-    | 'lang.name'
-    | 'lang.locale'
-    | 'lang.locale.ogp'
+export const structuralKeys = [
+    'lang.name',
+    'lang.locale',
+    'lang.locale.ogp',
 
-    | 'header.sidebar.toggle'
-    | 'header.theme.toggle'
-    | 'header.language.select'
-    | 'header.nav.title'
-    | 'header.nav.home'
-    | 'header.nav.category'
-    | 'header.nav.tags'
-    | 'header.nav.graph'
+    'header.sidebar.toggle',
+    'header.theme.toggle',
+    'header.language.select',
+    'header.nav.title',
+    'header.nav.home',
+    'header.nav.category',
+    'header.nav.tags',
+    'header.nav.graph',
 
-    | 'sidebar.nav.title'
-    
+    'sidebar.nav.title'
+] as const;
+
+export const translationKeys = [...structuralKeys, ...customKeys] as const;
+export type TranslationKey = typeof translationKeys[number];

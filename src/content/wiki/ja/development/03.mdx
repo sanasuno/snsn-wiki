@@ -1,5 +1,5 @@
 ---
-title: 開発記録3 ウィキページ作成
+title: 開発記録3 ウィキページのルーティング
 order: 3
 tags: [開発記録]
 date: 2026-08-18
@@ -57,90 +57,100 @@ export const collections = { wiki };
 - `hasToc`: 目次表示フラグ（true/false）（任意、デフォルトtrue）
 - `subpage`: サブページフラグ（true/false）（任意、デフォルトfalse）
 
-## 動的ルーティング
-`./src/pages/[locale]/wiki/[...slug].astro`を作成し、動的ルート用のページとします。   
-- ファイル名に`[...slug]`のレストパラメータ形式を採用することで、任意の深さにマッチします。  
-`getStaticPaths()`関数で`locale`と`slug`を出力することで、対応するページのパスを生成します。  
+## ユーティリティ関数
+`@lib/slug.ts`に、スラッグ関連のユーティリティ関数を記述します。
 
-### getStaticPaths()
-`getStaticPaths()`関数では、パス生成のために各ページの`locale`と`slug`を出力する必要があります。  
-
-まず、`getCollection()`関数を用いて、`wiki`コレクションから`draft`フラグが`false`のページを収集します。  
-次に、収集した各ページの`id`をもとに`locale`と`baseSlug`を抽出し、`pagesByBaseSlug`に格納します。  
-さらに、URL衝突の検証を行うために、URL上の位置を`routeKey`として抽出し、`routeKeyOwners`に格納します。  
+### divideId()
+ページIDを分割して、ロケールと生のベーススラッグを抽出する関数です。
 
 ```ts
-const pages = await getCollection('wiki', (page) => !page.data.draft);
-const pagesByBaseSlug: Record<string, Record<string, CollectionEntry<'wiki'>>> = {};
-const routeKeyOwners: Record<string, Set<string>> = {};
-```
+import type { Locale } from '@i18n/i18n.config';
+import { isLocale } from "@lib/locale";
 
-#### divideId
-`id`から`locale`と`baseSlug`を抽出する関数を、`@lib/locale.ts`に作成します。  
-`id`は`./src/content/wiki`配下のファイルパスを表します。  
-このディレクトリの下に各ロケールごとのディレクトリがあるので、`id`を`/`で分割し、最初の要素を`locale`、残りを`baseSlug`として抽出します。  
-Astroのルーティングでは、`index.mdx`はルートパスとして扱われるため、`baseSlug`から`index`を削除して正規化する必要があります。  
-また、`locale`が`locales`に含まれていることを確認する必要があるので、この部分を別の関数として切り出します。
-
-```ts
-import { locales } from "@i18n/i18n.config"
-export function isLocale(value: string): value is Locale {
-    return locales.includes(value as Locale)
-}
-```
-
-```ts
-import { type Locale } from "@i18n/i18n.config"
-export function divideId(id: string): {locale: Locale, rawBaseSlug: string} {
-    const parts = id.split('/');
+export function dividePageId(pageId: string): {locale: Locale, rawBaseSlug: string} {
+    const parts = pageId.split('/');
     if (isLocale(parts[0])) {
         return {
             locale: parts[0],
             rawBaseSlug: parts.slice(1).join('/')
         };
     }
-    throw new Error(`[Invalid id format] ${id}`);
+    throw new Error(`[Invalid id format] ${pageId}`);
 }
 ```
 
-#### ページデータ格納
-`divideId()`関数を用いて`locale`と`baseSlug`を取得したら、`baseSlug`を`normalizedBaseSlug`に正規化してから、`pagesByBaseSlug`に`normalizedBaseSlug`と`locale`をキーとして、ページデータを`pagesByBaseSlug`に格納します。  
-さらに、URL衝突の検証用に、実際のURLの位置を`routeKey`として、`routeKeyOwners`に格納します。  
-実際のURLでは、`index`ファイル名のページは省略されるため、`page.id`末尾の`/index`を削除します。  
-`routeKey`をキー、`baseSlug`を値として`routeKeyOwners`に格納します。これにより、異なる`baseSlug`（＝異なるファイル）が同じ`routeKey`を持つ場合、URLが衝突することがわかります。
+- ページIDは`./src/content/wiki/`以下のパスです。この直下に各ロケールのディレクトリを配置し、その下にページを配置する構成を取っているので、ページIDをロケール部分とベーススラッグ部分に分離できます。  
+- ページIDを`.split('/')`で分割すると、最初の要素がロケール、残りがベーススラッグになります。  
+- `isLocale()`関数でページIDから取得したロケールが実際に`@i18n/i18n.config.ts`で設定したロケールの対象かどうかをチェックします。
+
+### normalizeSlug()
+スラッグを正規化する関数です。
 
 ```ts
-for (const page of pages) {
-    const { locale, rawBaseSlug } = divideId(page.id);
+export function normalizeSlug(rawSlug: string): string {
+    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim();
+    return normalized === 'index'
+        ? ''
+        : normalized.replace(/\/index$/, '');
+}
+```
+
+## 動的ルーティング
+`./src/pages/[locale]/wiki/[...slug].astro`を作成し、動的ルート用のページとします。   
+- スラッグ部分は`[...slug]`のレストパラメータ形式を採用することで、任意の深さのスラッグにマッチします。  
+`getStaticPaths()`関数で`locale`と`slug`を出力することで、対応するページのパスを生成します。  
+
+### getStaticPaths()
+`getStaticPaths()`関数では、パス生成のために各ページの`locale`と`slug`を出力する必要があります。  
+
+まず、`getCollection()`関数を用いて、`wiki`コレクションから`draft`フラグが`false`のページ（下書きではないページ）を全て収集します。  
+
+```ts
+const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+```
+
+#### ページデータ格納
+収集した各ページについて、ページIDから`dividePageId()`関数を用いて`locale`と`rawBaseSlug`を取得し、さらに`rawBaseSlug`は`normalizeSlug()`関数を用いて`normalizedBaseSlug`に正規化します。  
+同じ記事の各言語版を紐づけるため、`normalizedBaseSlug`と`locale`をキーとして`pagesByBaseSlug`に格納します。
+
+```ts
+const pagesByBaseSlug: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
+
+for (const page of wikiPages) {
+    const { locale, rawBaseSlug } = dividePageId(page.id);
     const normalizedBaseSlug = normalizeSlug(rawBaseSlug);
     if (!pagesByBaseSlug[normalizedBaseSlug]) {
         pagesByBaseSlug[normalizedBaseSlug] = {};
     }
     pagesByBaseSlug[normalizedBaseSlug][locale] = page;
-    
-    const routeKey = normalizeSlug(page.id);
-    
-    if (!routeKeyOwners[routeKey]) {
-        routeKeyOwners[routeKey] = new Set();
-    }
-    routeKeyOwners[routeKey].add(rawBaseSlug);
 }
 ```
 
-#### ルート検証
-すべてのページについてこの操作が完了したら、URL検証を行います。  
-`routeKeyOwners`に格納した各`routeKey`について、`routeKeyOwners[routeKey]`のサイズが1より大きい場合、つまり異なる`baseSlug`が同じ`routeKey`を持つ場合、URLが衝突しているので、エラーを投げます。
+#### 衝突検証
+もし複数の異なるファイルが同じ`normalizedBaseSlug`に正規化される場合、後から処理された方が先に処理された方を上書きしてしまうため、これを検出してビルドエラーにします。  
+そこで、正規化後のページIDと正規化前のページIDを紐づけて`normalizedIdOwners`に保存します。  
+もし正規化による衝突が起きる場合は、同じ`normalizedId`に対して複数の`page.id`が登録されるため、`normalizedIdOwners`の各要素の`size`が1より大きくなるので、これを検出してエラーを投げます。  
+- なお、衝突判定は同一ロケール内だけで行う必要があるため、ベーススラッグではなく、ロケール情報を含むページIDの正規化前後を比較しています。
 
 ```ts
-for (const [routeKey, owners] of Object.entries(routeKeyOwners)) {
+const normalizedIdOwners: Record<string, Set<string>> = {};
+for (const page of wikiPages) {
+    const normalizedId = normalizeSlug(page.id);
+    
+    if (!normalizedIdOwners[normalizedId]) {
+        normalizedIdOwners[normalizedId] = new Set();
+    }
+    normalizedIdOwners[normalizedId].add(page.id);
+}
+for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
     if (owners.size > 1) {
-        throw new Error(`[wiki routing] Multiple owners for route slug "${routeKey}": ${Array.from(owners).join(', ')}`);
+        throw new Error(`[wiki routing] Multiple owners for normalized ID "${normalizedId}": ${Array.from(owners).join(', ')}`);
     }
 }
 ```
 
 #### paths
-URL検証が完了したら、`pagesByBaseSlug`に格納したデータから、各ページのURLパス構築に必要な`locale`および`baseSlug`の取得、フォールバック判定を`paths`に格納していきます。  
+衝突検証が完了したら、`pagesByBaseSlug`に格納したデータから、各ページのURLパス構築に必要な`locale`および`baseSlug`の取得、フォールバック判定を`paths`に格納していきます。  
 まず、各`normalizedBaseSlug`について、利用可能なロケールのページを取得し、`availablePages`に格納します。  
 さらに、各`locale`について、`normalizedBaseSlug`を`slug`に設定します。ただし、`normalizedBaseSlug`が空文字の場合は`slug`を`undefined`に設定します。  
 `availablePages`に対応する`locale`のページが存在しない場合は`isFallback`を`true`に、存在する場合は`isFallback`を`false`に設定します。  

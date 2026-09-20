@@ -100,3 +100,25 @@ export default defineConfig({
 
 - `astro.config.ts`では、エイリアスを利用できないため、`i18n.config.ts`およびそこからインポートされるファイルは、エイリアスを使用できないことに注意が必要です。
 
+## ユーティリティ関数
+`@lib/locale/ts`に、ロケール関連のユーティリティ関数を記述します。
+
+### isLocale()
+`isLocale()`は、対象の文字列が有効なロケールであるかどうかを判定する関数です。
+
+```ts
+import { locales, type Locale } from '@i18n/i18n.config';
+export function isLocale(value: string): value is Locale {
+    return locales.includes(value as Locale);
+}
+```
+
+### isTranslationKey()
+`isTranslationKey`は、対象の文字列が有効な翻訳キーであるかどうかを判定する関数です。
+
+```ts
+import { translationKeys, type TranslationKey } from '@i18n/keys';
+export function isTranslationKey(value: string): value is TranslationKey {
+    return translationKeys.includes(value as TranslationKey);
+}
+```

@@ -3,7 +3,8 @@
  * ロケール関連のユーティリティ関数
  */
 
-import { locales, translations, defaultLocale, type Locale, type TranslationKey } from "@i18n/i18n.config";
+import { locales, type Locale } from '@i18n/i18n.config';
+import { translationKeys, type TranslationKey } from '@i18n/keys';
 
 /**
  * 文字列が有効なロケールかどうかを判定する関数
@@ -20,33 +21,5 @@ export function isLocale(value: string): value is Locale {
  * @returns 有効な翻訳キーであればtrue、そうでなければfalse
  */
 export function isTranslationKey(value: string): value is TranslationKey {
-    return Object.hasOwn(translations[defaultLocale], value);
-}
-
-/**
- * IDをロケールと生のベーススラッグに分割する関数
- * @param id ID (例: "en/example-page")
- * @returns ロケールと生のベーススラッグのオブジェクト
- * @throws Invalid id formatエラー
- */
-export function divideId(id: string): {locale: Locale, rawBaseSlug: string} {
-    const parts = id.split('/');
-    if (isLocale(parts[0])) {
-        return {
-            locale: parts[0],
-            rawBaseSlug: parts.slice(1).join('/')
-        };
-    }
-    throw new Error(`[Invalid id format] ${id}`);
-}
-
-/**
- * スラッグを正規化する関数
- * @param slug 正規化するスラッグ
- * @returns 正規化されたスラッグ
- */
-export function normalizeSlug(slug: string): string {
-    return slug === 'index'
-        ? ''
-        : slug.replace(/\/index$/, '');
+    return translationKeys.includes(value as TranslationKey);
 }

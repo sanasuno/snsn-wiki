@@ -4,7 +4,7 @@
  * ウィキページの動的ルーティング用ページ
  */
 import { getCollection, render, type CollectionEntry } from 'astro:content';
-import { divideId, normalizeSlug } from '@lib/locale';
+import { dividePageId, normalizeSlug } from '@lib/slug';
 import { locales, defaultLocale, type Locale } from '@i18n/i18n.config';
 import MainLayout from '@layouts/MainLayout.astro';
 import { removeTrailingSlash } from '@lib/path';
@@ -16,27 +16,34 @@ interface Props {
     isFallback: boolean;
 }
 
+/**
+ * Astroの静的パス生成関数
+ * wikiコレクションからページを収集し、ロケールとベーススラッグごとにグループ化する
+ * URL衝突を検証し、各ページのパスを生成する
+ */
 export async function getStaticPaths() {
-    const pages = await getCollection('wiki', (page) => !page.data.draft);
+    const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+
     const pagesByBaseSlug: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
     const normalizedIdOwners: Record<string, Set<string>> = {};
     
-    for (const page of pages) {
-        const { locale, rawBaseSlug } = divideId(page.id);
+    for (const page of wikiPages) {
+        const { locale, rawBaseSlug } = dividePageId(page.id);
+        
         const normalizedBaseSlug = normalizeSlug(rawBaseSlug);
         if (!pagesByBaseSlug[normalizedBaseSlug]) {
             pagesByBaseSlug[normalizedBaseSlug] = {};
         }
         pagesByBaseSlug[normalizedBaseSlug][locale] = page;
         
-        const normalizedId = normalizeSlug(page.id);
-        
+        const normalizedId = normalizeSlug(page.id);        
         if (!normalizedIdOwners[normalizedId]) {
             normalizedIdOwners[normalizedId] = new Set();
         }
-        normalizedIdOwners[normalizedId].add(rawBaseSlug);
+        normalizedIdOwners[normalizedId].add(page.id);
     }
 
+    // 正規化によって衝突するIDがないか検証
     for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
         if (owners.size > 1) {
             throw new Error(`[wiki routing] Multiple owners for normalized ID "${normalizedId}": ${Array.from(owners).join(', ')}`);
