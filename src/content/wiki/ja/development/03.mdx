@@ -150,12 +150,12 @@ for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
 ```
 
 #### paths
-衝突検証が完了したら、`pagesByBaseSlug`に格納したデータから、各ページのURLパス構築に必要な`locale`および`baseSlug`の取得、フォールバック判定を`paths`に格納していきます。  
-まず、各`normalizedBaseSlug`について、利用可能なロケールのページを取得し、`availablePages`に格納します。  
-さらに、各`locale`について、`normalizedBaseSlug`を`slug`に設定します。ただし、`normalizedBaseSlug`が空文字の場合は`slug`を`undefined`に設定します。  
-`availablePages`に対応する`locale`のページが存在しない場合は`isFallback`を`true`に、存在する場合は`isFallback`を`false`に設定します。  
-`availablePages`に`locale`が存在する場合はそのページを、`locale`が存在せず`defaultLocale`が存在する場合は`defaultLocale`のページを、`locale`も`defaultLocale`も存在しない場合、存在するうちの最初のページを`page`に設定します。  
-最後に、`paths`の`params`に`locale`と`slug`を、`props`に`page`、`locale`、`baseSlug`、`isFallback`を格納します。
+衝突検証が完了したら、`pagesByBaseSlug`に格納したデータを用いてURLを確定します。  
+あるロケールに対応するページが存在しなくてもURLを生成し、中身は別のロケールのコンテンツで代替するという方針を取っています。  
+この場合、`isFallback`フラグを立て、レイアウトコンポーネントに別言語によるフォールバックであることを伝えます。  
+フォールバック解決の優先順位は、そのロケール、デフォルトロケール、それ以外の他のロケールから順に試行します。  
+もし、どのロケールでもフォールバックできるロケールが見つからなかった場合は、エラーを投げます。  
+最後に、`path`に生成したデータを追加します。URL解決に必要な`locale`および`slug`は`params`に、ページの内容表示に必要な`page`、`locale`、`baseSlug`、`isFallback`は`props`に格納します。
 
 ```ts
 const paths: { params: { locale: Locale; slug: string | undefined }; props: Props }[] = [];
@@ -168,7 +168,12 @@ for (const baseSlug of Object.keys(pagesByBaseSlug)) {
         const isFallback = !availablePages[locale];
         const page = availablePages[locale]
             ?? availablePages[defaultLocale]
-            ?? Object.values(availablePages)[0];
+            ?? locales.map((loc) => availablePages[loc]).find(
+                (p): p is CollectionEntry<'wiki'> => p !== undefined
+            );
+        if (!page) {
+            throw new Error(`[wiki routing] No page found for baseSlug "${baseSlug}"`);
+        }
 
         paths.push({
             params: { locale, slug },
@@ -181,13 +186,18 @@ for (const baseSlug of Object.keys(pagesByBaseSlug)) {
         })
     }
 }
+return paths;
 ```
 
-#### 出力
-`paths`を出力します。
+#### 代替リンク生成
+対応する翻訳ページへの代替リンクを生成します。
 
 ```ts
-return paths;
+const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+const alternateLinks = locales.map(altLocale => ({
+    locale: altLocale,
+    href: removeTrailingSlash(new URL(`${baseUrl}/${altLocale}/wiki/${baseSlug}`, Astro.site).toString())
+}))
 ```
 
 ## ページレンダー

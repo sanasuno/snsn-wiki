@@ -20,6 +20,7 @@ interface Props {
  * Astroの静的パス生成関数
  * wikiコレクションからページを収集し、ロケールとベーススラッグごとにグループ化する
  * URL衝突を検証し、各ページのパスを生成する
+ * @returns {Promise<{ params: { locale: Locale; slug: string | undefined }; props: Props }[]>} パスとプロパティの配列
  */
 export async function getStaticPaths() {
     const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
@@ -27,6 +28,7 @@ export async function getStaticPaths() {
     const pagesByBaseSlug: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
     const normalizedIdOwners: Record<string, Set<string>> = {};
     
+    // ページデータを正規化して格納
     for (const page of wikiPages) {
         const { locale, rawBaseSlug } = dividePageId(page.id);
         
@@ -50,6 +52,7 @@ export async function getStaticPaths() {
         }
     }
 
+    // パスを生成
     const paths: { params: { locale: Locale; slug: string | undefined }; props: Props }[] = [];
     for (const baseSlug of Object.keys(pagesByBaseSlug)) {
         const availablePages = pagesByBaseSlug[baseSlug];
@@ -58,15 +61,14 @@ export async function getStaticPaths() {
                 ? undefined
                 : baseSlug;
             const isFallback = !availablePages[locale];
-            const fallbackPage = availablePages[locale]
+            const page = availablePages[locale]
                 ?? availablePages[defaultLocale]
                 ?? locales.map((loc) => availablePages[loc]).find(
                     (p): p is CollectionEntry<'wiki'> => p !== undefined
                 );
-            if (!fallbackPage) {
+            if (!page) {
                 throw new Error(`[wiki routing] No page found for baseSlug "${baseSlug}"`);
             }
-            const page = fallbackPage;
 
             paths.push({
                 params: { locale, slug },
@@ -83,13 +85,15 @@ export async function getStaticPaths() {
 }
 
 const { page, locale, baseSlug, isFallback } = Astro.props;
-const { Content } = await render(page);
 
+// 代替リンク生成
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 const alternateLinks = locales.map(altLocale => ({
     locale: altLocale,
     href: removeTrailingSlash(new URL(`${baseUrl}/${altLocale}/wiki/${baseSlug}`, Astro.site).toString())
 }))
+
+const { Content } = await render(page);
 ---
 <MainLayout
     title={page.data.title}
