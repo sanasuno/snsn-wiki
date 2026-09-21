@@ -7,15 +7,16 @@ import { getCollection } from "astro:content";
 import { t, type Locale } from "@i18n/i18n.config";
 import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
 import { getUniquePagesByLocale } from '@lib/content/pages';
-import { getBaseSlug } from '@lib/path';
+import { removeTrailingSlash, getBaseSlug, getRoute } from '@lib/path';
 import { getCategory } from '@lib/content/category';
 
 interface Props {
     locale: Locale;
     localeBaseUrl: string;
+    wikiBaseUrl: string;
     currentPath: string;
 }
-const { locale, localeBaseUrl, currentPath }: Props = Astro.props;
+const { locale, localeBaseUrl, wikiBaseUrl, currentPath }: Props = Astro.props;
 
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
 const uniquePages = getUniquePagesByLocale(wikiPages, locale);
@@ -29,6 +30,16 @@ for (const page of uniquePages) {
         : category.join('/');
     (pagesByCategory[key] ??= []).push(page);
 }
+
+const renderedCategories = new Set<string>();
+
+type WikiPage = typeof wikiPages[0];
+const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
+    title: (a, b) => a.data.title.localeCompare(b.data.title),
+    order: (a, b) => (a.data.order ?? 0) - (b.data.order ?? 0),
+    date: (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0),
+    updated: (a, b) => (b.data.updated?.getTime() ?? 0) - (a.data.updated?.getTime() ?? 0),
+};
 ---
 <aside class="sidebar" id="sidebar">
     <nav aria-label={t("sidebar.nav.title", locale)}>
@@ -40,8 +51,108 @@ for (const page of uniquePages) {
                     if (categoryPages.length === 0) {
                         return null;
                     }
+                    renderedCategories.add(section.category);
+                    const sorted = [...categoryPages].sort((a, b) => {
+                        return sorters[section.sort ?? 'title'](a, b);
+                    });
+
+                    return (
+                        <section class='sidebar-section'>
+                            <button class='sidebar-section-title'>
+                                {t(section.titleKey, locale) && <i class={`${section.icon} fa-fw`}></i>}
+                                {t(section.titleKey, locale)}
+                                <i class='fas fa-chevron-don sidebar-chevron'></i>
+                            </button>
+                            <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
+                                {
+                                    sorted.map(page => {
+                                        return (
+                                            <a href={getRoute(page.id, wikiBaseUrl)} class='sidebar-nav-title'>
+                                                <i class='far fa-file-lines fa-fw'></i>
+                                                {page.data.title}
+                                            </a>
+                                        )
+                                    })
+                                }
+                            </div>
+                        </section>
+                    );
+                } else if (section.items) {
+                    return (
+                        <section class='sidebar-section'>
+                            <button class='sidebar-section-title'>
+                                {t(section.titleKey, locale) && <i class={`${section.icon} fa-fw`}></i>}
+                                {t(section.titleKey, locale)}
+                                <i class='fas fa-chevron-down sidebar-chevron'></i>
+                            </button>
+                            <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
+                                {section.items.map(item => {
+                                    let href = item.href;
+                                    let label = item.i18nKey ? t(item.i18nKey, locale): '';
+                                    if (item.path) {
+                                        const page = slugMap[removeTrailingSlash(item.path)];
+                                        if (page) {
+                                            href = getRoute(page.id, wikiBaseUrl);
+                                            if (!item.i18nKey) {
+                                                label = page.data.title;
+                                            }
+                                        }
+                                    } else if (href && !item.external) {
+                                        href = href === '/'
+                                            ? (localeBaseUrl ?? '/')
+                                            : `${localeBaseUrl}${href}`
+                                        ;
+                                    }
+                                    if (!href || !label) {
+                                        return null;
+                                    }
+                                    return <a href={href} rel={item.external ? 'noopener noreferrer' :null}>
+                                        {item.icon
+                                            ? <i class={`${item.icon} fa-fw`}></i>
+                                            : <i class='far fa-file-lines fa-fw'></i>
+                                        }
+                                        {' '}
+                                        {label}
+                                    </a>
+                                })}
+                            </div>
+                        </section>
+                    );
+                } else {
+                    return null;
                 }
             })
         }
+
+        {autoAddUnknownCategories && Object.entries(pagesByCategory).map(([category, categoryPages]) => {
+            if (renderedCategories.has(category)) {
+                return null;
+            }
+            const sorted = [...categoryPages].sort(
+                (a, b) => a.data.title.localeCompare(b.data.title)
+            );
+            return (
+                <section class='sidebar-section'>
+                    <button class='sidebar-section-title'>
+                        <i class='fas fa-folder fa-fw'></i>
+                        {category === ''
+                            ? t('homepage.title', locale)
+                            : t(`category.${category}`, locale)
+                        }
+                        <i class='fas fa-chevron-down sidebar-chevron'></i>
+                    </button>
+                    <div class='sidebar-nav'>
+                        {sorted.map((page) => {
+                            return (
+                                <a href={getRoute(page.id, wikiBaseUrl)}>
+                                    <i class='far fa-file-lines fa-fw'></i>
+                                    {page.data.title}
+                                </a>
+                            )
+                        })}
+                    </div>
+                </section>
+            )
+        })}
     </nav>
 </aside>

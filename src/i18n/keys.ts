@@ -18,7 +18,9 @@ export const structuralKeys = [
     'header.nav.tags',
     'header.nav.graph',
 
-    'sidebar.nav.title'
+    'sidebar.nav.title',
+
+    'homepage.title'
 ] as const;
 
 export const translationKeys = [...structuralKeys, ...customKeys] as const;

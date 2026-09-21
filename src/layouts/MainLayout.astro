@@ -4,29 +4,32 @@
  * サイト全体のレイアウト定義ファイル
  */
 
-import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
-import { removeTrailingSlash } from "@lib/path";
+import { t, defaultLocale, type Locale } from '@i18n/i18n.config';
+import { removeTrailingSlash } from '@lib/path';
 
-import Header from "@layouts/Header.astro";
-import Sidebar from "@layouts/Sidebar.astro";
-import MainContent from "@layouts/MainContent.astro";
-import Toc from "@layouts/Toc.astro"
+import Header from '@layouts/Header.astro';
+import Sidebar from '@layouts/Sidebar.astro';
+import MainContent from '@layouts/MainContent.astro';
+import Toc from '@layouts/Toc.astro';
 
-import "@fortawesome/fontawesome-free/css/all.min.css";
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
-import "@styles/global.css";
-import "@styles/theme.css";
-import "@styles/custom.css";
+import '@styles/global.css';
+import '@styles/theme.css';
+import '@styles/custom.css';
 
 interface Props {
     title: string;
     description?: string;
     locale?: Locale;
     alternateLinks?: { locale: Locale, href: string }[];
-    hasToc?: boolean;
     isFallback?: boolean;
+    tags?: string[];
     date?: Date;
     updated?: Date;
+    isSubPage?: boolean;
+    headings?: { depth: number; slug: string; text: string }[];
+    hasToc?: boolean;
 }
 
 const {
@@ -34,14 +37,18 @@ const {
     description,
     locale = defaultLocale,
     alternateLinks = [],
-    hasToc = true,
     isFallback = false,
+    tags = [],
     date,
-    updated
+    updated,
+    isSubPage = false,
+    headings = [],
+    hasToc = true,
 } = Astro.props;
 
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 const localeBaseUrl = `${baseUrl}/${locale}`;
+const wikiBaseUrl = `${localeBaseUrl}/wiki`;
 
 const currentPath = removeTrailingSlash(Astro.url.pathname) || '/';
 
@@ -63,6 +70,7 @@ const pageDescription = description ?? siteDescription;
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <meta name="generator" content="snsn-wiki" />
+        {isFallback && <meta name="robots" content="noindex, follow" />}
         <link rel="icon" href={new URL(`${baseUrl}/favicon.ico`, Astro.site).href} sizes="48x48" />
         <link rel="icon" href={new URL(`${baseUrl}/favicon.svg`, Astro.site).href} type="image/svg+xml" />
         <link rel="sitemap" href={new URL(`${baseUrl}/sitemap-index.xml`, Astro.site).href} />
@@ -104,16 +112,32 @@ const pageDescription = description ?? siteDescription;
             <Sidebar
                 locale={locale}
                 localeBaseUrl={localeBaseUrl}
+                wikiBaseUrl={wikiBaseUrl}
                 currentPath={currentPath}
             />
             <main class="main-panel">
-                <MainContent>
+                <MainContent
+                    title={title}
+                    locale={locale}
+                    localeBaseUrl={localeBaseUrl}
+                    currentPath={currentPath}
+                    tags={tags}
+                    date={date}
+                    updated={updated}
+                    isSubPage={isSubPage}
+                    isFallback={isFallback}
+                >
                     <slot />
                 </MainContent>
             </main>
             {hasToc && (
                 <aside class="toc-panel">
-                    <Toc />
+                    <Toc
+                        locale={locale}
+                        localeBaseUrl={localeBaseUrl}
+                        currentPath={currentPath}
+                        headings={headings}
+                    />
                 </aside>
             )}
         </div>

@@ -21,5 +21,7 @@ export const ja = {
     'header.nav.graph': 'グラフ',
 
     'sidebar.nav.title': 'サイドバー',
+
+    'homepage.title': 'ホーム',
     ...jaCustom
 } satisfies Record<TranslationKey, string>;

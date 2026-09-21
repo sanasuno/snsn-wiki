@@ -93,17 +93,20 @@ const alternateLinks = locales.map(altLocale => ({
     href: removeTrailingSlash(new URL(`${baseUrl}/${altLocale}/wiki/${baseSlug}`, Astro.site).toString())
 }))
 
-const { Content } = await render(page);
+const { Content, headings } = await render(page);
 ---
 <MainLayout
     title={page.data.title}
     description={page.data.description}
     locale={locale}
     alternateLinks={alternateLinks}
-    hasToc={page.data.hasToc}
     isFallback={isFallback}
+    tags={page.data.tags}
     date={page.data.date}
     updated={page.data.updated}
+    isSubPage={page.data.isSubPage}
+    hasToc={page.data.hasToc}
+    headings={headings}
 >
     <Content />
 </MainLayout>

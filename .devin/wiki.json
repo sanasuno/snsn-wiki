@@ -1,0 +1,164 @@
+{
+  "repo_notes": [
+    {
+      "content": ""
+    }
+  ],
+  "pages": [
+    {
+      "title": "Overview",
+      "purpose": "What snsn-wiki is: an Astro-based multilingual wiki static site generator. Architecture at a glance, links to child pages.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Getting Started",
+      "purpose": "Install, npm scripts (dev/build/preview), Node engine requirements, SITE_URL/BASE_PATH env vars, VSCode setup.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Project Configuration",
+      "purpose": "astro.config.ts details, tsconfig path aliases (@lib, @i18n, @layouts...), .gitignore, LICENSE, agent instruction files.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Content System",
+      "purpose": "Overview of how wiki content is authored, validated, and routed; links to children.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Content Collections & Frontmatter Schema",
+      "purpose": "src/content.config.ts wiki collection definition, frontmatter fields (title, description, draft, hasToc), MDX authoring conventions.",
+      "parent": "Content System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Dynamic Wiki Routing",
+      "purpose": "[locale]/wiki/[...slug].astro: getStaticPaths, slug normalization, route collision detection, locale fallback, alternate links.",
+      "parent": "Content System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Bundled Documentation Content",
+      "purpose": "Tour of src/content/wiki (ja/en/eo), the development/00-06 guide series, index and draft pages.",
+      "parent": "Content System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Internationalization",
+      "purpose": "Overview of the i18n subsystem: locales, translation dictionaries, runtime language switching.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Locale Configuration & Translation Dictionaries",
+      "purpose": "i18n.config.ts (translations map, t(), Locale/TranslationKey types), ja/en/eo dictionaries and *.custom.ts extension files.",
+      "parent": "Internationalization",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Locale Utilities and Client-Side i18n",
+      "purpose": "src/lib/locale.ts type guards, divideId, normalizeSlug; src/scripts/i18n.ts runtime DOM translation and header.nav.ts.",
+      "parent": "Internationalization",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "UI Layer",
+      "purpose": "Overview of layouts, styling, and client scripts composing the wiki interface.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Layout Components",
+      "purpose": "MainLayout document shell and head/SEO metadata, Header, Sidebar, MainContent, Toc composition.",
+      "parent": "UI Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Styling & Theming",
+      "purpose": "global.css grid layout and responsive breakpoints, theme.css variables/dark mode, custom.css overrides.",
+      "parent": "UI Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Client-Side Scripts",
+      "purpose": "main.ts entrypoint, theme.ts toggle with localStorage persistence, sidebar.ts toggling, localStorage helper.",
+      "parent": "UI Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Landing Pages & Static Assets",
+      "purpose": "src/pages/index.astro and ja/index.astro redirect/landing pages, public/ favicons, sitemap link.",
+      "parent": "UI Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Glossary",
+      "purpose": "Definitions of project-specific terms: base slug, raw base slug, route key, isFallback, TranslationKey, defaultLocale, no-toc layout, custom dictionary, x-default, etc., with code pointers.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}

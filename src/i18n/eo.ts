@@ -21,5 +21,7 @@ export const eo = {
     'header.nav.graph': 'Grafiko',
 
     'sidebar.nav.title': 'Flanka Strio',
+
+    'homepage.title': 'Hejmo',
     ...eoCustom
 } satisfies Record<TranslationKey, string>;

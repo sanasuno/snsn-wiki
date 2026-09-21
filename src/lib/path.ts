@@ -40,3 +40,14 @@ export function getBaseSlug(pageId: string): string {
     }
     return pageId;
 }
+
+/**
+ * ページIDからルートを取得する関数
+ * @param pageId ページID
+ * @param wikiBaseUrl ウィキベースURL
+ * @returns ルート
+ */
+export function getRoute(pageId: string, wikiBaseUrl: string): string {
+    const baseSlug = getBaseSlug(pageId);
+    return removeTrailingSlash(`${wikiBaseUrl}/${baseSlug}`);
+}
