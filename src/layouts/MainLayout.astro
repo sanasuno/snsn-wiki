@@ -10,6 +10,7 @@ import { removeTrailingSlash } from '@lib/path';
 import Header from '@layouts/Header.astro';
 import Sidebar from '@layouts/Sidebar.astro';
 import MainContent from '@layouts/MainContent.astro';
+import Footer from '@layouts/Footer.astro'
 import Toc from '@layouts/Toc.astro';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -129,6 +130,10 @@ const pageDescription = description ?? siteDescription;
                 >
                     <slot />
                 </MainContent>
+                <Footer
+                    locale={locale}
+                    localeBaseUrl={localeBaseUrl}
+                />
             </main>
             {hasToc && (
                 <aside class="toc-panel">

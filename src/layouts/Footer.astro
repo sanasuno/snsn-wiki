@@ -1,0 +1,12 @@
+---
+/**
+ * @layouts/Footer.astro
+ * フッターコンポーネント
+ */
+import type { Locale } from '@i18n/i18n.config';
+interface Props {
+    locale: Locale,
+    localeBaseUrl: string;
+}
+const { locale, localBaseUrl } = Astro.props;
+---
