@@ -8,7 +8,8 @@ import type { TranslationKey } from "./keys";
 export const en = {
     'lang.name': 'English',
     'lang.locale': 'en-US',
-    'lang.locale.ogp': 'en_US',
+    'og.locale': 'en_US',
+    'og.font': 'Noto Sans',
     
     'header.sidebar.toggle': 'Toggle sidebar',
     'header.theme.toggle': 'Toggle theme',

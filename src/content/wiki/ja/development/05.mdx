@@ -1,72 +1,10 @@
 ---
-title: 開発記録5 レイアウト
+title: 開発記録05 OGP画像生成
 order: 5
 tags: [開発記録]
-date: 2026-08-28
+date: 2026-09-22
 ---
-## CSS Grid
-CSS Gridを使って、レイアウトの各コンポーネントごとに配置を決定します。  
-`header`、`sidebar`、`main`、`toc`の4つの領域を配置します。
-
-```css
-.layout {
-    display: grid;
-    grid-template-rows: var(--header-height) 1fr;
-    grid-template-columns: var(--sidebar-width) 1fr var(--toc-width);
-    grid-template-areas: 
-        "header header header"
-        "sidebar main toc";
-    min-height: 100vh;
-}
-```
-
-目次パネルを表示しない記事では、`.no-toc` クラスが付与され、`toc` 領域が配置されません。
-
-```css
-.layout.no-toc {
-    grid-template-columns: var(--sidebar-width) 1fr;
-    grid-template-areas:
-        "header header"
-        "sidebar main";
-}
-```
-
-画面幅が1200px以下の場合、目次パネルを配置せず、表示もしません。
-
-```css
-@media(max-width: 1200px) {
-    .layout{
-        grid-template-columns: var(--sidebar-width) 1fr;
-        grid-template-areas:
-            "header header"
-            "sidebar main";
-    }
-    .toc-panel {
-        display: none;
-    }
-}
-```
-
-さらに、画面幅が768px以下の場合、メインコンテンツのみ表示し、サイドバーは`.open`クラスが付与された場合のみ表示されます。
-
-```css
-@media (max-width: 768px) {
-    .layout, .layout.no-toc {
-        grid-template-columns: 1fr;
-        grid-template-areas:
-            "header"
-            "main";
-    }
-    .sidebar {
-        display: none;
-    }
-    .sidebar.open {
-        display: block;
-        position: fixed;
-        inset: var(--header-height) 0 0 0;
-        width: var(--sidebar-width);
-        z-index: 1000;
-        overflow-y: auto;
-    }
-}
+## インストール
+```sh
+npm install satori @resvg/resvg-js
 ```

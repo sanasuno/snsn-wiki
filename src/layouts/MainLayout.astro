@@ -10,8 +10,9 @@ import { removeTrailingSlash } from '@lib/path';
 import Header from '@layouts/Header.astro';
 import Sidebar from '@layouts/Sidebar.astro';
 import MainContent from '@layouts/MainContent.astro';
-import Footer from '@layouts/Footer.astro'
+import Footer from '@layouts/Footer.astro';
 import Toc from '@layouts/Toc.astro';
+import MiniGraph from '@layouts/MiniGraph.astro';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -23,14 +24,14 @@ interface Props {
     title: string;
     description?: string;
     locale?: Locale;
-    alternateLinks?: { locale: Locale, href: string }[];
+    alternateLinks?: { locale: Locale; href: string }[];
     isFallback?: boolean;
     tags?: string[];
     date?: Date;
     updated?: Date;
     isSubPage?: boolean;
     headings?: { depth: number; slug: string; text: string }[];
-    hasToc?: boolean;
+    showSubpanel?: boolean;
 }
 
 const {
@@ -44,7 +45,7 @@ const {
     updated,
     isSubPage = false,
     headings = [],
-    hasToc = true,
+    showSubpanel = true,
 } = Astro.props;
 
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
@@ -53,7 +54,12 @@ const wikiBaseUrl = `${localeBaseUrl}/wiki`;
 
 const currentPath = removeTrailingSlash(Astro.url.pathname) || '/';
 
-const canonicalUrl = new URL(currentPath, Astro.url.origin).href;
+const canonicalUrl = new URL(currentPath, Astro.url).href;
+
+const ogSlug = currentPath.startsWith(wikiBaseUrl)
+    ? `wiki${currentPath.slice(wikiBaseUrl.length)}`
+    : 'index';
+const ogImageUrl = new URL(`${baseUrl}/og/${locale}/${ogSlug}.png`, Astro.url).href;
 
 const defaultAlternateLink = alternateLinks.find(link => link.locale === defaultLocale);
 
@@ -65,24 +71,39 @@ const pageDescription = description ?? siteDescription;
 ---
 <!DOCTYPE html>
 <html lang={locale} data-lang={locale}>
-    <head>
+    <head prefix="og: https://ogp.me/ns#">
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <meta name="generator" content="snsn-wiki" />
         {isFallback && <meta name="robots" content="noindex, follow" />}
-        <link rel="icon" href={new URL(`${baseUrl}/favicon.ico`, Astro.site).href} sizes="48x48" />
-        <link rel="icon" href={new URL(`${baseUrl}/favicon.svg`, Astro.site).href} type="image/svg+xml" />
-        <link rel="sitemap" href={new URL(`${baseUrl}/sitemap-index.xml`, Astro.site).href} />
+        <link rel="icon" href={new URL(`${baseUrl}/favicon.ico`, Astro.url).href} sizes="48x48" />
+        <link rel="icon" href={new URL(`${baseUrl}/favicon.svg`, Astro.url).href} type="image/svg+xml" />
+        <link rel="sitemap" href={new URL(`${baseUrl}/sitemap-index.xml`, Astro.url).href} />
         <link rel="canonical" href={canonicalUrl} />
-        {defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.site).href} hreflang="x-default" />}
-        {alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.site).href} hreflang={link.locale} />)}
+        {defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.url).href} hreflang="x-default" />}
+        {alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.url).href} hreflang={link.locale} />)}
+
+        <!-- OGP -->
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content={siteTitle} />
+        <meta property="og:locale" content={t('og.locale', locale)} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={ogImageUrl} />
 
         <!-- Google Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans+Mono:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif+JP:wght@200..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Serif+JP:wght@200..900&display=swap" rel="stylesheet">
 
         <!-- テーマ初期化スクリプト -->
         <script is:inline>
@@ -99,12 +120,12 @@ const pageDescription = description ?? siteDescription;
 
         <!-- i18n初期化スクリプト -->
         <script>
-            import { initI18n } from "@scripts/i18n";
+            import { initI18n } from '@scripts/i18n';
             initI18n();
         </script>
     </head>
     <body>
-        <div class={`layout${hasToc ? '' : ' no-toc'}`}>
+        <div class={`layout${showSubpanel ? '' : ' no-subpanel'}`}>
             <Header
                 locale={locale}
                 localeBaseUrl={localeBaseUrl}
@@ -113,7 +134,6 @@ const pageDescription = description ?? siteDescription;
             <Sidebar
                 locale={locale}
                 localeBaseUrl={localeBaseUrl}
-                wikiBaseUrl={wikiBaseUrl}
                 currentPath={currentPath}
             />
             <main class="main-panel">
@@ -135,19 +155,22 @@ const pageDescription = description ?? siteDescription;
                     localeBaseUrl={localeBaseUrl}
                 />
             </main>
-            {hasToc && (
-                <aside class="toc-panel">
+            {showSubpanel && (
+                <aside class="subpanel">
                     <Toc
+                        locale={locale}
+                        headings={headings}
+                    />
+                    <MiniGraph
                         locale={locale}
                         localeBaseUrl={localeBaseUrl}
                         currentPath={currentPath}
-                        headings={headings}
                     />
                 </aside>
             )}
         </div>
         <script>
-            import "@scripts/main";
+            import '@scripts/main';
         </script>
     </body>
 </html>

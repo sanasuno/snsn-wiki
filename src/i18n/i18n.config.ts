@@ -9,13 +9,13 @@ export type { TranslationKey };
 
 // 各言語の翻訳ファイルをインポートしてまとめる
 // ロケール追加時はここに追記する
-import { ja } from "./ja";
 import { en } from "./en";
 import { eo } from "./eo";
+import { ja } from "./ja";
 export const translations = {
-    ja,
     en,
-    eo
+    eo,
+    ja
 } as const;
 
 // ロケール型を定義

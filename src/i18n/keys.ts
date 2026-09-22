@@ -7,7 +7,9 @@ import { customKeys } from "./keys.custom";
 export const structuralKeys = [
     'lang.name',
     'lang.locale',
-    'lang.locale.ogp',
+
+    'og.locale',
+    'og.font',
 
     'header.sidebar.toggle',
     'header.theme.toggle',

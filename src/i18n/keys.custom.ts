@@ -11,7 +11,9 @@ export const customKeys = [
     'sidebar.category',
     'sidebar.tags',
     'sidebar.graph',
-    'sidebar.development'
+    'sidebar.development',
+
+    'category.development',
     // ここにカスタムキーを追加
 ] as const;
 

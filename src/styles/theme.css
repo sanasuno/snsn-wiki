@@ -8,7 +8,7 @@
     --content-max-width: 760px;
     --header-height: 56px;
     --sidebar-width: 260px;
-    --toc-width: 220px;
+    --subpanel-width: 220px;
 
     /* 背景色 */
     --color-bg: #f0f0f0;
@@ -50,14 +50,14 @@
     --color-border-hover: #444444;
 }
 
-:root[data-lang="ja"] {
-    --font-sans: 'Noto Sans JP', sans-serif;
-    --font-serif: 'Noto Serif JP', serif;
+:root {
+    --font-sans: 'Noto Sans', sans-serif;
+    --font-serif: 'Noto Serif', serif;
     --font-mono: 'Noto Sans Mono', monospace;
 }
 
-:root[data-lang="en"], :root[data-lang="eo"] {
+:root[data-lang="ja"] {
     --font-sans: 'Noto Sans JP', sans-serif;
-    --font-serif: 'Noto Serif', serif;
+    --font-serif: 'Noto Serif JP', serif;
     --font-mono: 'Noto Sans Mono', monospace;
 }

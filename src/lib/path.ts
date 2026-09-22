@@ -2,8 +2,8 @@
  * @lib/path.ts
  * パス関連のユーティリティ関数
  */
-import { locales, type Locale } from '@i18n/i18n.config';
-
+import { t, type Locale, type TranslationKey } from '@i18n/i18n.config';
+import { isLocale } from '@lib/locale';
 /**
  * 末尾のスラッシュを削除する関数
  * @param path 削除するパス
@@ -14,40 +14,89 @@ export function removeTrailingSlash(path: string): string {
 }
 
 /**
- * パスが現在のパスと一致するか判定する関数
- * @param targetPath 対象のパス
- * @param localeBaseUrl ロケールベースURL
- * @param currentPath 現在のパス
- * @returns パスが一致する場合はtrue、そうでない場合はfalse
+ * ページIDからロケールを取得する関数
+ * @param pageId ページID
+ * @returns ロケール
+ * @throws Invalid id formatエラー
  */
-export function isActive(targetPath: string, localeBaseUrl: string, currentPath: string): boolean {
-    const localeTargetUrl = removeTrailingSlash(`${localeBaseUrl}${targetPath}`);
-    if (targetPath === '/') {
-        return currentPath === localeTargetUrl;
+export function getLocale(pageId: string): Locale {
+    const parts = pageId.split('/');
+    if (isLocale(parts[0])) {
+        return parts[0] as Locale;
     }
-    return currentPath === localeTargetUrl || currentPath.startsWith(`${localeTargetUrl}/`);
+    throw new Error(`[Invalid id format] ${pageId}`);
 }
 
 /**
- * ページIDからベーススラッグを取得する関数
+ * ページIDから生のスラッグを取得する関数
  * @param pageId ページID
- * @returns ベーススラッグ
+ * @returns 生のスラッグ
  */
-export function getBaseSlug(pageId: string): string {
+export function getRawSlug(pageId: string): string {
     const parts = pageId.split('/');
-    if (parts.length > 1 && locales.includes(parts[0] as Locale)) {
-        return parts.slice(1).join('/');
-    }
-    return pageId;
+    return parts.slice(1).join('/');
+}
+
+/**
+ * ページIDをロケールと生のベーススラッグに分割する関数
+ * @param pageId ページID (例: "en/example-page")
+ * @returns ロケールと生のスラッグのオブジェクト
+ */
+export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} {
+    const locale = getLocale(pageId);
+    const rawSlug = getRawSlug(pageId);
+    return {locale, rawSlug};
+}
+
+/**
+ * パスを正規化する関数
+ * @param rawPath 正規化するパス
+ * @returns 正規化されたパス
+ */
+export function normalizePath(rawPath: string): string {
+    const normalized = rawPath.normalize('NFKC').toLowerCase().trim();
+    return normalized === 'index'
+        ? ''
+        : normalized.replace(/\/index$/, '');
+}
+
+/**
+ * ページIDから正規化されたスラッグを取得する関数
+ * @param pageId ページID
+ * @returns 正規化されたスラッグ
+ */
+export function getNormalizedSlug(pageId: string): string {
+    const rawSlug = dividePageId(pageId).rawSlug;
+    return normalizePath(rawSlug);
 }
 
 /**
  * ページIDからルートを取得する関数
  * @param pageId ページID
- * @param wikiBaseUrl ウィキベースURL
  * @returns ルート
  */
-export function getRoute(pageId: string, wikiBaseUrl: string): string {
-    const baseSlug = getBaseSlug(pageId);
-    return removeTrailingSlash(`${wikiBaseUrl}/${baseSlug}`);
+export function getRoute(pageId: string): string {
+    const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+    const locale = getLocale(pageId);
+    const slug = getNormalizedSlug(pageId);
+    return removeTrailingSlash(`${baseUrl}/${locale}/wiki/${slug}`);
+}
+
+/**
+ * 現在のパスが指定されたパスと一致するか判定する関数
+ * @param targetPath - 比較するパス
+ * @param currentPath - 現在のパス
+ * @param localeBaseUrl - ロケールベースURL
+ * @returns パスが一致する場合はtrue、そうでない場合はfalse
+ */
+export function isActive(targetPath: string, currentPath: string, localeBaseUrl: string): boolean {
+    // 対象のURLを生成
+    const targetUrl = `${localeBaseUrl}${targetPath}`;
+    if (targetPath === '/') {
+        // ルートパスの場合は完全一致で判定
+        return currentPath === localeBaseUrl;
+    } else {
+        // ルートパス以外の場合、完全一致またはサブパスで判定
+        return currentPath === targetUrl || currentPath.startsWith(`${targetUrl}/`);
+    }
 }

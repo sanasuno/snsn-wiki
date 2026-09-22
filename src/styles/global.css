@@ -37,14 +37,14 @@ body {
 .layout {
     display: grid;
     grid-template-rows: var(--header-height) 1fr;
-    grid-template-columns: var(--sidebar-width) 1fr var(--toc-width);
+    grid-template-columns: var(--sidebar-width) 1fr var(--subpanel-width);
     grid-template-areas: 
         "header header header"
-        "sidebar main toc";
+        "sidebar main sub";
     min-height: 100vh;
 }
 
-.layout.no-toc {
+.layout.no-subpanel {
     grid-template-columns: var(--sidebar-width) 1fr;
     grid-template-areas:
         "header header"
@@ -58,13 +58,13 @@ body {
             "header header"
             "sidebar main";
     }
-    .toc-panel {
+    .subpanel {
         display: none;
     }
 }
 
 @media (max-width: 768px) {
-    .layout, .layout.no-toc {
+    .layout, .layout.no-subpanel {
         grid-template-columns: 1fr;
         grid-template-areas:
             "header"
@@ -291,7 +291,7 @@ body {
 
 .astro-code {
     overflow-x: scroll !important;
-    max-width: calc(100vw - var(--sidebar-width) - var(--toc-width));
+    max-width: calc(100vw - var(--sidebar-width) - var(--subpanel-width));
 }
 
 @media (max-width: 1200px) {
@@ -306,6 +306,6 @@ body {
     }
 }
 
-.toc-panel {
-    grid-area: toc;
+.subpanel {
+    grid-area: sub;
 }

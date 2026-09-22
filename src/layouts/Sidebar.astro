@@ -4,26 +4,25 @@
  * サイドバーコンポーネント
  */
 import { getCollection } from "astro:content";
-import { t, type Locale } from "@i18n/i18n.config";
+import { t, type Locale, type TranslationKey } from "@i18n/i18n.config";
 import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
 import { getUniquePagesByLocale } from '@lib/content/pages';
-import { removeTrailingSlash, getBaseSlug, getRoute } from '@lib/path';
-import { getCategory } from '@lib/content/category';
+import { removeTrailingSlash, getRawSlug, getRoute } from '@lib/path';
+import { getCategory } from '@lib/category';
 
 interface Props {
     locale: Locale;
     localeBaseUrl: string;
-    wikiBaseUrl: string;
     currentPath: string;
 }
-const { locale, localeBaseUrl, wikiBaseUrl, currentPath }: Props = Astro.props;
+const { locale, localeBaseUrl, currentPath }: Props = Astro.props;
 
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
 const uniquePages = getUniquePagesByLocale(wikiPages, locale);
 const pagesByCategory : Record<string, typeof uniquePages> = {};
 const slugMap : Record<string, (typeof uniquePages)[0]> = {};
 for (const page of uniquePages) {
-    slugMap[getBaseSlug(page.id)] = page;
+    slugMap[getRawSlug(page.id)] = page;
     const category: string[] = getCategory(page.id) || [];
     const key = category.length > 0 && autoGroupByLeafCategory
         ? category[category.length - 1]
@@ -67,7 +66,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                 {
                                     sorted.map(page => {
                                         return (
-                                            <a href={getRoute(page.id, wikiBaseUrl)} class='sidebar-nav-title'>
+                                            <a href={getRoute(page.id)} class='sidebar-nav-title'>
                                                 <i class='far fa-file-lines fa-fw'></i>
                                                 {page.data.title}
                                             </a>
@@ -87,12 +86,12 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                             </button>
                             <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
                                 {section.items.map(item => {
-                                    let href = item.href;
+                                    let href = item.path;
                                     let label = item.i18nKey ? t(item.i18nKey, locale): '';
                                     if (item.path) {
                                         const page = slugMap[removeTrailingSlash(item.path)];
                                         if (page) {
-                                            href = getRoute(page.id, wikiBaseUrl);
+                                            href = getRoute(page.id);
                                             if (!item.i18nKey) {
                                                 label = page.data.title;
                                             }
@@ -137,14 +136,14 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                         <i class='fas fa-folder fa-fw'></i>
                         {category === ''
                             ? t('homepage.title', locale)
-                            : t(`category.${category}`, locale)
+                            : t(`category.${category}` as TranslationKey, locale)
                         }
                         <i class='fas fa-chevron-down sidebar-chevron'></i>
                     </button>
                     <div class='sidebar-nav'>
                         {sorted.map((page) => {
                             return (
-                                <a href={getRoute(page.id, wikiBaseUrl)}>
+                                <a href={getRoute(page.id)}>
                                     <i class='far fa-file-lines fa-fw'></i>
                                     {page.data.title}
                                 </a>

@@ -9,7 +9,8 @@ import type { TranslationKey } from "./keys";
 export const ja = {
     'lang.name': '日本語',
     'lang.locale': 'ja-JP',
-    'lang.locale.ogp': 'ja_JP',
+    'og.locale': 'ja_JP',
+    'og.font': 'Noto Sans JP',
 
     'header.sidebar.toggle': 'サイドバー切り替え',
     'header.theme.toggle': 'テーマ切り替え',
