@@ -7,13 +7,13 @@ import { getCollection } from 'astro:content';
 import { dividePageId, getNormalizedSlug } from '@lib/path';
 import { getTranslatedCategory } from '@lib/category';
 import { renderOgImage } from '@lib/og-image';
-import { t } from '@i18n/i18n.config';
+import { t, locales } from '@i18n/i18n.config';
 
 export const prerender = true;
 
 export const getStaticPaths = (async () => {
     const wikiPages = await getCollection('wiki');
-    return wikiPages.map((page) => {
+    const wikiPaths = wikiPages.map((page) => {
         const locale = dividePageId(page.id).locale;
         const normalizedSlug = getNormalizedSlug(page.id);
         const category = getTranslatedCategory(page.id, locale, page.data.isSubPage);
@@ -31,6 +31,21 @@ export const getStaticPaths = (async () => {
             },
         };
     });
+
+    const fallbackPaths = locales.map((locale) => ({
+        params: {
+            locale,
+            slug: 'index'
+        },
+        props: {
+            title: t('site.title', locale),
+            description: t('site.description', locale),
+            category: undefined,
+            siteName: t('site.title', locale),
+            font: t('og.font', locale),
+        },
+    }));
+    return [...wikiPaths, ...fallbackPaths];
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ props }) => {

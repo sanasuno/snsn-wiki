@@ -39,5 +39,6 @@ export function getLeafCategory(pageId: string, isSubPage: boolean = false ): st
  */
 export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage: boolean = false ): string {
     const category = getCategory(pageId, isSubPage);
+    if (category.length === 0 || (category.length === 1 && category[0] === '')) return '';
     return t(`category.${category.join('.')}` as TranslationKey, locale);
 }
