@@ -5,22 +5,21 @@ tags: [開発記録]
 date: 2026-08-17
 ---
 ## i18nについて
-snsn-wikiでは、i18n（国際化）に対応しています。  
-ここでは、対応するロケールの設定や、翻訳用の関数を作成していきます。
+i18n（国際化）対応を行います。ここでは、ビルド時に実行されるサーバーサイド翻訳の実装を行っていきます。
 
 ## 翻訳ファイル
-`@i18n/key.ts`および`@i18n/keys.custom.ts`に、使用する翻訳キーをそれぞれ`TranslationKey`型、`CustomKey`型として記述します。`TranslationKey`型は`CustomKey`型を含みます。  
-システム側で使用するものは`keys.ts`に、ユーザーが自分で翻訳内容を変えたり追加したりするものは`keys.custom.ts`に記述します。  
-また、具体的な翻訳を記述する翻訳ファイルも、`@i18n/ja.ts`と`@i18n/ja.custom.ts`のように分離して記述していきます。  
+`@i18n/key.ts` および `@i18n/keys.custom.ts` に、使用する翻訳キーをそれぞれ `TranslationKey` 型、`CustomKey` 型として記述します。`TranslationKey` 型は `CustomKey` 型を含みます。  
+システム側で使用するものは `keys.ts` に、ユーザーが自分で翻訳内容を変えたり追加したりするものは `keys.custom.ts` に記述します。  
+また、具体的な翻訳を記述する翻訳ファイルも、`@i18n/ja.ts` と `@i18n/ja.custom.ts` のように分離して記述していきます。  
 これは、snsn-wiki本体の更新によって、ユーザーの追加した翻訳に影響が及ばないようにするためです。  
-翻訳ファイルは、`[key]: [value]`の形式で定義され、それらを各言語ごとにまとめて出力します。
+翻訳ファイルは、`[key]: [value]` の形式で定義され、それらを各言語ごとにまとめて出力します。
 
 ## i18n.config.ts
-`i18n.config.ts`は、i18n関連の設定を記述するファイルです。  
+`i18n.config.ts` は、i18n関連の設定を記述するファイルです。  
 利用可能なロケールや翻訳の一覧、デフォルトロケール設定、翻訳関数などが含まれます。
 
 ### 翻訳キー
-`@i18n/keys.ts`から、翻訳キーの型である`TranslationKey`型をインポートして、そのままエクスポートします。
+`@i18n/keys.ts` から、翻訳キーの型である `TranslationKey` 型をインポートして、そのままエクスポートします。
 
 ```ts
 import type { TranslationKey } from "./keys";
@@ -28,7 +27,7 @@ export type { TranslationKey };
 ```
 
 ### 翻訳ファイルのインポート
-`i18n`ディレクトリ配下にある翻訳ファイルをインポートし、すべてまとめて`translations`オブジェクトに格納します。  
+`i18n` ディレクトリ配下にある翻訳ファイルをインポートし、すべてまとめて `translations` オブジェクトに格納します。  
 ロケールを追加するときは、ここに追記します。
 
 ```ts
@@ -43,22 +42,22 @@ export const translations = {
 ```
 
 ### ロケール型
-`translations`オブジェクトのキーを`Locale`型として定義します。
+`translations` オブジェクトのキーを `Locale` 型として定義します。
 
 ```ts
 export type Locale = keyof typeof translations;
 ```
 
 ### デフォルトロケール
-サイトのデフォルトロケール`defaultLocale`を決定します。デフォルトロケールは、主に各種翻訳やページ遷移のフォールバックとして使われます。  
-デフォルトロケールは、`Locale`型の要素である必要があります。
+サイトのデフォルトロケール `defaultLocale` を決定します。デフォルトロケールは、主に各種翻訳やページ遷移のフォールバックとして使われます。  
+デフォルトロケールは `Locale` 型の要素である必要があります。
 
 ```ts
 export const defaultLocale = 'ja' satisfies Locale;
 ```
 
 ### 利用可能なロケール
-`locales`は、利用可能なロケールの配列を定義します。
+`locales` は、利用可能なロケールの配列を定義します。
 
 ```ts
 export const locales = Object.keys(translations) as Locale[];

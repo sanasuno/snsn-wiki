@@ -15,7 +15,7 @@ try {
     site = new URL(siteConfig.url).toString().replace(/\/+$/, '');
 } catch (error) {
     throw new Error(
-        '[site.config] url is an invalid URL',
+        '[site.config] url is invalid',
         { cause: error }
     );
 }

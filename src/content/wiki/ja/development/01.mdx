@@ -92,38 +92,32 @@ Astro では、`astro.config.ts` に `site`（サイトのオリジン）と `ba
 
 ```ts
 export const siteConfig = {
-    url: 'https://example.com', // 本番サイトのオリジン
-    basePath: '/' // 配信パス（サブディレクトリ配信する場合記述、不要なら'/'）
+    url: 'https://example.com',
+    basePath: '/'
 } as const;
 ```
 
 ### site
-`siteConfig` から `url` を取得し、正規化してから `site` に代入します。
+`siteConfig.url` が有効な URL であるかチェックし、失敗したらエラーをスローします。成功したら `string` 型に戻し、末尾の `/` を削除してから `site` に代入します。
 
 ```ts
-import { siteConfig } from './src/site.config';
-
 let site: string;
 try {
     site = new URL(siteConfig.url).toString().replace(/\/+$/, '');
 } catch (error) {
     throw new Error(
-        '[site.config] url is an invalid URL',
+        '[site.config] url is invalid',
         { cause: error }
     );
 }
 ```
 
-- まず、`siteConfig.url` を `new URL()` で URL オブジェクトに変換できるかチェックします。  
-- 変換に成功したら、`toString()` で `string` 型に戻してから、末尾の `/` を削除して、`site` 変数に代入します。  
-- 変換に失敗した場合、`siteConfig.url` が有効な URL でないとみなして、エラーを投げます。  
+- `try` ブロック内で `site` に代入するため、まず `let` で `site` を宣言しておきます。
 
 ### base
-`siteConfig` から `basePath` を取得し、正規化してから `base` に代入します。
+`siteConfig.basePath` が `/` で始まるかチェックし、失敗したらエラーをスローします。成功したら、末尾の `/` を削除してから `base` に代入します。なお、空文字列になった場合は `/` を代入します。
 
 ```ts
-import { siteConfig } from './src/site.config';
-
 if (!siteConfig.basePath.startsWith('/')) {
     throw new Error(
         '[site.config] basePath must start with "/"'
@@ -131,8 +125,6 @@ if (!siteConfig.basePath.startsWith('/')) {
 }
 const base = siteConfig.basePath.replace(/\/+$/, '') || '/';
 ```
-- `basePath` が `/` で始まるかチェックし、`/` で始まらない場合はエラーを投げます。  
-- `basePath` の末尾の `/` を削除して、`base` 変数に代入します。削除した結果、空文字列になった場合、`/` を代入します。
 
 ### defineConfig
 設定した `site` と `base` を `defineConfig` に渡します。
