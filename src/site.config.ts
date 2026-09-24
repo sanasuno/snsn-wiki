@@ -1,5 +1,5 @@
 /**
- * src/site.config.ts
+ * ./src/site.config.ts
  * サイト全体の配信設定ファイル
  * デプロイ先のオリジンやパスを設定する
  */

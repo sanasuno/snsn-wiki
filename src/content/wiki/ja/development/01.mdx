@@ -6,7 +6,7 @@ tags: [開発記録]
 date: 2026-08-16
 ---
 ## 環境構築
-以下のコマンドでAstroをインストールします。
+以下のコマンドで Astro をインストールします。
 
 ```bash
 npm create astro@latest
@@ -51,7 +51,7 @@ npm create astro@latest
 ```
 
 ### エイリアス
-`tsconfig.json`にエイリアスを設定します。
+`tsconfig.json` にエイリアスを設定します。
 
 ```json
 {
@@ -76,18 +76,19 @@ npm create astro@latest
 ```
 
 ## Node.js
-Node.jsの型定義をインストールします。
+Node.js の型定義をインストールします。
 
 ```sh
 npm install @types/node --save-dev
 ```
 
 ## ライセンス
-snsn-wikiはMITライセンスなので、`./LICENSE`にMITライセンスの全文を記述します。
+snsn-wiki は MIT ライセンスなので、`./LICENSE` に MIT ライセンスの全文を記述します。
 
 ## URL管理
-Astroでは、`astro.config.ts`に`site`（サイトのオリジン）と`base`（サブディレクトリに配置する場合の配信パス）の値を設定することで、サイトのURLを管理します。  
-`src/site.config.ts`に、`siteConfig`として`url`と`basePath`を設定し、検証と正規化をしてから`astro.config.ts`の`defineConfig`に渡します。
+Astro では、`astro.config.ts` に `site`（サイトのオリジン）と `base`（サブディレクトリに配置する場合の配信パス）の値を設定することで、サイトのURLを管理します。ただし、これらの値はユーザーが編集する対象なので、安全のために別ファイル（`./src/site.config.ts`）に記述し、それをインポートする形式にします。  
+まず `site.config.ts` には、`siteConfig` として `url` と `basePath` を設定します。
+これらを `astro.config.ts` でインポートし、検証と正規化をしてから `astro.config.ts` の `defineConfig` に渡します。
 
 ```ts
 export const siteConfig = {
@@ -97,7 +98,7 @@ export const siteConfig = {
 ```
 
 ### site
-`siteConfig`から`url`を取得し、正規化してから`site`に代入します。
+`siteConfig` から `url` を取得し、正規化してから `site` に代入します。
 
 ```ts
 import { siteConfig } from './src/site.config';
@@ -113,12 +114,12 @@ try {
 }
 ```
 
-- まず、`siteConfig.url`を`new URL()`でURLオブジェクトに変換できるかチェックします。  
-- 変換に成功したら、`toString()`で`string`型に戻してから、末尾の`/`を削除して、`site`変数に代入します。  
-- 変換に失敗した場合、`siteConfig.url`が有効なURLでないとみなして、エラーを投げます。  
+- まず、`siteConfig.url` を `new URL()` で URL オブジェクトに変換できるかチェックします。  
+- 変換に成功したら、`toString()` で `string` 型に戻してから、末尾の `/` を削除して、`site` 変数に代入します。  
+- 変換に失敗した場合、`siteConfig.url` が有効な URL でないとみなして、エラーを投げます。  
 
 ### base
-`siteConfig`から`basePath`を取得し、正規化してから`base`に代入します。
+`siteConfig` から `basePath` を取得し、正規化してから `base` に代入します。
 
 ```ts
 import { siteConfig } from './src/site.config';
@@ -130,11 +131,11 @@ if (!siteConfig.basePath.startsWith('/')) {
 }
 const base = siteConfig.basePath.replace(/\/+$/, '') || '/';
 ```
-- `basePath`が`/`で始まるかチェックし、`/`で始まらない場合はエラーを投げます。  
-- `basePath`の末尾の`/`を削除して、`base`変数に代入します。削除した結果、空文字列になった場合、`/`を代入します。
+- `basePath` が `/` で始まるかチェックし、`/` で始まらない場合はエラーを投げます。  
+- `basePath` の末尾の `/` を削除して、`base` 変数に代入します。削除した結果、空文字列になった場合、`/` を代入します。
 
 ### defineConfig
-設定した`site`と`base`を`defineConfig`に渡します。
+設定した `site` と `base` を `defineConfig` に渡します。
 
 ```ts
 export default defineConfig({

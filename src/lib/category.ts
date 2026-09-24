@@ -3,6 +3,7 @@
  * カテゴリ関連のユーティリティ関数
  */
 import { t, type Locale, type TranslationKey } from '@i18n/i18n.config';
+import { isTranslationKey } from '@lib/locale';
 
 /**
  * ページIDからカテゴリを取得する関数
@@ -40,5 +41,9 @@ export function getLeafCategory(pageId: string, isSubPage: boolean = false ): st
 export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage: boolean = false ): string {
     const category = getCategory(pageId, isSubPage);
     if (category.length === 0 || (category.length === 1 && category[0] === '')) return '';
-    return t(`category.${category.join('.')}` as TranslationKey, locale);
+    
+    const key = `category.${category.join('.')}` as TranslationKey;
+    if (!isTranslationKey(key)) return '';
+    
+    return t(key, locale);
 }
