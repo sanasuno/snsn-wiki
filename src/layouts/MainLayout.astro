@@ -59,7 +59,7 @@ const canonicalUrl = new URL(currentPath, Astro.url).href;
 const ogSlug = currentPath.startsWith(wikiBaseUrl)
     ? `wiki${currentPath.slice(wikiBaseUrl.length)}`
     : 'index';
-const ogImageUrl = new URL(`${baseUrl}/og/${locale}/${ogSlug}.png`, Astro.url).href;
+const ogImageUrl = new URL(`${localeBaseUrl}/og/${ogSlug}.png`, Astro.url).href;
 
 const defaultAlternateLink = alternateLinks.find(link => link.locale === defaultLocale);
 

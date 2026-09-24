@@ -2,7 +2,7 @@
  * @lib/path.ts
  * パス関連のユーティリティ関数
  */
-import { t, type Locale, type TranslationKey } from '@i18n/i18n.config';
+import type { Locale } from '@i18n/i18n.config';
 import { isLocale } from '@lib/locale';
 /**
  * 末尾のスラッシュを削除する関数
@@ -38,7 +38,7 @@ export function getRawSlug(pageId: string): string {
 }
 
 /**
- * ページIDをロケールと生のベーススラッグに分割する関数
+ * ページIDをロケールと生のスラッグに分割する関数
  * @param pageId ページID (例: "en/example-page")
  * @returns ロケールと生のスラッグのオブジェクト
  */
@@ -49,12 +49,12 @@ export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} 
 }
 
 /**
- * パスを正規化する関数
- * @param rawPath 正規化するパス
- * @returns 正規化されたパス
+ * スラッグを正規化する関数
+ * @param rawSlug 正規化するスラッグ
+ * @returns 正規化されたスラッグ
  */
-export function normalizePath(rawPath: string): string {
-    const normalized = rawPath.normalize('NFKC').toLowerCase().trim();
+export function normalizeSlugLike(rawSlug: string): string {
+    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim();
     return normalized === 'index'
         ? ''
         : normalized.replace(/\/index$/, '');
@@ -67,15 +67,15 @@ export function normalizePath(rawPath: string): string {
  */
 export function getNormalizedSlug(pageId: string): string {
     const rawSlug = dividePageId(pageId).rawSlug;
-    return normalizePath(rawSlug);
+    return normalizeSlugLike(rawSlug);
 }
 
 /**
- * ページIDからルートを取得する関数
+ * ページIDからWikiのURLを取得する関数
  * @param pageId ページID
- * @returns ルート
+ * @returns WikiのURL
  */
-export function getRoute(pageId: string): string {
+export function getWikiUrl(pageId: string): string {
     const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
     const locale = getLocale(pageId);
     const slug = getNormalizedSlug(pageId);

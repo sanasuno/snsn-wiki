@@ -6,8 +6,8 @@
 import { getCollection } from "astro:content";
 import { t, type Locale, type TranslationKey } from "@i18n/i18n.config";
 import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
-import { getUniquePagesByLocale } from '@lib/content/pages';
-import { removeTrailingSlash, getRawSlug, getRoute } from '@lib/path';
+import { getUniquePagesByLocale } from '@lib/pages';
+import { removeTrailingSlash, getRawSlug, getWikiUrl } from '@lib/path';
 import { getCategory } from '@lib/category';
 
 interface Props {
@@ -66,7 +66,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                 {
                                     sorted.map(page => {
                                         return (
-                                            <a href={getRoute(page.id)} class='sidebar-nav-title'>
+                                            <a href={getWikiUrl(page.id)} class='sidebar-nav-title'>
                                                 <i class='far fa-file-lines fa-fw'></i>
                                                 {page.data.title}
                                             </a>
@@ -91,7 +91,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                     if (item.path) {
                                         const page = slugMap[removeTrailingSlash(item.path)];
                                         if (page) {
-                                            href = getRoute(page.id);
+                                            href = getWikiUrl(page.id);
                                             if (!item.i18nKey) {
                                                 label = page.data.title;
                                             }
@@ -143,7 +143,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                     <div class='sidebar-nav'>
                         {sorted.map((page) => {
                             return (
-                                <a href={getRoute(page.id)}>
+                                <a href={getWikiUrl(page.id)}>
                                     <i class='far fa-file-lines fa-fw'></i>
                                     {page.data.title}
                                 </a>

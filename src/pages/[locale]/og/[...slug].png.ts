@@ -1,10 +1,9 @@
 /**
- * ./src/pages/og/[locale]/[...slug].png.ts
+ * ./src/pages/[locale]/og/[...slug].png.ts
  * OGP 画像配信エンドポイント
  */
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { getCollection } from 'astro:content';
-import { dividePageId, getNormalizedSlug } from '@lib/path';
+import { resolveWikiPages } from '@lib/pages';
 import { getTranslatedCategory } from '@lib/category';
 import { renderOgImage } from '@lib/og-image';
 import { t, locales } from '@i18n/i18n.config';
@@ -12,10 +11,8 @@ import { t, locales } from '@i18n/i18n.config';
 export const prerender = true;
 
 export const getStaticPaths = (async () => {
-    const wikiPages = await getCollection('wiki');
-    const wikiPaths = wikiPages.map((page) => {
-        const locale = dividePageId(page.id).locale;
-        const normalizedSlug = getNormalizedSlug(page.id);
+    const resolvedPages = await resolveWikiPages();
+    const wikiPaths = resolvedPages.map(({ locale, normalizedSlug, page }) => {
         const category = getTranslatedCategory(page.id, locale, page.data.isSubPage);
         return {
             params: {

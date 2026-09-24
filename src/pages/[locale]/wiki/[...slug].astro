@@ -3,10 +3,11 @@
  * ./src/pages/[locale]/wiki/[...slug].astro
  * ウィキページの動的ルーティング用ページ
  */
-import { getCollection, render, type CollectionEntry } from 'astro:content';
-import { locales, defaultLocale, type Locale } from '@i18n/i18n.config';
+import { render, type CollectionEntry } from 'astro:content';
+import { locales, type Locale } from '@i18n/i18n.config';
+import { resolveWikiPages } from '@lib/pages';
 import MainLayout from '@layouts/MainLayout.astro';
-import { dividePageId, normalizePath, getNormalizedSlug, removeTrailingSlash } from '@lib/path';
+import { removeTrailingSlash } from '@lib/path';
 
 interface Props {
     page: CollectionEntry<'wiki'>;
@@ -22,64 +23,14 @@ interface Props {
  * @returns {Promise<{ params: { locale: Locale; slug: string | undefined }; props: Props }[]>} パスとプロパティの配列
  */
 export async function getStaticPaths() {
-    const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
-
-    const pagesBySlug: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
-    const normalizedIdOwners: Record<string, Set<string>> = {};
-    
-    // ページデータを正規化して格納
-    for (const page of wikiPages) {
-        const locale = dividePageId(page.id).locale;        
-        const normalizedSlug = getNormalizedSlug(page.id);
-        if (!pagesBySlug[normalizedSlug]) {
-            pagesBySlug[normalizedSlug] = {};
-        }
-        pagesBySlug[normalizedSlug][locale] = page;
-        
-        const normalizedId = normalizePath(page.id);        
-        if (!normalizedIdOwners[normalizedId]) {
-            normalizedIdOwners[normalizedId] = new Set();
-        }
-        normalizedIdOwners[normalizedId].add(page.id);
-    }
-
-    // 正規化によって衝突するIDがないか検証
-    for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
-        if (owners.size > 1) {
-            throw new Error(`[wiki routing] Multiple owners for normalized ID "${normalizedId}": ${Array.from(owners).join(', ')}`);
-        }
-    }
-
-    // パスを生成
-    const paths: { params: { locale: Locale; slug: string | undefined }; props: Props }[] = [];
-    for (const normalizedSlug of Object.keys(pagesBySlug)) {
-        const availablePages = pagesBySlug[normalizedSlug];
-        for (const locale of locales) {
-            const slug = normalizedSlug === ''
-                ? undefined
-                : normalizedSlug;
-            const isFallback = !availablePages[locale];
-            const page = availablePages[locale]
-                ?? availablePages[defaultLocale]
-                ?? locales.map((loc) => availablePages[loc]).find(
-                    (p): p is CollectionEntry<'wiki'> => p !== undefined
-                );
-            if (!page) {
-                throw new Error(`[wiki routing] No page found for slug "${slug}"`);
-            }
-
-            paths.push({
-                params: { locale, slug },
-                props: {
-                    page,
-                    locale,
-                    normalizedSlug,
-                    isFallback,
-                }
-            })
-        }
-    }
-    return paths;
+    const resolvedPages = await resolveWikiPages();
+    return resolvedPages.map(({ locale, normalizedSlug, page, isFallback }) => ({
+        params: {
+            locale,
+            slug: normalizedSlug === '' ? undefined : normalizedSlug,
+        },
+        props: { page, locale, normalizedSlug, isFallback },
+    }));
 }
 
 const { page, locale, normalizedSlug, isFallback } = Astro.props;

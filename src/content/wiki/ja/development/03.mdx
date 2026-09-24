@@ -69,22 +69,40 @@ export function removeTrailingSlash(path: string): string {
 }
 ```
 
-### dividePageId()
-ページIDを分割して、ロケールと生のベーススラッグを抽出する関数です。
+### getLocale()
+ページIDからロケールを取得する関数です。
 
 ```ts
 import type { Locale } from '@i18n/i18n.config';
 import { isLocale } from "@lib/locale";
 
-export function dividePageId(pageId: string): {locale: Locale, rawBaseSlug: string} {
+export function getLocale(pageId: string): Locale {
     const parts = pageId.split('/');
     if (isLocale(parts[0])) {
-        return {
-            locale: parts[0],
-            rawBaseSlug: parts.slice(1).join('/')
-        };
+        return parts[0] as Locale;
     }
     throw new Error(`[Invalid id format] ${pageId}`);
+}
+```
+
+### getRawSlug()
+ページIDから生のスラッグを取得する関数です。
+
+```ts
+export function getRawSlug(pageId: string): string {
+    const parts = pageId.split('/');
+    return parts.slice(1).join('/');
+}
+```
+
+### dividePageId()
+ページIDを分割して、ロケールと生のベーススラッグを抽出する関数です。
+
+```ts
+export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} {
+    const locale = getLocale(pageId);
+    const rawSlug = getRawSlug(pageId);
+    return {locale, rawSlug};
 }
 ```
 
@@ -92,15 +110,37 @@ export function dividePageId(pageId: string): {locale: Locale, rawBaseSlug: stri
 - ページIDを`.split('/')`で分割すると、最初の要素がロケール、残りがベーススラッグになります。  
 - `isLocale()`関数でページIDから取得したロケールが実際に`@i18n/i18n.config.ts`で設定したロケールの対象かどうかをチェックします。
 
-### normalizeSlug()
-スラッグを正規化する関数です。
+### normalizePath()
+パスを正規化する関数です。
 
 ```ts
-export function normalizeSlug(rawSlug: string): string {
-    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim();
+export function normalizePath(rawPath: string): string {
+    const normalized = rawPath.normalize('NFKC').toLowerCase().trim();
     return normalized === 'index'
         ? ''
         : normalized.replace(/\/index$/, '');
+}
+```
+
+### getNormalizedSlug()
+ページIDから正規化されたスラッグを取得する関数です。
+
+```ts
+export function getNormalizedSlug(pageId: string): string {
+    const rawSlug = dividePageId(pageId).rawSlug;
+    return normalizePath(rawSlug);
+}
+```
+
+### getWikiUrl()
+ページIDからWikiページのURLを取得する関数です。
+
+```ts
+export function getWikiUrl(pageId: string): string {
+    const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
+    const locale = getLocale(pageId);
+    const slug = getNormalizedSlug(pageId);
+    return removeTrailingSlash(`${baseUrl}/${locale}/wiki/${slug}`);
 }
 ```
 
