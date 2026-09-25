@@ -7,7 +7,7 @@ date: 2026-08-18
 では、いよいよウィキページの作成に取り掛かっていきます。
 
 ## 構成
-`./src/content/wiki/[locale]`配下に各記事のmdxファイルを配置し、コレクションローダーで収集したものを、`./src/pages/[locale]/wiki/[...slug].astro`でページに変換します。  
+`./src/content/wiki/[locale]` 配下に各記事のmdxファイルを配置し、コレクションローダー `./src/content.config.ts` で収集したものを `./src/pages/[locale]/wiki/[...slug].astro` でページに変換します。  
 
 ## mdx
 まずは、mdxファイルを取り扱うためのインテグレーションを追加します。  
