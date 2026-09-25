@@ -7,12 +7,12 @@ import { render, type CollectionEntry } from 'astro:content';
 import { locales, type Locale } from '@i18n/i18n.config';
 import { resolveWikiPages } from '@lib/pages';
 import MainLayout from '@layouts/MainLayout.astro';
-import { removeTrailingSlash } from '@lib/path';
+import { getWikiBaseUrl } from '@lib/path';
 
 interface Props {
     page: CollectionEntry<'wiki'>;
     locale: Locale;
-    normalizedSlug: string;
+    slug: string;
     isFallback: boolean;
 }
 
@@ -24,23 +24,22 @@ interface Props {
  */
 export async function getStaticPaths() {
     const resolvedPages = await resolveWikiPages();
-    return resolvedPages.map(({ locale, normalizedSlug, page, isFallback }) => ({
+    return resolvedPages.map(({ locale, slug, page, isFallback }) => ({
         params: {
             locale,
-            slug: normalizedSlug === '' ? undefined : normalizedSlug,
+            slug: slug === '' ? undefined : slug,
         },
-        props: { page, locale, normalizedSlug, isFallback },
+        props: { page, locale, slug, isFallback },
     }));
 }
 
-const { page, locale, normalizedSlug, isFallback } = Astro.props;
+const { page, locale, slug, isFallback } = Astro.props;
 
 // 代替リンク生成
-const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 const alternateLinks = locales.map(altLocale => ({
     locale: altLocale,
-    href: removeTrailingSlash(new URL(`${baseUrl}/${altLocale}/wiki/${normalizedSlug}`, Astro.url).toString())
-}))
+    href: `${getWikiBaseUrl(altLocale)}/${slug}`
+}));
 
 const { Content, headings } = await render(page);
 ---

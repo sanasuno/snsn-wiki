@@ -5,7 +5,7 @@
  */
 
 import { t, defaultLocale, type Locale } from '@i18n/i18n.config';
-import { removeTrailingSlash } from '@lib/path';
+import { getBaseUrl, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath } from '@lib/path';
 
 import Header from '@layouts/Header.astro';
 import Sidebar from '@layouts/Sidebar.astro';
@@ -48,11 +48,11 @@ const {
     showSubpanel = true,
 } = Astro.props;
 
-const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
-const localeBaseUrl = `${baseUrl}/${locale}`;
-const wikiBaseUrl = `${localeBaseUrl}/wiki`;
+const baseUrl = getBaseUrl();
+const localeBaseUrl = getLocaleBaseUrl(locale);
+const wikiBaseUrl = getWikiBaseUrl(locale);
 
-const currentPath = removeTrailingSlash(Astro.url.pathname) || '/';
+const currentPath = getCurrentPath(Astro.url);
 
 const canonicalUrl = new URL(currentPath, Astro.url).href;
 
@@ -128,20 +128,14 @@ const pageDescription = description ?? siteDescription;
         <div class={`layout${showSubpanel ? '' : ' no-subpanel'}`}>
             <Header
                 locale={locale}
-                localeBaseUrl={localeBaseUrl}
-                currentPath={currentPath}
             />
             <Sidebar
                 locale={locale}
-                localeBaseUrl={localeBaseUrl}
-                currentPath={currentPath}
             />
             <main class="main-panel">
                 <MainContent
                     title={title}
                     locale={locale}
-                    localeBaseUrl={localeBaseUrl}
-                    currentPath={currentPath}
                     tags={tags}
                     date={date}
                     updated={updated}
@@ -152,7 +146,6 @@ const pageDescription = description ?? siteDescription;
                 </MainContent>
                 <Footer
                     locale={locale}
-                    localeBaseUrl={localeBaseUrl}
                 />
             </main>
             {showSubpanel && (
@@ -163,8 +156,6 @@ const pageDescription = description ?? siteDescription;
                     />
                     <MiniGraph
                         locale={locale}
-                        localeBaseUrl={localeBaseUrl}
-                        currentPath={currentPath}
                     />
                 </aside>
             )}

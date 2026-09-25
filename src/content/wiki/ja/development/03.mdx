@@ -22,9 +22,9 @@ npx astro add mdx
 `./src/content/wiki`配下にある、`.md`または`.mdx`ファイルを収集し、`wiki`コレクションとして利用できるように定義します。
 
 ```ts
-import { defineCollection } from "astro:content";
-import { glob } from "astro/loaders";
-import { z } from "astro/zod";
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
 
 const wiki = defineCollection({
     loader: glob({ base: './src/content/wiki', pattern: '**/*.{md,mdx}'}),
@@ -38,7 +38,7 @@ const wiki = defineCollection({
         updated: z.coerce.date().optional(),
         draft: z.boolean().default(false),
         showSubpanel: z.boolean().default(true),
-        subpage: z.boolean().default(false),
+        isSubPage: z.boolean().default(false),
     }),
 });
 

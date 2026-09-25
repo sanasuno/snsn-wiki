@@ -7,15 +7,16 @@ import { getCollection } from "astro:content";
 import { t, type Locale, type TranslationKey } from "@i18n/i18n.config";
 import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
 import { getUniquePagesByLocale } from '@lib/pages';
-import { removeTrailingSlash, getRawSlug, getWikiUrl } from '@lib/path';
+import { removeTrailingSlash, getRawSlug, getLocaleBaseUrl, getWikiUrl, getCurrentPath } from '@lib/path';
 import { getCategory } from '@lib/category';
 
 interface Props {
     locale: Locale;
-    localeBaseUrl: string;
-    currentPath: string;
 }
-const { locale, localeBaseUrl, currentPath }: Props = Astro.props;
+const { locale }: Props = Astro.props;
+
+const localeBaseUrl = getLocaleBaseUrl(locale);
+const currentPath = getCurrentPath(Astro.url);
 
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
 const uniquePages = getUniquePagesByLocale(wikiPages, locale);

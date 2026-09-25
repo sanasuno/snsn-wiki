@@ -8,14 +8,14 @@
  */
 import { t, locales, type Locale } from "@i18n/i18n.config";
 import { headerNavItems } from "@layouts/header.nav";
-import { isActive } from "@lib/path";
+import { removeTrailingSlash, getLocaleBaseUrl, isActive } from "@lib/path";
 
 interface Props {
     locale: Locale;
-    localeBaseUrl: string;
-    currentPath: string;
 }
-const { locale, localeBaseUrl, currentPath }: Props = Astro.props;
+const { locale }: Props = Astro.props;
+const localeBaseUrl = getLocaleBaseUrl(locale);
+const currentPath = removeTrailingSlash(Astro.url.pathname) || '/';
 const showLanguageSwitcher: boolean = locales.length > 1;
 ---
 <header class="site-header">
@@ -29,7 +29,7 @@ const showLanguageSwitcher: boolean = locales.length > 1;
     <nav class="header-nav" aria-label={t("header.nav.title", locale)}>
         {
             headerNavItems.map((item) => (
-                <a href={localeBaseUrl + item.path} class={isActive(item.path, localeBaseUrl, currentPath) ? "active" : ""}>
+                <a href={localeBaseUrl + item.path} class={isActive(item.path, currentPath) ? "active" : ""}>
                     {item.icon && <i class={item.icon}></i>}
                     <span class="nav-label" data-i18n={item.i18nKey}>
                         {t(item.i18nKey, locale)}

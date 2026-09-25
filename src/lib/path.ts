@@ -66,37 +66,71 @@ export function normalizeSlugLike(rawSlug: string): string {
  * @returns 正規化されたスラッグ
  */
 export function getNormalizedSlug(pageId: string): string {
-    const rawSlug = dividePageId(pageId).rawSlug;
+    const rawSlug = getRawSlug(pageId);
     return normalizeSlugLike(rawSlug);
 }
 
 /**
- * ページIDからWikiのURLを取得する関数
+ * ベースURLを取得する関数
+ * @returns ベースURL
+ */
+export function getBaseUrl(): string {
+    return removeTrailingSlash(import.meta.env.BASE_URL);
+}
+
+/**
+ * ロケールベースURLを取得する関数
+ * @param locale ロケール
+ * @returns ロケールベースURL
+ */
+export function getLocaleBaseUrl(locale: Locale): string {
+    return `${getBaseUrl()}/${locale}`;
+}
+
+/**
+ * WikiベースURLを取得する関数
+ * @param locale ロケール
+ * @returns WikiベースURL
+ */
+export function getWikiBaseUrl(locale: Locale): string {
+    return `${getLocaleBaseUrl(locale)}/wiki`;
+}
+
+/**
+ * ページIDからWikiページのURLを取得する関数
  * @param pageId ページID
- * @returns WikiのURL
+ * @returns WikiページのURL
  */
 export function getWikiUrl(pageId: string): string {
-    const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
     const locale = getLocale(pageId);
     const slug = getNormalizedSlug(pageId);
-    return removeTrailingSlash(`${baseUrl}/${locale}/wiki/${slug}`);
+    return removeTrailingSlash(`${getWikiBaseUrl(locale)}/${slug}`);
+}
+
+/**
+ * Astro.urlから現在のパスを取得する関数
+ * @param url Astro.url
+ * @returns 現在のパス
+ */
+export function getCurrentPath(url: URL): string {
+    return removeTrailingSlash(url.pathname) || '/';
 }
 
 /**
  * 現在のパスが指定されたパスと一致するか判定する関数
- * @param targetPath - 比較するパス
+ * @param targetSlug - 比較するスラッグ
  * @param currentPath - 現在のパス
- * @param localeBaseUrl - ロケールベースURL
  * @returns パスが一致する場合はtrue、そうでない場合はfalse
  */
-export function isActive(targetPath: string, currentPath: string, localeBaseUrl: string): boolean {
-    // 対象のURLを生成
-    const targetUrl = `${localeBaseUrl}${targetPath}`;
-    if (targetPath === '/') {
+export function isActive(targetSlug: string, currentPath: string): boolean {
+    const base = getBaseUrl();
+    const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length).slice(1) : currentPath;
+    const currentSlug = getLocale(relativePath) ? `/${getNormalizedSlug(relativePath)}` : relativePath;
+    if (targetSlug === '/') {
         // ルートパスの場合は完全一致で判定
-        return currentPath === localeBaseUrl;
+        return currentSlug === '/';
     } else {
         // ルートパス以外の場合、完全一致またはサブパスで判定
-        return currentPath === targetUrl || currentPath.startsWith(`${targetUrl}/`);
+        return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
     }
 }

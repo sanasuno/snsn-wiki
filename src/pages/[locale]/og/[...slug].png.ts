@@ -12,12 +12,12 @@ export const prerender = true;
 
 export const getStaticPaths = (async () => {
     const resolvedPages = await resolveWikiPages();
-    const wikiPaths = resolvedPages.map(({ locale, normalizedSlug, page }) => {
+    const wikiPaths = resolvedPages.map(({ locale, slug, page }) => {
         const category = getTranslatedCategory(page.id, locale, page.data.isSubPage);
         return {
             params: {
                 locale,
-                slug: normalizedSlug === '' ? 'wiki' : `wiki/${normalizedSlug}`,
+                slug: slug === '' ? 'wiki' : `wiki/${slug}`,
             },
             props: {
                 title: page.data.title,

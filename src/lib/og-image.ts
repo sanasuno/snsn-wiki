@@ -100,7 +100,7 @@ export async function renderOgImage({ title, description, category, siteName, fo
                                         borderRadius: 999,
                                         border: '1px solid rgba(245,245,245,0.4)',
                                     },
-                                    children: `#${category}`,
+                                    children: category,
                                 },
                             },
                         },

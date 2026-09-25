@@ -10,13 +10,13 @@ import { getLocale, getRawSlug, getNormalizedSlug, normalizeSlugLike } from '@li
 /**
  * リゾルブされたウィキページ情報
  * - locale: ページのロケール
- * - normalizedSlug: 正規化されたスラッグ
+ * - slug: ページのスラッグ
  * - page: ページデータ
  * - isFallback: フォールバックページかどうか
  */
 export interface ResolvedWikiPage {
     locale: Locale;
-    normalizedSlug: string;
+    slug: string;
     page: CollectionEntry<'wiki'>;
     isFallback: boolean;
 }
@@ -53,8 +53,8 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
     }
 
     const resolved: ResolvedWikiPage[] = [];
-    for (const normalizedSlug of Object.keys(pagesBySlugLocale)) {
-        const availablePages = pagesBySlugLocale[normalizedSlug];
+    for (const slug of Object.keys(pagesBySlugLocale)) {
+        const availablePages = pagesBySlugLocale[slug];
         for (const locale of locales) {
             const isFallback = !availablePages[locale];
             const page = availablePages[locale]
@@ -63,9 +63,9 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
                     (p): p is CollectionEntry<'wiki'> => p !== undefined
                 );
             if (!page) {
-                throw new Error(`[wiki routing] No page found for slug "${normalizedSlug}"`);
+                throw new Error(`[wiki routing] No page found for slug "${slug}"`);
             }
-            resolved.push({ locale, normalizedSlug, page, isFallback});
+            resolved.push({ locale, slug, page, isFallback});
         }
     }
     return resolved;
