@@ -124,13 +124,12 @@ export function getCurrentPath(url: URL): string {
  */
 export function isActive(targetSlug: string, currentPath: string): boolean {
     const base = getBaseUrl();
-    const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length).slice(1) : currentPath;
-    const currentSlug = getLocale(relativePath) ? `/${getNormalizedSlug(relativePath)}` : relativePath;
-    if (targetSlug === '/') {
-        // ルートパスの場合は完全一致で判定
-        return currentSlug === '/';
-    } else {
-        // ルートパス以外の場合、完全一致またはサブパスで判定
-        return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
-    }
+    const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length + 1) : currentPath;
+    const [maybeLocale, ...rest] = relativePath.split('/');
+    const currentSlug = isLocale(maybeLocale)
+        ? `/${normalizeSlugLike(rest.join('/'))}`
+        : relativePath;
+    return targetSlug === '/'
+        ? currentSlug === '/'
+        : currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
 }

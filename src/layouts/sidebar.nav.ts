@@ -39,7 +39,7 @@ export const sidebarNavItems: SidebarNavSection[] = [
     {
         titleKey: 'sidebar.development',
         category: 'development',
-        sort: 'title',
+        sort: 'order',
         icon: 'fas fa-code',
         collapsed: false
     }
