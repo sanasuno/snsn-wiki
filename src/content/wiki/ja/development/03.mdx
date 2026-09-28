@@ -18,8 +18,8 @@ npx astro add mdx
 ```
 
 ## コレクションローダー
-ウィキページ用のコレクションローダーを`./src/content.config.ts`として作成し、`src`直下に配置します。  
-`./src/content/wiki`配下にある、`.md`または`.mdx`ファイルを収集し、`wiki`コレクションとして利用できるように定義します。
+ウィキページ用のコレクションローダーを `./src/content.config.ts` として作成します。  
+`./src/content/wiki` 配下にある `.md` または `.mdx` ファイルを収集して `wiki` コレクションとして利用できるように定義します。
 
 ```ts
 import { defineCollection } from 'astro:content';
@@ -45,7 +45,7 @@ const wiki = defineCollection({
 export const collections = { wiki };
 ```
 
-以下、schemaの各項目の説明です。
+`schema` の各項目の説明です。
 - `title`: ページのタイトル（必須）
 - `description`: ページの説明（任意）
 - `order`: ページの表示順（数値が小さい方が上に表示される）（任意、デフォルト0）
@@ -58,7 +58,7 @@ export const collections = { wiki };
 - `subpage`: サブページフラグ（true/false）（任意、デフォルトfalse）
 
 ## ユーティリティ関数
-`@lib/path.ts`に、パス関連のユーティリティ関数を記述します。
+`@lib/path.ts` にパス関連のユーティリティ関数を記述します。
 
 ### removeTrailingSlash()
 末尾のスラッシュを削除する関数です。
@@ -70,7 +70,7 @@ export function removeTrailingSlash(path: string): string {
 ```
 
 ### getLocale()
-ページIDからロケールを取得する関数です。
+ページIDからロケールを取得する関数です。ページIDを `/` で分割したときの先頭の要素をロケールとして扱います。有効なロケールかどうかを `isLocale()` 関数で判定し、有効ロケールだった場合はそのロケールを返し、有効ロケールでない場合にはエラーをスローします。
 
 ```ts
 import type { Locale } from '@i18n/i18n.config';
@@ -86,7 +86,7 @@ export function getLocale(pageId: string): Locale {
 ```
 
 ### getRawSlug()
-ページIDから生のスラッグを取得する関数です。
+ページIDから生のスラッグを取得する関数です。ページIDを `/` で分割したときの、先頭を除いた要素を `/` で再結合して返します。
 
 ```ts
 export function getRawSlug(pageId: string): string {
@@ -96,7 +96,7 @@ export function getRawSlug(pageId: string): string {
 ```
 
 ### dividePageId()
-ページIDを分割して、ロケールと生のベーススラッグを抽出する関数です。
+ページIDを分割して、ロケールと生のベーススラッグを抽出する関数です。与えられたページIDに `getLocale()` 関数と `getRawSlug()` 関数でそれぞれロケールと生スラッグを取得し、まとめて返します。
 
 ```ts
 export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} {
@@ -106,16 +106,12 @@ export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} 
 }
 ```
 
-- ページIDは`./src/content/wiki/`以下のパスです。この直下に各ロケールのディレクトリを配置し、その下にページを配置する構成を取っているので、ページIDをロケール部分とベーススラッグ部分に分離できます。  
-- ページIDを`.split('/')`で分割すると、最初の要素がロケール、残りがベーススラッグになります。  
-- `isLocale()`関数でページIDから取得したロケールが実際に`@i18n/i18n.config.ts`で設定したロケールの対象かどうかをチェックします。
-
-### normalizePath()
-パスを正規化する関数です。
+### normalizeSlugLike()
+スラッグを正規化する関数です。まず、与えられたスラッグを `NFKC` で正規化して小文字化し、先頭と末尾の空白を除去します。さらにその結果が `index` だった場合は空文字を返し、それ以外の場合では末尾の `/index` を削除します。
 
 ```ts
-export function normalizePath(rawPath: string): string {
-    const normalized = rawPath.normalize('NFKC').toLowerCase().trim();
+export function normalizeSlugLike(rawSlug: string): string {
+    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim();
     return normalized === 'index'
         ? ''
         : normalized.replace(/\/index$/, '');
@@ -123,7 +119,7 @@ export function normalizePath(rawPath: string): string {
 ```
 
 ### getNormalizedSlug()
-ページIDから正規化されたスラッグを取得する関数です。
+ページIDから正規化されたスラッグを取得する関数です。与えられたページIDに `getRawSlug()` 関数を用いて生スラッグを取得し、さらに `normalizedSlugLike()` 関数で正規化します。
 
 ```ts
 export function getNormalizedSlug(pageId: string): string {
@@ -132,15 +128,50 @@ export function getNormalizedSlug(pageId: string): string {
 }
 ```
 
+### getBaseUrl()
+サイトのベースURLを取得する関数です。環境変数から `BASE_URL` を返します。
+
+```ts
+export function getBaseUrl(): string {
+    return removeTrailingSlash(import.meta.env.BASE_URL);
+}
+```
+
+### getLocaleBaseUrl()
+与えられたロケールのロケールベースURLを取得する関数です。ベースURLの後ろに `/${locale}` をつけたURLを返します。
+
+```ts
+export function getLocaleBaseUrl(locale: Locale): string {
+    return `${getBaseUrl()}/${locale}`;
+}
+```
+
+### getWikiBaseUrl()
+与えられたロケールのWikiページのベースURLを取得する関数です。ロケールベースURLの後ろにさらに `/wiki` をつけたURLを返します。
+
+```ts
+export function getWikiBaseUrl(locale: Locale): string {
+    return `${getLocaleBaseUrl(locale)}/wiki`;
+}
+```
+
 ### getWikiUrl()
-ページIDからWikiページのURLを取得する関数です。
+与えられたWikiページのページIDから、そのページのURLを取得する関数です。スラッグの正規化処理を適用します。
 
 ```ts
 export function getWikiUrl(pageId: string): string {
-    const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
     const locale = getLocale(pageId);
     const slug = getNormalizedSlug(pageId);
-    return removeTrailingSlash(`${baseUrl}/${locale}/wiki/${slug}`);
+    return removeTrailingSlash(`${getWikiBaseUrl(locale)}/${slug}`);
+}
+```
+
+### getCurrentPath()
+与えられた `Astro.url` から現在のパスを取得する関数です。与えられたURLの `pathname` を末尾の `/` を削除して返し、空になった場合は  `/` を返します。
+
+```ts
+export function getCurrentPath(url: URL): string {
+    return removeTrailingSlash(url.pathname) || '/';
 }
 ```
 
