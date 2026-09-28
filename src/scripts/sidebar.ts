@@ -9,7 +9,6 @@
  * @param isOpen 開いているかどうか
  */
 function setSidebarToggleBtnState(btn: HTMLButtonElement, isOpen: boolean) {
-    btn.setAttribute('aria-pressed', isOpen.toString());
     btn.setAttribute('aria-expanded', isOpen.toString());
     const icon = btn.querySelector('i');
     if (icon) {

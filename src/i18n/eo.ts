@@ -24,5 +24,9 @@ export const eo = {
     'sidebar.nav.title': 'Flanka Strio',
 
     'homepage.title': 'Hejmo',
+    'homepage.description': 'Hejma paĝa priskribo',
+    
+    'graph.title': 'Grafiko',
+    'graph.description': 'Grafika paĝa priskribo',
     ...eoCustom
 } satisfies Record<TranslationKey, string>;

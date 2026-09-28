@@ -23,5 +23,9 @@ export const en = {
     'sidebar.nav.title': 'Sidebar',
 
     'homepage.title': 'Home',
+    'homepage.description': 'Home page description',
+    
+    'graph.title': 'Graph',
+    'graph.description': 'Graph page description',
     ...enCustom
 } satisfies Record<TranslationKey, string>;

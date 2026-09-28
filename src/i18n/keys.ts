@@ -22,7 +22,11 @@ export const structuralKeys = [
 
     'sidebar.nav.title',
 
-    'homepage.title'
+    'homepage.title',
+    'homepage.description',
+
+    'graph.title',
+    'graph.description',
 ] as const;
 
 export const translationKeys = [...structuralKeys, ...customKeys] as const;

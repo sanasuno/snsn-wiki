@@ -24,7 +24,7 @@
     --color-border-hover: #d0d0d0;
 
     /* アクセント色 */
-    --color-accent: #08824f;
+    --color-accent: #3ecf8e;
 
     /* 角丸 */
     --radius-sm: 4px;
@@ -39,7 +39,7 @@
     /* 背景 */
     --color-bg: #1a1a1a;
     --color-bg-hover: #2a2a2a;
-    --color-bg-accent: #b8d6b9;
+    --color-bg-accent: #1f3a2b;
 
     /* 文字色 */
     --color-text: #f0f0f0;

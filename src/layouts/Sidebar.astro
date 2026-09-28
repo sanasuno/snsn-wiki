@@ -61,7 +61,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                             <button class='sidebar-section-title'>
                                 {t(section.titleKey, locale) && <i class={`${section.icon} fa-fw`}></i>}
                                 {t(section.titleKey, locale)}
-                                <i class='fas fa-chevron-don sidebar-chevron'></i>
+                                <i class='fas fa-chevron-down sidebar-chevron'></i>
                             </button>
                             <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
                                 {

@@ -78,12 +78,14 @@ body {
         width: var(--sidebar-width);
         height: calc(100vh - var(--header-height));
         transition: var(--transition);
+        visibility: hidden;
     }
     .sidebar.open {
         left: 0;
         width: var(--sidebar-width);
         z-index: 1000;
         overflow-y: auto;
+        visibility: visible;
     }
 }
 
@@ -186,7 +188,13 @@ body {
 
 @media(max-width: 1200px) {
     .nav-label {
-        display: none;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: (50%);
+        white-space: nowrap;
     }
 }
 
@@ -203,7 +211,7 @@ body {
     font-size: 1rem;
     cursor: pointer;
     color: var(--color-text-muted);
-    transition: all var(--transition);
+    transition: var(--transition);
 }
 
 .theme-toggle:hover {
