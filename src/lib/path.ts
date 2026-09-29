@@ -122,10 +122,10 @@ export function getCurrentPath(url: URL): string {
  * @param currentPath - 現在のパス
  * @returns パスが一致する場合はtrue、そうでない場合はfalse
  */
-export function isActive(targetSlug: string, currentPath: string): boolean {
+export function isPathActive(targetSlug: string, currentPath: string): boolean {
     const base = getBaseUrl();
-    const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length + 1) : currentPath;
-    const [maybeLocale, ...rest] = relativePath.split('/');
+    const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length) : currentPath;
+    const [ _, maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(rest.join('/'))}`
         : relativePath;

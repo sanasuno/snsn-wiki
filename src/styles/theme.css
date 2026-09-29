@@ -24,7 +24,7 @@
     --color-border-hover: #d0d0d0;
 
     /* アクセント色 */
-    --color-accent: #3ecf8e;
+    --color-accent: #08824f;
 
     /* 角丸 */
     --radius-sm: 4px;
@@ -48,6 +48,9 @@
     /* ボーダー色 */
     --color-border: #333333;
     --color-border-hover: #444444;
+
+    /* アクセント色 */
+    --color-accent: #3ecf8e;
 }
 
 :root {
