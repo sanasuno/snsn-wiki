@@ -8,7 +8,7 @@ import { locales, defaultLocale, type Locale } from '@i18n/i18n.config';
 import { getLocale, getRawSlug, getNormalizedSlug, normalizeSlugLike } from '@lib/path';
 
 /**
- * リゾルブされたウィキページ情報
+ * ウィキページの情報
  * - locale: ページのロケール
  * - slug: ページのスラッグ
  * - page: ページデータ
@@ -22,8 +22,8 @@ export interface ResolvedWikiPage {
 }
 
 /**
- * ウィキページをリゾルブする関数
- * @returns リゾルブされたウィキページ情報の配列
+ * ウィキページを解決する関数
+ * @returns 解決されたウィキページ情報の配列
  */
 export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
     const wikiPages = await getCollection('wiki', (page) => !page.data.draft);

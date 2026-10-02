@@ -7,7 +7,7 @@ date: 2026-08-18
 では、いよいよウィキページの作成に取り掛かっていきます。
 
 ## 構成
-`./src/content/wiki/[locale]` 配下に各記事のmdxファイルを配置し、コレクションローダー `./src/content.config.ts` で収集したものを `./src/pages/[locale]/wiki/[...slug].astro` でページに変換します。  
+`./src/content/wiki/[locale]` 配下に配置した `md` および `mdx` ファイルをコレクションローダー `./src/content.config.ts` で収集し、 `./src/pages/[locale]/wiki/[...slug].astro` でページに変換します。  
 
 ## mdx
 まずは、mdxファイルを取り扱うためのインテグレーションを追加します。  
@@ -200,45 +200,50 @@ export function isPathActive(targetSlug: string, currentPath: string): boolean {
 ## 動的ルーティング
 `./src/pages/[locale]/wiki/[...slug].astro` を作成し、動的ルート用のページとします。   
 - スラッグ部分は `[...slug]` のレストパラメータ形式を採用することで、任意の深さのスラッグにマッチします。  
-`getStaticPaths()` 関数で `locale` と `slug` を出力することで、対応するページのパスを生成します。  
+`getStaticPaths()` 関数で `locale` と `slug` を出力することで、対応するページのパスを生成します。実際の処理は `@lib/pages` の `resolveWikiPages()` 関数で行います。
 
-### getStaticPaths()
-`getStaticPaths()` 関数では、パス生成のために各ページの `locale` と `slug` を出力する必要があります。  
+### resolvewikiPages()
+ウィキページを解決する関数です。ウィキページ収集、スラッグ生成、衝突の検知、ロケールのフォールバック判定など、様々なロジックを処理します。
 
-まず、`getCollection()`関数を用いて、`wiki`コレクションから`draft`フラグが`false`のページ（下書きではないページ）を全て収集します。  
+#### ウィキページ収集
+`getCollection()` 関数を用いてウィキページを収集します。ただし、下書きページ（ `page.data.draft === true` のページ）は除外します。
 
 ```ts
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
 ```
 
 #### ページデータ格納
-収集した各ページについて、ページIDから`dividePageId()`関数を用いて`locale`と`rawBaseSlug`を取得し、さらに`rawBaseSlug`は`normalizeSlug()`関数を用いて`normalizedBaseSlug`に正規化します。  
-同じ記事の各言語版を紐づけるため、`normalizedBaseSlug`と`locale`をキーとして`pagesByBaseSlug`に格納します。
+収集したページを `pagesBySlugLocale` に格納していきます。これは各ページのスラッグとロケールをキーとする配列です。  
+また、スラッグを生成するときに正規化を行いますが、この過程で衝突するファイルを検知するため、並行して正規化前後のページIDを `normalizedIdOwners` に格納します。
 
 ```ts
-const pagesByBaseSlug: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
+const pagesBySlugLocale: Record<string, Partial<Record<Locale, CollectionEntry<'iki'>>>> = {};
+const normalizedIdOwners: Record<string, Set<string>> = {};
+```
 
+各ページのページIDに `getLocale()` 関数と `getNormalizedSlug()` 関数をそれぞれ適用し、`locale` と `normalizedSlug` を取得します。各ページの `normalizedSlug` と `locale` をキーとして、ページ内容を `pagesBySlugLocale` に登録します。  
+
+```ts
 for (const page of wikiPages) {
-    const { locale, rawBaseSlug } = dividePageId(page.id);
-    const normalizedBaseSlug = normalizeSlug(rawBaseSlug);
-    if (!pagesByBaseSlug[normalizedBaseSlug]) {
-        pagesByBaseSlug[normalizedBaseSlug] = {};
+    const locale = getLocale(page.id);
+    const normalizedSlug = getNormalizedSlug(page.id);
+    if (!pagesBySlugLocale[normalizedSlug]) {
+        pagesBySlugLocale[normalizedSlug] = {};
     }
-    pagesByBaseSlug[normalizedBaseSlug][locale] = page;
+    pagesBySlugLocale[normalizedSlug][locale] = page;
 }
 ```
 
 #### 衝突検証
-もし複数の異なるファイルが同じ`normalizedBaseSlug`に正規化される場合、後から処理された方が先に処理された方を上書きしてしまうため、これを検出してビルドエラーにします。  
-そこで、正規化後のページIDと正規化前のページIDを紐づけて`normalizedIdOwners`に保存します。  
-もし正規化による衝突が起きる場合は、同じ`normalizedId`に対して複数の`page.id`が登録されるため、`normalizedIdOwners`の各要素の`size`が1より大きくなるので、これを検出してエラーを投げます。  
-- なお、衝突判定は同一ロケール内だけで行う必要があるため、ベーススラッグではなく、ロケール情報を含むページIDの正規化前後を比較しています。
+もし複数の異なるファイルが同じ `normalizedSlug` に正規化される場合、後から処理された方が先に処理された方を上書きしてしまいます。この衝突を避けるため、検出する必要があります。  
+そこで、正規化後のページID（ `normalizedId` ）をキー、正規化前のページID（ `page.id` ）を値として `normalizedIdOwners` に格納します。  
+衝突が起こった場合は、同じ `normalizedId` に対して複数の `page.id` が登録されます。これをチェックすることで衝突を検知できます。  
+なお、衝突判定は同一ロケール内だけで行う必要があるため、ロケール情報を持たないスラッグではなく、ロケール情報を含むページIDを用いて比較しています。
 
 ```ts
 const normalizedIdOwners: Record<string, Set<string>> = {};
 for (const page of wikiPages) {
-    const normalizedId = normalizeSlug(page.id);
-    
+    const normalizedId = normalizeSlugLike(page.id);    
     if (!normalizedIdOwners[normalizedId]) {
         normalizedIdOwners[normalizedId] = new Set();
     }
@@ -251,55 +256,57 @@ for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
 }
 ```
 
-#### paths
-衝突検証が完了したら、`pagesByBaseSlug`に格納したデータを用いてURLを確定します。  
-あるロケールに対応するページが存在しなくてもURLを生成し、中身は別のロケールのコンテンツで代替するという方針を取っています。  
-この場合、`isFallback`フラグを立て、レイアウトコンポーネントに別言語によるフォールバックであることを伝えます。  
-フォールバック解決の優先順位は、そのロケール、デフォルトロケール、それ以外の他のロケールから順に試行します。  
-もし、どのロケールでもフォールバックできるロケールが見つからなかった場合は、エラーを投げます。  
-最後に、`path`に生成したデータを追加します。URL解決に必要な`locale`および`slug`は`params`に、ページの内容表示に必要な`page`、`locale`、`baseSlug`、`isFallback`は`props`に格納します。
+#### フォールバック判定
+`pagesBySlugLocale` に格納した `locale` と `slug` の組み合わせで、各ページの URL を生成します。  
+あるロケールで元となるファイルがなくとも、別のロケールに同じスラッグのファイルがある場合、それをフォールバックとして代替使用します。このとき、ページには「これが別のロケールによるフォールバックである」という情報を渡します。  
+フォールバック解決の優先順位は、本来のロケール、デフォルトロケール、その他の翻訳があるロケール（ `locales` で定義された順番に検証）の順です。いずれのロケールでも翻訳が見つからない場合はエラーをスローします。  
+最後に返すのは、 `locale` 、 `slug` 、 `page` 、 `isFallback` の4種類のデータの配列です。
 
 ```ts
-const paths: { params: { locale: Locale; slug: string | undefined }; props: Props }[] = [];
-for (const baseSlug of Object.keys(pagesByBaseSlug)) {
-    const availablePages = pagesByBaseSlug[baseSlug];
+const resolved: ResolvedWikiPage[] = [];
+for (const slug of Object.keys(pagesBySlugLocale)) {
+    const availablePages = pagesBySlugLocale[slug];
     for (const locale of locales) {
-        const slug = baseSlug === ''
-            ? undefined
-            : baseSlug;
         const isFallback = !availablePages[locale];
         const page = availablePages[locale]
             ?? availablePages[defaultLocale]
-            ?? locales.map((loc) => availablePages[loc]).find(
-                (p): p is CollectionEntry<'wiki'> => p !== undefined
+            ?? locales.mp((loc) => availablePages[loc]).find(
+                (p): p is CollectionEntry<'wiki'> => p !== undefind
             );
         if (!page) {
-            throw new Error(`[wiki routing] No page found for baseSlug "${baseSlug}"`);
+            throw new Error(`[wiki routing] No page found for slug "${slug}"`);
         }
-
-        paths.push({
-            params: { locale, slug },
-            props: {
-                page,
-                locale,
-                baseSlug,
-                isFallback,
-            }
-        })
+        resolved.push({ locale, slug, page, isFallback});
     }
 }
-return paths;
+return resolved;
+```
+
+### getStaticPaths()
+`./src/pages/[locale]/wiki/[...slug].astro` 内に `getStaticPaths()` 関数を記述し、`resolveWikiPages()` 関数を用いて URL を組み立て、各種 `props` を出力します。
+
+```ts
+export async function gtStaticPaths() {
+    const resolvedPages = await resolveWikiPages();
+    return resolvedPages.map(({ locale, slug, page, isFallback }) => ({
+        params: {
+            locale,
+            slug: slug === '' ? undefined : slug,
+        },
+        props: { page, locale, slug, isFallback },
+    }));
+}
+const { page, locale, slug, isFallback } = Astro.props;
 ```
 
 #### 代替リンク生成
-対応する翻訳ページへの代替リンクを生成します。
+対応する翻訳ページへの代替リンク一覧を生成します。
 
 ```ts
-const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 const alternateLinks = locales.map(altLocale => ({
     locale: altLocale,
-    href: removeTrailingSlash(new URL(`${baseUrl}/${altLocale}/wiki/${baseSlug}`, Astro.site).toString())
-}))
+    href: `${getWikiBaseUrl(altLocale)}/${slug}`
+}));
 ```
 
 ## ページレンダー

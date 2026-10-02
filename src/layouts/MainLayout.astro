@@ -86,7 +86,7 @@ const pageDescription = description ?? siteDescription;
         {alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.url).href} hreflang={link.locale} />)}
 
         <!-- OGP -->
-        <meta property="og:title" content={pageTitle} />
+        <meta property="og:title" content={title} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="article" />
