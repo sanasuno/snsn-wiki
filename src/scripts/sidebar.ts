@@ -52,3 +52,23 @@ export function sidebarToggle() {
     });
 }
 
+/**
+ * サイドバーセクションの開閉を初期化する関数
+ */
+export function sidebarSections() {
+    document.querySelectorAll<HTMLButtonElement>('.sidebar-section-title').forEach((btn) => {
+        if (btn.dataset.initialized === 'true') return;
+        btn.dataset.initialized = 'true';
+
+        const body = btn.nextElementSibling;
+        if (!(body instanceof HTMLElement)) return;
+
+        const sync = () => btn.setAttribute('aria-expanded', String(!body.classList.contains('collapsed')));
+        sync();
+
+        btn.addEventListener('click', () => {
+            body.classList.toggle('collapsed');
+            sync();
+        });
+    });
+}

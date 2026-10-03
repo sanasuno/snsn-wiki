@@ -7,7 +7,7 @@ import { getCollection } from "astro:content";
 import { t, type Locale, type TranslationKey } from "@i18n/i18n.config";
 import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
 import { getUniquePagesByLocale } from '@lib/pages';
-import { removeTrailingSlash, getRawSlug, getLocaleBaseUrl, getWikiUrl, getCurrentPath } from '@lib/path';
+import { normalizeSlugLike, getNormalizedSlug, getLocaleBaseUrl, getWikiUrl, getCurrentPath } from '@lib/path';
 import { getCategory } from '@lib/category';
 
 interface Props {
@@ -16,14 +16,14 @@ interface Props {
 const { locale }: Props = Astro.props;
 
 const localeBaseUrl = getLocaleBaseUrl(locale);
-const currentPath = getCurrentPath(Astro.url);
+const currentPath = decodeURIComponent(getCurrentPath(Astro.url));
 
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
 const uniquePages = getUniquePagesByLocale(wikiPages, locale);
 const pagesByCategory : Record<string, typeof uniquePages> = {};
 const slugMap : Record<string, (typeof uniquePages)[0]> = {};
 for (const page of uniquePages) {
-    slugMap[getRawSlug(page.id)] = page;
+    slugMap[getNormalizedSlug(page.id)] = page;
     const category: string[] = getCategory(page.id) || [];
     const key = category.length > 0 && autoGroupByLeafCategory
         ? category[category.length - 1]
@@ -59,7 +59,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                     return (
                         <section class='sidebar-section'>
                             <button class='sidebar-section-title'>
-                                {t(section.titleKey, locale) && <i class={`${section.icon} fa-fw`}></i>}
+                                {section.icon && <i class={`${section.icon} fa-fw`}></i>}
                                 {t(section.titleKey, locale)}
                                 <i class='fas fa-chevron-down sidebar-chevron'></i>
                             </button>
@@ -67,7 +67,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                 {
                                     sorted.map(page => {
                                         return (
-                                            <a href={getWikiUrl(page.id)} class='sidebar-nav-title'>
+                                            <a href={getWikiUrl(page.id)} aria-current={getWikiUrl(page.id) === currentPath ? 'page' : undefined} class='sidebar-nav-title'>
                                                 <i class='far fa-file-lines fa-fw'></i>
                                                 {page.data.title}
                                             </a>
@@ -81,7 +81,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                     return (
                         <section class='sidebar-section'>
                             <button class='sidebar-section-title'>
-                                {t(section.titleKey, locale) && <i class={`${section.icon} fa-fw`}></i>}
+                                {section.icon && <i class={`${section.icon} fa-fw`}></i>}
                                 {t(section.titleKey, locale)}
                                 <i class='fas fa-chevron-down sidebar-chevron'></i>
                             </button>
@@ -89,19 +89,15 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                 {section.items.map(item => {
                                     let href = item.path;
                                     let label = item.i18nKey ? t(item.i18nKey, locale): '';
-                                    if (item.path) {
-                                        const page = slugMap[removeTrailingSlash(item.path)];
+                                    if (!item.external) {
+                                        const key = normalizeSlugLike(item.path.replace(/^\/+|\/+$/g, ''));
+                                        const page = key ? slugMap[key] : undefined;
                                         if (page) {
                                             href = getWikiUrl(page.id);
-                                            if (!item.i18nKey) {
-                                                label = page.data.title;
-                                            }
+                                            if (!item.i18nKey) label = page.data.title;
+                                        } else {
+                                            href = item.path === '/' ? localeBaseUrl : `${localeBaseUrl}${item.path}`;
                                         }
-                                    } else if (href && !item.external) {
-                                        href = href === '/'
-                                            ? (localeBaseUrl ?? '/')
-                                            : `${localeBaseUrl}${href}`
-                                        ;
                                     }
                                     if (!href || !label) {
                                         return null;
@@ -144,7 +140,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                     <div class='sidebar-nav'>
                         {sorted.map((page) => {
                             return (
-                                <a href={getWikiUrl(page.id)}>
+                                <a href={getWikiUrl(page.id)} aria-current={getWikiUrl(page.id) === currentPath ? 'page' : undefined}>
                                     <i class='far fa-file-lines fa-fw'></i>
                                     {page.data.title}
                                 </a>

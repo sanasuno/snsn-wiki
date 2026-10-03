@@ -4,6 +4,7 @@
    ==================================== */
 
 :root {
+    color-scheme: light;
     /* レイアウト寸法 */
     --content-max-width: 760px;
     --header-height: 56px;
@@ -14,6 +15,12 @@
     --color-bg: #f0f0f0;
     --color-bg-hover: #e0e0e0;
     --color-bg-accent: #c8e6c9;
+    --color-bg-accent-hover: #a5d6a7;
+    --color-bg-secondary: #f5f5f5;
+    --color-bg-secondary-hover: #e8e8e8;
+    --color-bg-tertiary: #f0f0f0;
+    --color-bg-tertiary-hover: #e0e0e0;
+    --color-bg-code: #f8f8f8;
 
     /* 文字色 */
     --color-text: #303030;
@@ -22,9 +29,19 @@
     /* ボーダー色 */
     --color-border: #e0e0e0;
     --color-border-hover: #d0d0d0;
+    --color-border-accent: #c8e6c9;
 
     /* アクセント色 */
     --color-accent: #08824f;
+    --color-accent-hover: #066a3d;
+    --color-accent-active: #04522b;
+
+    /* リンク色 */
+    --color-link: #1976d2;
+    --color-link-hover: #1565c0;
+    --color-link-visited: #7b1fa2;
+    --color-wikilink: #3f51b5;
+    --color-wikilink-missing: #d32f2f;
 
     /* 角丸 */
     --radius-sm: 4px;
@@ -36,10 +53,16 @@
 }
 
 :root[data-theme="dark"] {
+    color-scheme: dark;
     /* 背景 */
     --color-bg: #1a1a1a;
     --color-bg-hover: #2a2a2a;
     --color-bg-accent: #1f3a2b;
+    --color-bg-secondary: #2a2a2a;
+    --color-bg-secondary-hover: #3a3a3a;
+    --color-bg-tertiary: #1a1a1a;
+    --color-bg-tertiary-hover: #2a2a2a;
+    --color-bg-code: #1e1e1e;
 
     /* 文字色 */
     --color-text: #f0f0f0;
@@ -48,9 +71,25 @@
     /* ボーダー色 */
     --color-border: #333333;
     --color-border-hover: #444444;
+    --color-border-accent: #1f3a2b;
 
     /* アクセント色 */
     --color-accent: #3ecf8e;
+    --color-accent-hover: #2eb879;
+    --color-accent-active: #259f68;
+    
+    /* リンク色 */
+    --color-link: #4fc3f7;
+    --color-link-hover: #29b6f6;
+    --color-link-visited: #ce93d8;
+    --color-wikilink: #9575cd;
+    --color-wikilink-missing: #ef5350;
+}
+
+:root[data-theme="dark"] .astro-code,
+:root[data-theme="dark"] .astro-code span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiiki-dark-bg) !important;
 }
 
 :root {
