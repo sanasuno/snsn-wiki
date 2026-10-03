@@ -217,7 +217,7 @@ const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
 また、スラッグを生成するときに正規化を行いますが、この過程で衝突するファイルを検知するため、並行して正規化前後のページIDを `normalizedIdOwners` に格納します。
 
 ```ts
-const pagesBySlugLocale: Record<string, Partial<Record<Locale, CollectionEntry<'iki'>>>> = {};
+const pagesBySlugLocale: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
 const normalizedIdOwners: Record<string, Set<string>> = {};
 ```
 
