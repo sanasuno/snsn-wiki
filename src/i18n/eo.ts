@@ -28,5 +28,12 @@ export const eo = {
     
     'graph.title': 'Grafiko',
     'graph.description': 'Grafika paĝa priskribo',
+
+    '404.title': '404',
+    '404.description': 'Paĝo ne trovita',
+    
+    'footer.privacy': 'Privateca politiko',
+    'footer.terms': 'Uzantkondiĉoj',
+    
     ...eoCustom
 } satisfies Record<TranslationKey, string>;

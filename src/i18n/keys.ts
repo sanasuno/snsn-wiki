@@ -27,6 +27,12 @@ export const structuralKeys = [
 
     'graph.title',
     'graph.description',
+
+    '404.title',
+    '404.description',
+
+    'footer.privacy',
+    'footer.terms',
 ] as const;
 
 export const translationKeys = [...structuralKeys, ...customKeys] as const;

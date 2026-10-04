@@ -86,7 +86,7 @@ export default defineConfig({
         sitemap({
             i18n: {
                 defaultLocale,
-                locales: Object.fromEntries(locales.map(locale => [locale, locale]))
+                locales: Object.fromEntries(locales.map(locale => [locale, t('lang.locale', locale)]))
             }
         })
     ]
@@ -102,7 +102,7 @@ export default defineConfig({
 
 ```astro
 ---
-const canonicalUrl = Astro.url;
+const canonicalUrl = new URL(currentPath, Astro.url).href;
 ---
 <link rel="canonical" href={canonicalUrl.href} />
 ```
@@ -114,8 +114,8 @@ const canonicalUrl = Astro.url;
 ---
 const defaultAlternateLink = alternateLinks.find(link => link.locale === defaultLocale);
 ---
-{defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.site).href} hreflang="x-default" />}
-{alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.site).href} hreflang={link.locale} />)}
+{defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.url).href} hreflang="x-default" />}
+{alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.url).href} hreflang={link.locale} />)}
 ```
 
 ### Google Fonts

@@ -101,8 +101,7 @@ export function getWikiBaseUrl(locale: Locale): string {
  * @param pageId ページID
  * @returns WikiページのURL
  */
-export function getWikiUrl(pageId: string): string {
-    const locale = getLocale(pageId);
+export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
     return removeTrailingSlash(`${getWikiBaseUrl(locale)}/${slug}`);
 }

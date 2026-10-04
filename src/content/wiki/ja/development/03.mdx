@@ -55,7 +55,7 @@ export const collections = { wiki };
 - `updated`: ページの更新日（YYYY-MM-DD形式）（任意）
 - `draft`: ドラフトフラグ（true/false）（任意、デフォルトfalse）
 - `showSubpanel`: サブパネル表示フラグ（true/false）（任意、デフォルトtrue）
-- `subpage`: サブページフラグ（true/false）（任意、デフォルトfalse）
+- `isSubpage`: サブページフラグ（true/false）（任意、デフォルトfalse）
 
 ## ユーティリティ関数
 `@lib/path.ts` にパス関連のユーティリティ関数を記述します。
@@ -123,8 +123,8 @@ export function normalizeSlugLike(rawSlug: string): string {
 
 ```ts
 export function getNormalizedSlug(pageId: string): string {
-    const rawSlug = dividePageId(pageId).rawSlug;
-    return normalizePath(rawSlug);
+    const rawSlug = getRawSlug(pageId);
+    return normalizeSlugLike(rawSlug);
 }
 ```
 
@@ -202,7 +202,7 @@ export function isPathActive(targetSlug: string, currentPath: string): boolean {
 - スラッグ部分は `[...slug]` のレストパラメータ形式を採用することで、任意の深さのスラッグにマッチします。  
 `getStaticPaths()` 関数で `locale` と `slug` を出力することで、対応するページのパスを生成します。実際の処理は `@lib/pages` の `resolveWikiPages()` 関数で行います。
 
-### resolvewikiPages()
+### resolveWikiPages()
 ウィキページを解決する関数です。ウィキページ収集、スラッグ生成、衝突の検知、ロケールのフォールバック判定など、様々なロジックを処理します。
 
 #### ウィキページ収集
@@ -270,8 +270,8 @@ for (const slug of Object.keys(pagesBySlugLocale)) {
         const isFallback = !availablePages[locale];
         const page = availablePages[locale]
             ?? availablePages[defaultLocale]
-            ?? locales.mp((loc) => availablePages[loc]).find(
-                (p): p is CollectionEntry<'wiki'> => p !== undefind
+            ?? locales.map((loc) => availablePages[loc]).find(
+                (p): p is CollectionEntry<'wiki'> => p !== undefined
             );
         if (!page) {
             throw new Error(`[wiki routing] No page found for slug "${slug}"`);
@@ -286,7 +286,7 @@ return resolved;
 `./src/pages/[locale]/wiki/[...slug].astro` 内に `getStaticPaths()` 関数を記述し、`resolveWikiPages()` 関数を用いて URL を組み立て、各種 `props` を出力します。
 
 ```ts
-export async function gtStaticPaths() {
+export async function getStaticPaths() {
     const resolvedPages = await resolveWikiPages();
     return resolvedPages.map(({ locale, slug, page, isFallback }) => ({
         params: {

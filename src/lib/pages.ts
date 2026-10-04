@@ -5,7 +5,7 @@
 
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { locales, defaultLocale, type Locale } from '@i18n/i18n.config';
-import { getLocale, getRawSlug, getNormalizedSlug, normalizeSlugLike } from '@lib/path';
+import { getLocale, getNormalizedSlug, normalizeSlugLike } from '@lib/path';
 
 /**
  * ウィキページの情報
@@ -78,17 +78,16 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
  * @returns 一意にフィルタリングされたページリスト
  */
 export function getUniquePagesByLocale( pages: CollectionEntry<'wiki'>[], locale: Locale ): CollectionEntry<'wiki'>[] {
-    const uniquePages: Record<string, CollectionEntry<'wiki'>> = {};
+    const priority = (l: Locale) =>
+        l === locale ? 0: l === defaultLocale ? 1 : 2 + locales.indexOf(l);
+    const best: Record<string, CollectionEntry<'wiki'>> = {};
 
     for (const page of pages) {
-        const pLocale = getLocale(page.id);
-        const baseSlug = getRawSlug(page.id);
-
-        if (!uniquePages[baseSlug]) {
-            uniquePages[baseSlug] = page;
-        } else if (pLocale === locale) {
-            uniquePages[baseSlug] = page;
+        const key = getNormalizedSlug(page.id);
+        const current = best[key];
+        if (!current || priority(getLocale(page.id)) < priority(getLocale(current.id))) {
+            best[key] = page;
         }
     }
-    return Object.values(uniquePages);
+    return Object.values(best);
 }

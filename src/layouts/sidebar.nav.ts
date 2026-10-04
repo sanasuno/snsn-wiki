@@ -31,9 +31,9 @@ export const sidebarNavItems: SidebarNavSection[] = [
         titleKey: 'sidebar.quickLinks',
         items: [
             { path: '/', i18nKey: 'sidebar.home', icon: 'fas fa-house' },
-            { path: '/category', i18nKey: 'sidebar.category', icon: 'fas fa-folder' },
-            { path: '/tags', i18nKey: 'sidebar.tags', icon: 'fas fa-tags' },
-            { path: '/graph', i18nKey: 'sidebar.graph', icon: 'fas fa-diagram-project' }
+            // { path: '/category', i18nKey: 'sidebar.category', icon: 'fas fa-folder' },
+            // { path: '/tags', i18nKey: 'sidebar.tags', icon: 'fas fa-tags' },
+            // { path: '/graph', i18nKey: 'sidebar.graph', icon: 'fas fa-diagram-project' }
         ]
     },
     {

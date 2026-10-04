@@ -58,6 +58,7 @@
     --color-bg: #1a1a1a;
     --color-bg-hover: #2a2a2a;
     --color-bg-accent: #1f3a2b;
+    --color-bg-accent-hover: #1a3224;
     --color-bg-secondary: #2a2a2a;
     --color-bg-secondary-hover: #3a3a3a;
     --color-bg-tertiary: #1a1a1a;
@@ -89,7 +90,7 @@
 :root[data-theme="dark"] .astro-code,
 :root[data-theme="dark"] .astro-code span {
     color: var(--shiki-dark) !important;
-    background-color: var(--shiiki-dark-bg) !important;
+    background-color: var(--shiki-dark-bg) !important;
 }
 
 :root {

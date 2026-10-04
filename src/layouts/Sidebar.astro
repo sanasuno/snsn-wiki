@@ -7,7 +7,7 @@ import { getCollection } from "astro:content";
 import { t, type Locale, type TranslationKey } from "@i18n/i18n.config";
 import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
 import { getUniquePagesByLocale } from '@lib/pages';
-import { normalizeSlugLike, getNormalizedSlug, getLocaleBaseUrl, getWikiUrl, getCurrentPath } from '@lib/path';
+import { normalizeSlugLike, getNormalizedSlug, getLocaleBaseUrl, getWikiUrl, getCurrentPath, isPathActive } from '@lib/path';
 import { getCategory } from '@lib/category';
 
 interface Props {
@@ -24,7 +24,7 @@ const pagesByCategory : Record<string, typeof uniquePages> = {};
 const slugMap : Record<string, (typeof uniquePages)[0]> = {};
 for (const page of uniquePages) {
     slugMap[getNormalizedSlug(page.id)] = page;
-    const category: string[] = getCategory(page.id) || [];
+    const category: string[] = getCategory(page.id, page.data.isSubPage);
     const key = category.length > 0 && autoGroupByLeafCategory
         ? category[category.length - 1]
         : category.join('/');
@@ -58,7 +58,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
 
                     return (
                         <section class='sidebar-section'>
-                            <button class='sidebar-section-title'>
+                            <button type="button" class='sidebar-section-title'>
                                 {section.icon && <i class={`${section.icon} fa-fw`}></i>}
                                 {t(section.titleKey, locale)}
                                 <i class='fas fa-chevron-down sidebar-chevron'></i>
@@ -67,7 +67,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                 {
                                     sorted.map(page => {
                                         return (
-                                            <a href={getWikiUrl(page.id)} aria-current={getWikiUrl(page.id) === currentPath ? 'page' : undefined} class='sidebar-nav-title'>
+                                            <a href={getWikiUrl(page.id, locale)} aria-current={getWikiUrl(page.id, locale) === currentPath ? 'page' : undefined} class='sidebar-nav-title'>
                                                 <i class='far fa-file-lines fa-fw'></i>
                                                 {page.data.title}
                                             </a>
@@ -80,7 +80,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                 } else if (section.items) {
                     return (
                         <section class='sidebar-section'>
-                            <button class='sidebar-section-title'>
+                            <button type="button" class='sidebar-section-title'>
                                 {section.icon && <i class={`${section.icon} fa-fw`}></i>}
                                 {t(section.titleKey, locale)}
                                 <i class='fas fa-chevron-down sidebar-chevron'></i>
@@ -93,7 +93,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                         const key = normalizeSlugLike(item.path.replace(/^\/+|\/+$/g, ''));
                                         const page = key ? slugMap[key] : undefined;
                                         if (page) {
-                                            href = getWikiUrl(page.id);
+                                            href = getWikiUrl(page.id, locale);
                                             if (!item.i18nKey) label = page.data.title;
                                         } else {
                                             href = item.path === '/' ? localeBaseUrl : `${localeBaseUrl}${item.path}`;
@@ -102,7 +102,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                     if (!href || !label) {
                                         return null;
                                     }
-                                    return <a href={href} rel={item.external ? 'noopener noreferrer' :null}>
+                                    return <a href={href} rel={item.external ? 'noopener noreferrer' :null} aria-current={!item.external && isPathActive(item.path, currentPath) ? 'page' : undefined}>
                                         {item.icon
                                             ? <i class={`${item.icon} fa-fw`}></i>
                                             : <i class='far fa-file-lines fa-fw'></i>
@@ -129,7 +129,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
             );
             return (
                 <section class='sidebar-section'>
-                    <button class='sidebar-section-title'>
+                    <button type="button" class='sidebar-section-title'>
                         <i class='fas fa-folder fa-fw'></i>
                         {category === ''
                             ? t('homepage.title', locale)
@@ -140,7 +140,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                     <div class='sidebar-nav'>
                         {sorted.map((page) => {
                             return (
-                                <a href={getWikiUrl(page.id)} aria-current={getWikiUrl(page.id) === currentPath ? 'page' : undefined}>
+                                <a href={getWikiUrl(page.id, locale)} aria-current={getWikiUrl(page.id, locale) === currentPath ? 'page' : undefined}>
                                     <i class='far fa-file-lines fa-fw'></i>
                                     {page.data.title}
                                 </a>

@@ -29,7 +29,7 @@ const { locale, localeBaseUrl }: Props = Astro.props;
 サイドバー切り替え用のボタンを配置します。
 
 ```astro
-<button class="sidebar-toggle" id="sidebar-toggle" aria-label={t("header.sidebar.toggle", locale)} aria-pressed="false">
+<button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label={t("header.sidebar.toggle", locale)} aria-expanded="false" aria-controls="sidebar">
     <i class="fas fa-bars" aria-hidden="true"></i>
 </button>
 ```
@@ -44,7 +44,6 @@ const { locale, localeBaseUrl }: Props = Astro.props;
  * @param isOpen 開いているかどうか
  */
 function setSidebarToggleBtnState(btn: HTMLButtonElement, isOpen: boolean) {
-    btn.setAttribute('aria-pressed', isOpen.toString());
     btn.setAttribute('aria-expanded', isOpen.toString());
     const icon = btn.querySelector('i');
     if (icon) {

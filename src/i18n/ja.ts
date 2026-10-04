@@ -28,6 +28,12 @@ export const ja = {
 
     'graph.title': 'グラフ',
     'graph.description': 'グラフの説明',
+
+    '404.title': '404',
+    '404.description': 'ページが見つかりません',
+    
+    'footer.privacy': 'プライバシーポリシー',
+    'footer.terms': '利用規約',
     
     ...jaCustom
 } satisfies Record<TranslationKey, string>;

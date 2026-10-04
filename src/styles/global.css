@@ -350,7 +350,7 @@ body {
     transition: var(--transition);
 }
 
-.sidebar-section-title[aria-expanded="faluse"] .sidebar-chevron {
+.sidebar-section-title[aria-expanded="false"] .sidebar-chevron {
     transform: rotate(-90deg);
 }
 
@@ -402,8 +402,106 @@ body {
     padding: 24px 20px;
 }
 
+.main-content > :first-child {
+    margin-top: 0;
+}
+
+.main-content :is(h1, h2, h3, h4, h5, h6) {
+    line-height: 1.3;
+    margin: 1.8em 0 0.6em;
+}
+
+.main-content h2 {
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.main-content :is(p, ul, ol, pre, table, blockquote) {
+    margin-block: 1em;
+}
+
+.main-content :is(ul, ol) {
+    padding-left: 1.5em;
+}
+
+.main-content a {
+    color: var(--color-link);
+}
+
+.main-content a:hover {
+    color: var(--color-link-hover);
+}
+
+.main-content a:visited {
+    color: var(--color-link-visited);
+}
+
+.main-content :not(pre) > code {
+    padding: 0.15em 0.4em;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg-code);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+}
+
 .astro-code {
+    padding: 1em;
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.main-content table {
+    display: block;
     overflow-x: auto;
+    border-collapse: collapse;
+}
+
+.main-content :is(th, td) {
+    padding: 6px 12px;
+    border: 1px solid var(--color-border);
+}
+
+.site-footer {
+    padding: 24px 48px;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+@media(max-width: 1200px) {
+    .site-footer {
+        padding: 24px;
+    }
+}
+
+@media(max-width: 768px) {
+    .site-footer {
+        padding: 16px;
+    }
+}
+
+.site-footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}
+
+.site-footer-links a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.site-footer-links a:hover {
+    color: var(--color-accent);
+}
+
+.site-footer-credit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .subpanel {

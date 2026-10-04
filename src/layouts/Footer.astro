@@ -3,9 +3,25 @@
  * @layouts/Footer.astro
  * フッターコンポーネント
  */
-import type { Locale } from '@i18n/i18n.config';
+import { t, type Locale } from '@i18n/i18n.config';
+import { getLocaleBaseUrl } from '@lib/path';
+
 interface Props {
     locale: Locale,
 }
 const { locale } = Astro.props;
+const localeBaseUrl = getLocaleBaseUrl(locale);
+
+const startYear = 2026;
+
+const year = new Date().getFullYear();
 ---
+<footer class="site-footer">
+    <div class="site-footer-links">
+        <a href={`${localeBaseUrl}/privacy`}>{t('footer.privacy', locale)}</a>
+        <a href={`${localeBaseUrl}/terms`}>{t('footer.terms', locale)}</a>
+    </div>
+    <div class="site-footer-credit">
+        © {startYear} - {year} {t('site.title', locale)}.
+    </div>
+</footer>
