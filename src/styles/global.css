@@ -550,7 +550,7 @@ body {
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-text-subtle);
+    color: var(--color-text-muted);
     margin-top: 20px;
 }
 
@@ -569,7 +569,7 @@ body {
     padding: 3px 8px;
     border-radius: var(--radius-sm);
     border-left: 2px solid transparent;
-    transition: all var(--transition);
+    transition: var(--transition);
     line-height: 1.4;
 }
 
@@ -616,7 +616,7 @@ body {
         cursor: pointer;
         box-shadow: var(--shadow-lg);
         z-index: 1000;
-        transition: background var(--transition), transform var(--transition);
+        transition: background var(--transition), transform 150ms ease;
     }
     
     .toc-drawer-button:hover {

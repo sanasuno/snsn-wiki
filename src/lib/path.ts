@@ -14,6 +14,15 @@ export function removeTrailingSlash(path: string): string {
 }
 
 /**
+ * 末尾にスラッシュを付与する関数
+ * @param path 付与するパス
+ * @returns 末尾にスラッシュを付与したパス
+ */
+export function ensureTrailingSlash(path: string): string {
+    return path.endsWith('/') ? path : `${path}/`;
+}
+
+/**
  * ページIDからロケールを取得する関数
  * @param pageId ページID
  * @returns ロケール
@@ -103,7 +112,7 @@ export function getWikiBaseUrl(locale: Locale): string {
  */
 export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
-    return removeTrailingSlash(`${getWikiBaseUrl(locale)}/${slug}`);
+    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}/${slug}`);
 }
 
 /**
@@ -112,7 +121,7 @@ export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): 
  * @returns 現在のパス
  */
 export function getCurrentPath(url: URL): string {
-    return removeTrailingSlash(url.pathname) || '/';
+    return ensureTrailingSlash(url.pathname) || '/';
 }
 
 /**
@@ -126,8 +135,8 @@ export function isPathActive(targetSlug: string, currentPath: string): boolean {
     const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length) : currentPath;
     const [ _, maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
-        ? `/${normalizeSlugLike(rest.join('/'))}`
-        : relativePath;
+        ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
+        : removeTrailingSlash(relativePath);
     return targetSlug === '/'
         ? currentSlug === '/'
         : currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);

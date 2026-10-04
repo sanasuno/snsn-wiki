@@ -5,7 +5,7 @@
  */
 
 import { t, defaultLocale, type Locale } from '@i18n/i18n.config';
-import { getBaseUrl, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath } from '@lib/path';
+import { getBaseUrl, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath, removeTrailingSlash } from '@lib/path';
 
 import Header from '@layouts/Header.astro';
 import Sidebar from '@layouts/Sidebar.astro';
@@ -56,8 +56,9 @@ const currentPath = getCurrentPath(Astro.url);
 
 const canonicalUrl = new URL(currentPath, Astro.url).href;
 
-const ogSlug = currentPath.startsWith(wikiBaseUrl)
-    ? `wiki${currentPath.slice(wikiBaseUrl.length)}`
+const pathNoSlash = removeTrailingSlash(currentPath);
+const ogSlug = pathNoSlash.startsWith(wikiBaseUrl)
+    ? `wiki${pathNoSlash.slice(wikiBaseUrl.length)}`
     : 'index';
 const ogImageUrl = new URL(`${localeBaseUrl}/og/${ogSlug}.png`, Astro.url).href;
 
@@ -151,7 +152,7 @@ const pageDescription = description ?? siteDescription;
                 />
             </main>
             {showSubpanel && (
-                <aside class="subpanel">
+                <aside class="subpanel" id="subpanel">
                     <Toc
                         locale={locale}
                         headings={headings}

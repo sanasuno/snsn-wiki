@@ -21,7 +21,7 @@ export function setUpToc() {
         },
         { rootMargin: '-20% 0% -70% 0%' }
     );
-    document.querySelectorAll(' main-content h2, main-content h3, .main-content h4' ).forEach((heading) => {
+    document.querySelectorAll('.main-content h2, .main-content h3, .main-content h4' ).forEach((heading) => {
         observer.observe(heading);
     });
     }

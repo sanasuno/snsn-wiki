@@ -44,7 +44,7 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ props }) => {
-    const { title, description, category, siteName } = props as { title: string; description?: string; category?: string; siteName: string; font: string };
+    const { title, description, category, siteName } = props as { title: string; description?: string; category?: string; siteName: string; };
     const png = await renderOgImage({ title, description, category, siteName });
     return new Response(new Uint8Array(png), {
         headers: {

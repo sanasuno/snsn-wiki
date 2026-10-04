@@ -7,7 +7,7 @@ import { getCollection } from "astro:content";
 import { t, type Locale, type TranslationKey } from "@i18n/i18n.config";
 import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
 import { getUniquePagesByLocale } from '@lib/pages';
-import { normalizeSlugLike, getNormalizedSlug, getLocaleBaseUrl, getWikiUrl, getCurrentPath, isPathActive } from '@lib/path';
+import { normalizeSlugLike, getNormalizedSlug, ensureTrailingSlash, getLocaleBaseUrl, getWikiUrl, getCurrentPath, isPathActive } from '@lib/path';
 import { getCategory } from '@lib/category';
 
 interface Props {
@@ -68,7 +68,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                     sorted.map(page => {
                                         return (
                                             <a href={getWikiUrl(page.id, locale)} aria-current={getWikiUrl(page.id, locale) === currentPath ? 'page' : undefined} class='sidebar-nav-title'>
-                                                <i class='far fa-file-lines fa-fw'></i>
+                                                <i class='far fa-file-lines fa-fw' aria-hidden="true"></i>
                                                 {page.data.title}
                                             </a>
                                         )
@@ -96,7 +96,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                             href = getWikiUrl(page.id, locale);
                                             if (!item.i18nKey) label = page.data.title;
                                         } else {
-                                            href = item.path === '/' ? localeBaseUrl : `${localeBaseUrl}${item.path}`;
+                                            href = ensureTrailingSlash(item.path === '/' ? localeBaseUrl : `${localeBaseUrl}${item.path}`);
                                         }
                                     }
                                     if (!href || !label) {
@@ -104,8 +104,8 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                     }
                                     return <a href={href} rel={item.external ? 'noopener noreferrer' :null} aria-current={!item.external && isPathActive(item.path, currentPath) ? 'page' : undefined}>
                                         {item.icon
-                                            ? <i class={`${item.icon} fa-fw`}></i>
-                                            : <i class='far fa-file-lines fa-fw'></i>
+                                            ? <i class={`${item.icon} fa-fw`} aria-hidden="true"></i>
+                                            : <i class='far fa-file-lines fa-fw' aria-hidden="true"></i>
                                         }
                                         {' '}
                                         {label}
@@ -141,7 +141,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                         {sorted.map((page) => {
                             return (
                                 <a href={getWikiUrl(page.id, locale)} aria-current={getWikiUrl(page.id, locale) === currentPath ? 'page' : undefined}>
-                                    <i class='far fa-file-lines fa-fw'></i>
+                                    <i class='far fa-file-lines fa-fw' aria-hidden="true"></i>
                                     {page.data.title}
                                 </a>
                             )

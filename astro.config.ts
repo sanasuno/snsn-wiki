@@ -32,6 +32,7 @@ const base = siteConfig.basePath.replace(/\/+$/, '') || '/';
 export default defineConfig({
     site,
     base,
+    trailingSlash: 'always',
     markdown: {
         shikiConfig: {
             themes: { light: 'github-light', dark: 'github-dark' },
