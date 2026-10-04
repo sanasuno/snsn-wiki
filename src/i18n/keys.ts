@@ -22,12 +22,22 @@ export const structuralKeys = [
 
     'sidebar.nav.title',
 
-    'footer.privacy',
-    'footer.terms',
-    
-    'toc.title',
-    'toc.open',
+    'fallback.notice',
 
+    'meta.created',
+    'meta.updated',
+
+    'privacy.title',
+    'privacy.description',
+
+    'terms.title',
+    'terms.description',
+    
+    'subpanel.open',
+    'subpanel.close',
+
+    'toc.title',
+    
     'homepage.title',
     'homepage.description',
 

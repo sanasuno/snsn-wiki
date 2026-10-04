@@ -29,6 +29,7 @@ interface Props {
     tags?: string[];
     date?: Date;
     updated?: Date;
+    id?: string;
     isSubPage?: boolean;
     headings?: { depth: number; slug: string; text: string }[];
     showSubpanel?: boolean;
@@ -43,6 +44,7 @@ const {
     tags = [],
     date,
     updated,
+    id,
     isSubPage = false,
     headings = [],
     showSubpanel = true,
@@ -142,6 +144,7 @@ const pageDescription = description ?? siteDescription;
                     tags={tags}
                     date={date}
                     updated={updated}
+                    id={id}
                     isSubPage={isSubPage}
                     isFallback={isFallback}
                 >
@@ -152,15 +155,20 @@ const pageDescription = description ?? siteDescription;
                 />
             </main>
             {showSubpanel && (
-                <aside class="subpanel" id="subpanel">
-                    <Toc
-                        locale={locale}
-                        headings={headings}
-                    />
-                    <MiniGraph
-                        locale={locale}
-                    />
-                </aside>
+                <>
+                    <aside class="subpanel" id="subpanel">
+                        <Toc
+                            locale={locale}
+                            headings={headings}
+                        />
+                        <MiniGraph
+                            locale={locale}
+                        />
+                    </aside>
+                    <button type="button" class="subpanel-drawer-button" id="subpanel-drawer-button" aria-label={t('subpanel.open', locale)} aria-controls="subpanel">
+                        <i class="fas fa-list-ul" aria-hidden="true"></i>
+                    </button>
+                </>
             )}
         </div>
         <script>

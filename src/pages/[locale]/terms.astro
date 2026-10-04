@@ -1,0 +1,25 @@
+---
+import { t, locales, type Locale} from '@i18n/i18n.config';
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import MainLayout from '@layouts/MainLayout.astro';
+
+export const getStaticPaths = () => {
+    return locales.map((locale) => ({
+        params: { locale },
+    }));
+};
+const locale = Astro.params.locale as Locale;
+const alternateLinks = locales.map(loc => ({
+    locale: loc,
+    href: getRelativeLocaleUrl(loc, 'terms'),
+}));
+---
+
+<MainLayout
+    title={t('terms.title')}
+    description={t('terms.description')}
+    locale={locale}
+    alternateLinks={alternateLinks}
+    showSubpanel={false}
+    >
+</MainLayout>

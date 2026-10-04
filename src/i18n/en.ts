@@ -22,12 +22,21 @@ export const en = {
     
     'sidebar.nav.title': 'Sidebar',
     
-    'footer.privacy': 'Privacy Policy',
-    'footer.terms': 'Terms of Service',
+    'fallback.notice': 'This page does not have an English translation yet.',
     
-    'toc.title': 'Table of Contents',
-    'toc.open': 'Open table of contents',
+    'meta.created': 'Created',
+    'meta.updated': 'Updated',
+    
+    'privacy.title': 'Privacy Policy',
+    'privacy.description': 'Privacy Policy description',
+    'terms.title': 'Terms of Service',
+    'terms.description': 'Terms of Service description',
+    
+    'subpanel.open': 'Open table of contents',
+    'subpanel.close': 'Close table of contents',
 
+    'toc.title': 'Table of Contents',
+    
     'homepage.title': 'Home',
     'homepage.description': 'Home page description',
     

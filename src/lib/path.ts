@@ -124,6 +124,7 @@ export function getCurrentPath(url: URL): string {
     return ensureTrailingSlash(url.pathname) || '/';
 }
 
+
 /**
  * 現在のパスが指定されたパスと一致するか判定する関数
  * @param targetSlug - 比較するスラッグ

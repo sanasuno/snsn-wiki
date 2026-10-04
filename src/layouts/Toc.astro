@@ -21,7 +21,7 @@ const filtered = headings.filter(h => h.depth >= 2 && h.depth <= 4);
 {filtered.length > 0 && (
     <nav aria-label={t('toc.title', locale)}>
         <div class="toc-title">
-            <i class="fas fa-list-ul"></i>
+            <i class="fas fa-list-ul" aria-hidden="true"></i>
             {t('toc.title', locale)}
         </div>
         <ol class="toc-nav">
@@ -35,7 +35,3 @@ const filtered = headings.filter(h => h.depth >= 2 && h.depth <= 4);
         </ol>
     </nav>
 )}
-<div class="toc-overlay" id="toc-overlay"></div>
-<button type="button" class="toc-drawer-button" id="toc-drawer-button" aria-label={t('toc.open', locale)}>
-    <i class="fas fa-list-ul"></i>
-</button>

@@ -20,15 +20,9 @@ export function getCategory(pageId: string, isSubpage: boolean = false): string[
     }
 }
 
-/**
- * ページIDからリーフカテゴリを取得する関数
- * @param pageId ページID
- * @param isSubPage サブページかどうか
- * @returns リーフカテゴリ
- */
-export function getLeafCategory(pageId: string, isSubPage: boolean = false ): string {
-    const category = getCategory(pageId, isSubPage);
-    return category[category.length - 1];
+export function getCategoryString(pageId: string, isSubpage: boolean = false): string {
+    const category = getCategory(pageId, isSubpage);
+    return category.join('/');
 }
 
 /**

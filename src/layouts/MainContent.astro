@@ -3,7 +3,191 @@
  * @layouts/MainContent.astro
  * メインコンテンツレイアウト
  */
+import { t, type Locale } from '@i18n/i18n.config';
+import { getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath } from '@lib/path';
+import { getCategory, getCategoryString, getTranslatedCategory } from '@lib/category';
+import { formatDate } from '@lib/date';
+
+interface Props {
+    title: string;
+    locale: Locale;
+    tags?: string[];
+    date?: Date;
+    updated?: Date;
+    id?: string;
+    isSubPage?: boolean;
+    isFallback?: boolean;
+}
+
+const {
+    title,
+    locale,
+    tags = [],
+    date,
+    updated,
+    id,
+    isSubPage = false,
+    isFallback = false,
+} = Astro.props;
+
+const localeBaseUrl = getLocaleBaseUrl(locale);
+const wikiBaseUrl = getWikiBaseUrl(locale);
+
+const currentPath = getCurrentPath(Astro.url);
+
+type Crumb = {
+    label: string;
+    href: string;
+    categorySegment?: string | undefined;
+}
+
+const categoryString = id ? getCategoryString(id, isSubPage) : undefined;
+
+function buildCrumbs(): Crumb[] {
+    if (id) {
+        const category = getCategory(id, isSubPage);
+        const crumbs: Crumb[] = [
+            {
+                label: t('homepage.title', locale),
+                href: wikiBaseUrl
+            }
+        ]
+        let categoryAccumulated = '';
+        category.forEach((segment, index) => {
+            const isLast = index === category.length - 1;
+            categoryAccumulated += `/${segment}`;
+            
+            crumbs.push({
+                label: isLast ? title : segment,
+                href: isLast ? currentPath : `${localeBaseUrl}/category/${categoryAccumulated}`,
+                categorySegment: isLast ? segment : undefined,
+            })
+        })
+        return crumbs;
+    } else {
+        const currentSlug = currentPath.startsWith(localeBaseUrl)
+            ? currentPath.slice(localeBaseUrl.length)
+            : currentPath;
+        const segments = currentSlug.split('/').filter(Boolean);
+        const crumbs: Crumb[] = [
+            {
+                label: t('homepage.title', locale),
+                href: localeBaseUrl
+            }
+        ];
+        let accumulated = localeBaseUrl;
+        segments.forEach((segment, index) => {
+            accumulated += `${segment}`;
+            const isLast = index === segments.length -1;
+            crumbs.push({
+                label: isLast ? title : segment,
+                href: isLast ? currentPath : `${accumulated}`,
+            });
+        });
+        return crumbs;
+    }
+}
+const crumbs = buildCrumbs();
 ---
-<div class="main-content">
-    <slot />
+<div class="main-content" id="main-content">
+    {isFallback && (
+        <div class="fallback-notice" role="note">
+            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+            <span>{t('fallback.notice', locale)}</span>
+        </div>
+    )}
+    <header class="page-header">
+        {id && (
+            <nav class="breadcrumb">
+                <ol class="breadcrumbs">
+                    {crumbs.map((crumb, index) => {
+                        const isHome = index === 0;
+                        const isLast = index === crumbs.length -1;
+                        const isCategorySegment = !isLast && !isHome && id;
+                        return (
+                            <>
+                                <li class:list={[{ 'breadcrumb__current': isLast }]} aria-current={isLast ? 'page' : undefined}>
+                                    {isHome ? (
+                                        isLast
+                                            ? <>
+                                                <i class="fas fa-house" aria-hidden="true"></i>
+                                                <span>{crumb.label}</span>
+                                            </>
+                                            : <>
+                                                <i class="fas fa-house" aria-hidden="true"></i>
+                                                <a href={crumb.href}>
+                                                    {crumb.label}
+                                                </a>
+                                            </>
+                                    ) : isLast ? (
+                                        <>
+                                            <i class="far fa-file" aria-hidden="true"></i>
+                                            <span>{crumb.label}</span>
+                                        </>
+                                    ) : isCategorySegment ? (
+                                        <>
+                                            <i class="fas fa-folder" aria-hidden="true"></i>
+                                            <a href={crumb.href}>
+                                                {getTranslatedCategory(id, locale, isSubPage)}
+                                            </a>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i class="far fa-file" aria-hidden="true"></i>
+                                            <a href={crumb.href}>{crumb.label}</a>
+                                        </>
+                                    )}
+                                </li>
+                                {!isLast && (
+                                    <li class="breadcrump__separator" aria-hidden="true">
+                                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                    </li>
+                                )}
+                            </>
+                        )
+                    })}
+                </ol>
+            </nav>
+        )}
+    </header>
+    <h1 class="page-title">
+        {title}
+    </h1>
+    <div class="page-meta">
+        {id && (
+            <div class="page-meta-category">
+                <a href={`${localeBaseUrl}/category/${categoryString}`}>
+                    {getTranslatedCategory(id, locale, isSubPage)}
+                </a>
+            </div>
+        )}
+        {( date || updated) && (
+            <div class="page-meta-dates">
+                {date && (
+                    <span class="page-date">
+                        <i class="far fa-calendar-plus" aria-hidden="true"></i>
+                        {t('meta.created', locale)}: {formatDate(date, locale)}
+                    </span>
+                )}
+                {updated && (
+                    <span class="page-date">
+                        <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                        {t('meta.updated', locale)}: {formatDate(updated, locale)}
+                    </span>
+                )}
+            </div>
+        )}
+    </div>
+    <article class="article-content">
+        <slot />
+        {tags.length > 0 && (
+            <div class="page-tags">
+                {tags.map(tag => (
+                    <a href={`${localeBaseUrl}/tag/${encodeURIComponent(tag)}`} class="page-tag">
+                        #{tag}
+                    </a>
+                ))}
+            </div>
+        )}
+    </article>
 </div>

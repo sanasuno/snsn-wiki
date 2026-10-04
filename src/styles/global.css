@@ -476,6 +476,326 @@ body {
     border: 1px solid var(--color-border);
 }
 
+.page-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* -------- フォールバック警告 -------- */
+.fallback-warning {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    margin-bottom: 24px;
+}
+
+.fallback-warning i {
+    font-size: 1.125rem;
+}
+
+.article-content {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 24px;
+}
+
+.breadcrumb {
+    font-size: 0.825rem;
+    margin-block-end: var(--space-3, 0.75rem);
+    color: var(--color-muted, #888);
+}
+
+.breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.breadcrumb__separator {
+    font-size: 0.65rem; /* アイコンを少し小さく */
+    color: var(--color-text-muted);
+    line-height: 1;
+}
+
+.breadcrumb i {
+    margin-right: 0.25rem;
+}
+
+.breadcrumb a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: var(--color-accent);
+}
+
+.breadcrumb__current {
+    color: var(--color-text, inherit);
+    font-weight: 500;
+}
+
+.page-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.page-meta-dates {
+    display: flex;
+    gap: 12px;
+}
+
+.page-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+}
+
+.page-date i {
+    font-size: 0.7rem;
+}
+
+.page-meta-category {
+    display: flex;
+    gap: 8px;
+}
+
+.page-meta-category a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: all var(--transition);
+}
+
+.page-meta-category a:hover {
+    background-color: var(--color-bg-accent);
+    border-color: var(--color-border-accent);
+    color: var(--color-accent);
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    margin: 0 0 12px 0;
+    color: var(--color-text);
+}
+
+
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    margin: 2em 0 0.75em;
+    scroll-margin-top: calc(var(--header-height) + 16px);
+    color: var(--color-text);
+}
+
+.article-content h1 {
+    font-size: 1.875rem;
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 8px;
+}
+
+.article-content h2 {
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 6px;
+}
+
+.article-content h3 {
+    font-size: 1.25rem;
+}
+
+.article-content h4 {
+    font-size: 1.1rem;
+}
+
+.article-content p {
+    margin: 1em 0;
+}
+
+.article-content a {
+    color: var(--color-link);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    transition: color var(--transition);
+}
+
+.article-content a:hover {
+    color: var(--color-link-hover);
+}
+
+.article-content a:visited {
+    color: var(--color-link-visited);
+}
+
+.article-content a.wikilink {
+    color: var(--color-wikilink);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--transition);
+}
+
+.article-content a.wikilink:hover {
+    border-bottom-color: var(--color-wikilink);
+}
+
+.article-content a.wikilink-missing {
+    color: var(--color-wikilink-missing) !important;
+    border-bottom: 1px dashed var(--color-wikilink-missing) !important;
+}
+
+.article-content li {
+    margin: 0.35em 0;
+}
+
+.article-content blockquote {
+  margin: 1.25em 0;
+  padding: 12px 20px;
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-accent-light);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--color-text-muted);
+}
+
+.article-content blockquote p:first-child {
+  margin-top: 0;
+}
+
+.article-content blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.article-content blockquote cite {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-subtle);
+  font-style: normal;
+}
+
+.article-content blockquote cite::before {
+  content: '— ';
+}
+
+.article-content :not(pre)>code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--color-bg-code);
+  color: var(--color-accent);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.article-content pre {
+  overflow-x: auto;
+  margin: 1.25em 0;
+  padding: 1em;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.article-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+.article-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25em 0;
+  font-size: 0.9rem;
+}
+
+.article-content th {
+  background: var(--color-bg-secondary);
+  font-weight: 600;
+  text-align: left;
+}
+
+.article-content th,
+.article-content td {
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+}
+
+.article-content tr:hover td {
+  background: var(--color-bg-tertiary);
+}
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.article-content hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 2em 0;
+}
+
+.page-tags {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.page-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    text-decoration: none;
+    transition: all var(--transition);
+}
+
+.page-tag:hover {
+    background-color: var(--color-bg-accent);
+    border-color: var(--color-border-accent);
+    color: var(--color-accent) !important;
+}
+
 .site-footer {
     padding: 24px 48px;
     font-size: 0.8rem;
@@ -539,12 +859,6 @@ body {
     }
 }
 
-@media(max-width: 1200px) {
-    .subpanel {
-        display: none;
-    }
-}
-
 .toc-title {
     font-size: 0.75rem;
     font-weight: 700;
@@ -595,12 +909,12 @@ body {
     font-size: 0.75rem;
 }
 
-.toc-drawer-button {
+.subpanel-drawer-button {
     display: none;
 }
 
 @media (max-width: 1200px) {
-    .toc-drawer-button {
+    .subpanel-drawer-button {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -616,10 +930,10 @@ body {
         cursor: pointer;
         box-shadow: var(--shadow-lg);
         z-index: 1000;
-        transition: background var(--transition), transform 150ms ease;
+        transition: background-color 150ms ease, transform 150ms ease;
     }
     
-    .toc-drawer-button:hover {
+    .subpanel-drawer-button:hover {
         background-color: var(--color-bg-accent-hover);
         color: var(--color-accent-hover);
         transform: scale(1.08);
@@ -628,12 +942,10 @@ body {
 
 @media (max-width: 1200px) {
     .subpanel {
-        display: block !important;
-        /* grid の display:none を上書き */
         position: fixed;
         inset: var(--header-height) 0 0 auto;
         width: min(320px, 90vw);
-        height: calc(100vh - var(--header-height));
+        height: calc(100dvh - var(--header-height));
         background-color: var(--color-bg);
         border-left: 1px solid var(--color-border);
         box-shadow: var(--shadow-lg);
@@ -641,7 +953,7 @@ body {
         padding: 20px 16px;
         overflow-y: auto;
         transform: translateX(100%);
-        transition: transform var(--transition);
+        transition: transform 150ms ease;
         scrollbar-width: thin;
     }
 

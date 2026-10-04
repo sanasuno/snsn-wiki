@@ -23,12 +23,21 @@ export const eo = {
 
     'sidebar.nav.title': 'Flanka Strio',
     
-    'footer.privacy': 'Privateca politiko',
-    'footer.terms': 'Uzantkondiĉoj',
+    'fallback.notice': 'Ĉi tiu paĝo ankoraŭ ne havas esperantan tradukon.',
     
-    'toc.title': 'Enhavtabelo',
-    'toc.open': 'Malfermi enhavtabelon',
+    'meta.created': 'Kreita',
+    'meta.updated': 'Ĝisdatigita',
+    
+    'privacy.title': 'Privateca politiko',
+    'privacy.description': 'Privateca politiko priskribo',
+    'terms.title': 'Uzantkondiĉoj',
+    'terms.description': 'Uzantkondiĉoj priskribo',
+    
+    'subpanel.open': 'Malfermi enhavtabelon',
+    'subpanel.close': 'Fermi enhavtabelon',
 
+    'toc.title': 'Enhavtabelo',
+    
     'homepage.title': 'Hejmo',
     'homepage.description': 'Hejma paĝa priskribo',
     

@@ -26,27 +26,3 @@ export function setUpToc() {
     });
     }
 }
-
-/**
- * 目次のドロワーを設定する関数
- */
-export function setupTocDrawer() {
-    const subPanel = document.getElementById('subpanel');
-    const tocDrawerButton = document.getElementById('toc-drawer-button');
-    if (subPanel && tocDrawerButton) {
-        tocDrawerButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            subPanel.classList.toggle('open');
-        });
-        document.addEventListener('click', (e) => {
-            if (
-                subPanel.classList.contains('open') &&
-                !subPanel.contains(e.target as Node) &&
-                !tocDrawerButton.contains(e.target as Node) &&
-                e.target !== tocDrawerButton
-            ) {
-                subPanel.classList.remove('open');
-            }
-        });
-    }
-}
