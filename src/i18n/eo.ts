@@ -22,6 +22,12 @@ export const eo = {
     'header.nav.graph': 'Grafiko',
 
     'sidebar.nav.title': 'Flanka Strio',
+    
+    'footer.privacy': 'Privateca politiko',
+    'footer.terms': 'Uzantkondiĉoj',
+    
+    'toc.title': 'Enhavtabelo',
+    'toc.open': 'Malfermi enhavtabelon',
 
     'homepage.title': 'Hejmo',
     'homepage.description': 'Hejma paĝa priskribo',
@@ -31,9 +37,6 @@ export const eo = {
 
     '404.title': '404',
     '404.description': 'Paĝo ne trovita',
-    
-    'footer.privacy': 'Privateca politiko',
-    'footer.terms': 'Uzantkondiĉoj',
     
     ...eoCustom
 } satisfies Record<TranslationKey, string>;

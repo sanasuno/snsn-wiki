@@ -1,8 +1,41 @@
 ---
 /**
+ * @layouts/Toc
  * 目次レイアウト
  */
+import { t, type Locale } from '@i18n/i18n.config';
+
+interface Props {
+    headings: Array<{
+        slug: string;
+        depth: number;
+        text: string;
+    }>;
+    locale: Locale;
+}
+
+const { headings, locale } = Astro.props;
+
+const filtered = headings.filter(h => h.depth >= 2 && h.depth <= 4);
 ---
-<div class="toc">
-目次パネル
-</div>
+{filtered.length > 0 && (
+    <nav aria-label={t('toc.title', locale)}>
+        <div class="toc-title">
+            <i class="fas fa-list-ul"></i>
+            {t('toc.title', locale)}
+        </div>
+        <ol class="toc-nav">
+            {filtered.map(heading => (
+                <li class={`depth-${heading.depth}`}>
+                    <a href={`#${heading.slug}`}>
+                        {heading.text}
+                    </a>
+                </li>
+            ))}
+        </ol>
+    </nav>
+)}
+<div class="toc-overlay" id="toc-overlay"></div>
+<button type="button" class="toc-drawer-button" id="toc-drawer-button" aria-label={t('toc.open', locale)}>
+    <i class="fas fa-list-ul"></i>
+</button>

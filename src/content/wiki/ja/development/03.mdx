@@ -55,7 +55,7 @@ export const collections = { wiki };
 - `updated`: ページの更新日（YYYY-MM-DD形式）（任意）
 - `draft`: ドラフトフラグ（true/false）（任意、デフォルトfalse）
 - `showSubpanel`: サブパネル表示フラグ（true/false）（任意、デフォルトtrue）
-- `isSubpage`: サブページフラグ（true/false）（任意、デフォルトfalse）
+- `isSubPage`: サブページフラグ（true/false）（任意、デフォルトfalse）
 
 ## ユーティリティ関数
 `@lib/path.ts` にパス関連のユーティリティ関数を記述します。
@@ -159,8 +159,7 @@ export function getWikiBaseUrl(locale: Locale): string {
 与えられたWikiページのページIDから、そのページのURLを取得する関数です。スラッグの正規化処理を適用します。
 
 ```ts
-export function getWikiUrl(pageId: string): string {
-    const locale = getLocale(pageId);
+export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
     return removeTrailingSlash(`${getWikiBaseUrl(locale)}/${slug}`);
 }
@@ -296,7 +295,6 @@ export async function getStaticPaths() {
         props: { page, locale, slug, isFallback },
     }));
 }
-const { page, locale, slug, isFallback } = Astro.props;
 ```
 
 #### 代替リンク生成

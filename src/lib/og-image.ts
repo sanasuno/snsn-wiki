@@ -27,10 +27,9 @@ interface OgImageParams {
     description?: string;
     category?: string;
     siteName?: string;
-    font: string;
 }
 
-export async function renderOgImage({ title, description, category, siteName, font }: OgImageParams): Promise<Buffer> {
+export async function renderOgImage({ title, description, category, siteName }: OgImageParams): Promise<Buffer> {
     const width = 1200;
     const height = 630;
 
@@ -46,7 +45,7 @@ export async function renderOgImage({ title, description, category, siteName, fo
                 padding: '64px',
                 background: '#0f1115',
                 color: '#f5f5f5',
-                fontFamily: font,
+                fontFamily: 'Noto Sans, Noto Sans JP',
             },
             children: [
                 {
@@ -63,26 +62,37 @@ export async function renderOgImage({ title, description, category, siteName, fo
                     type: 'div',
                     props: {
                         style: {
-                            fontSize: 56,
-                            fontWeight: 700,
-                            lineHeight: 1.3
+                            display: 'flex',
+                            flexDirection: 'column',
                         },
-                        children: title,
-                    },
-                },
-                description
-                    ? {
-                        type: 'div',
-                        props: {
-                            style: {
-                                fontSize: 30,
-                                opacity: 0.8,
-                                marginTop: 16
+                        children: [
+                            {
+                                type: 'div',
+                                props: {
+                                    style: {
+                                        fontSize: 56,
+                                        fontWeight: 700,
+                                        lineHeight: 1.3
+                                    },
+                                    children: title,
+                                },
                             },
-                            children: description
-                        }
+                            description
+                                ? {
+                                    type: 'div',
+                                    props: {
+                                        style: {
+                                            fontSize: 30,
+                                            opacity: 0.8,
+                                            marginTop: 16
+                                        },
+                                        children: description
+                                    }
+                                }
+                                : null,
+                        ].filter(Boolean)
                     }
-                    : null,
+                },
                 category
                     ? {
                         type: 'div',
@@ -106,7 +116,7 @@ export async function renderOgImage({ title, description, category, siteName, fo
                         },
                     }
                     : null,
-                ].filter(Boolean),
+            ].filter(Boolean),
         },
     };
 

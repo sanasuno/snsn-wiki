@@ -29,7 +29,7 @@ const showLanguageSwitcher: boolean = locales.length > 1;
     <nav class="header-nav" aria-label={t("header.nav.title", locale)}>
         {
             headerNavItems.map((item) => (
-                <a href={localeBaseUrl + item.path} class={isPathActive(item.path, currentPath) ? "active" : ""}>
+                <a href={localeBaseUrl + item.path} class={isPathActive(item.path, currentPath) ? "active" : ""} aria-current={isPathActive(item.path, currentPath) ? "page" : undefined}>
                     {item.icon && <i class={item.icon} aria-hidden="true"></i>}
                     <span class="nav-label" data-i18n={item.i18nKey}>
                         {t(item.i18nKey, locale)}

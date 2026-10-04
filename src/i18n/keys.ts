@@ -22,6 +22,12 @@ export const structuralKeys = [
 
     'sidebar.nav.title',
 
+    'footer.privacy',
+    'footer.terms',
+    
+    'toc.title',
+    'toc.open',
+
     'homepage.title',
     'homepage.description',
 
@@ -30,9 +36,6 @@ export const structuralKeys = [
 
     '404.title',
     '404.description',
-
-    'footer.privacy',
-    'footer.terms',
 ] as const;
 
 export const translationKeys = [...structuralKeys, ...customKeys] as const;

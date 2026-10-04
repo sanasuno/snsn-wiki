@@ -23,17 +23,20 @@ export const ja = {
 
     'sidebar.nav.title': 'サイドバー',
 
-    'homepage.title': 'ホーム',
-    'homepage.description': 'ホームページの説明',
-
-    'graph.title': 'グラフ',
-    'graph.description': 'グラフの説明',
-
     '404.title': '404',
     '404.description': 'ページが見つかりません',
     
     'footer.privacy': 'プライバシーポリシー',
     'footer.terms': '利用規約',
+    
+    'toc.title': '目次',
+    'toc.open': '目次を開く',
+
+    'homepage.title': 'ホーム',
+    'homepage.description': 'ホームページの説明',
+
+    'graph.title': 'グラフ',
+    'graph.description': 'グラフの説明',
     
     ...jaCustom
 } satisfies Record<TranslationKey, string>;

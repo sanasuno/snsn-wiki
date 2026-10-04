@@ -21,6 +21,12 @@ export const en = {
     'header.nav.graph': 'Graph',
     
     'sidebar.nav.title': 'Sidebar',
+    
+    'footer.privacy': 'Privacy Policy',
+    'footer.terms': 'Terms of Service',
+    
+    'toc.title': 'Table of Contents',
+    'toc.open': 'Open table of contents',
 
     'homepage.title': 'Home',
     'homepage.description': 'Home page description',
@@ -30,9 +36,6 @@ export const en = {
 
     '404.title': '404',
     '404.description': 'Page not found',
-    
-    'footer.privacy': 'Privacy Policy',
-    'footer.terms': 'Terms of Service',
     
     ...enCustom
 } satisfies Record<TranslationKey, string>;

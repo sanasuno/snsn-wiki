@@ -61,7 +61,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                             <button type="button" class='sidebar-section-title'>
                                 {section.icon && <i class={`${section.icon} fa-fw`}></i>}
                                 {t(section.titleKey, locale)}
-                                <i class='fas fa-chevron-down sidebar-chevron'></i>
+                                <i class='fas fa-chevron-down sidebar-chevron' aria-hidden="true"></i>
                             </button>
                             <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
                                 {
@@ -83,7 +83,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                             <button type="button" class='sidebar-section-title'>
                                 {section.icon && <i class={`${section.icon} fa-fw`}></i>}
                                 {t(section.titleKey, locale)}
-                                <i class='fas fa-chevron-down sidebar-chevron'></i>
+                                <i class='fas fa-chevron-down sidebar-chevron' aria-hidden="true"></i>
                             </button>
                             <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
                                 {section.items.map(item => {
@@ -130,12 +130,12 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
             return (
                 <section class='sidebar-section'>
                     <button type="button" class='sidebar-section-title'>
-                        <i class='fas fa-folder fa-fw'></i>
+                        <i class='fas fa-folder fa-fw' aria-hidden="true"></i>
                         {category === ''
                             ? t('homepage.title', locale)
                             : t(`category.${category}` as TranslationKey, locale)
                         }
-                        <i class='fas fa-chevron-down sidebar-chevron'></i>
+                        <i class='fas fa-chevron-down sidebar-chevron' aria-hidden="true"></i>
                     </button>
                     <div class='sidebar-nav'>
                         {sorted.map((page) => {

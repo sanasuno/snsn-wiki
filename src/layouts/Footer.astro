@@ -22,6 +22,6 @@ const year = new Date().getFullYear();
         <a href={`${localeBaseUrl}/terms`}>{t('footer.terms', locale)}</a>
     </div>
     <div class="site-footer-credit">
-        © {startYear} - {year} {t('site.title', locale)}.
+        © {startYear === year ? startYear : `${startYear} - ${year}`} {t('site.title', locale)}.
     </div>
 </footer>

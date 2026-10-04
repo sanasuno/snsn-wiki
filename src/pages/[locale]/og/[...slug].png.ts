@@ -24,7 +24,6 @@ export const getStaticPaths = (async () => {
                 description: page.data.description,
                 category,
                 siteName: t('site.title', locale),
-                font: t('og.font', locale),
             },
         };
     });
@@ -39,15 +38,14 @@ export const getStaticPaths = (async () => {
             description: t('site.description', locale),
             category: undefined,
             siteName: t('site.title', locale),
-            font: t('og.font', locale),
         },
     }));
     return [...wikiPaths, ...fallbackPaths];
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ props }) => {
-    const { title, description, category, siteName, font } = props as { title: string; description?: string; category?: string; siteName: string; font: string };
-    const png = await renderOgImage({ title, description, category, siteName, font });
+    const { title, description, category, siteName } = props as { title: string; description?: string; category?: string; siteName: string; font: string };
+    const png = await renderOgImage({ title, description, category, siteName });
     return new Response(new Uint8Array(png), {
         headers: {
             'Content-Type': 'image/png',

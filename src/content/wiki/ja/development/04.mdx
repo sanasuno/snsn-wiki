@@ -66,8 +66,8 @@ export function removeTrailingSlash(path: string): string {
 ---
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 ---
-<link rel="icon" href={new URL(`${baseUrl}/favicon.ico`, Astro.site).href} sizes="48x48" />
-<link rel="icon" href={new URL(`${baseUrl}/favicon.svg`, Astro.site).href} type="image/svg+xml" />
+<link rel="icon" href={new URL(`${baseUrl}/favicon.ico`, Astro.url).href} sizes="48x48" />
+<link rel="icon" href={new URL(`${baseUrl}/favicon.svg`, Astro.url).href} type="image/svg+xml" />
 ```
 
 ### サイトマップ
@@ -94,7 +94,7 @@ export default defineConfig({
 ```
 
 ```astro
-<link rel="sitemap" href={new URL(`${baseUrl}/sitemap-index.xml`, Astro.site).href} />
+<link rel="sitemap" href={new URL(`${baseUrl}/sitemap-index.xml`, Astro.url).href} />
 ```
 
 ### カノニカルURL
@@ -104,7 +104,7 @@ export default defineConfig({
 ---
 const canonicalUrl = new URL(currentPath, Astro.url).href;
 ---
-<link rel="canonical" href={canonicalUrl.href} />
+<link rel="canonical" href={canonicalUrl} />
 ```
 
 ### 代替言語
@@ -120,6 +120,13 @@ const defaultAlternateLink = alternateLinks.find(link => link.locale === default
 
 ### Google Fonts
 Google Fonts用のURLを記述します。
+
+```astro
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Serif+JP:wght@200..900&display=swap" rel="stylesheet">
+```
 
 ### Font Awesome
 
