@@ -149,7 +149,7 @@ export const getStaticPaths = (async () => {
         return {
             params: {
                 locale,
-                slug: slug === '' ? 'wiki' : `wiki/${slug}`;
+                slug: slug === '' ? 'wiki' : `wiki/${slug}`,
             },
             props: {
                 title: page.data.title,

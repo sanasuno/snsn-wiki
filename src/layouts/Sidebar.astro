@@ -7,7 +7,7 @@ import { getCollection } from "astro:content";
 import { t, type Locale, type TranslationKey } from "@i18n/i18n.config";
 import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
 import { getUniquePagesByLocale } from '@lib/pages';
-import { normalizeSlugLike, getNormalizedSlug, ensureTrailingSlash, getLocaleBaseUrl, getWikiUrl, getCurrentPath, isPathActive } from '@lib/path';
+import { normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
 import { getCategory } from '@lib/category';
 
 interface Props {
@@ -15,7 +15,6 @@ interface Props {
 }
 const { locale }: Props = Astro.props;
 
-const localeBaseUrl = getLocaleBaseUrl(locale);
 const currentPath = decodeURIComponent(getCurrentPath(Astro.url));
 
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
@@ -36,7 +35,7 @@ const renderedCategories = new Set<string>();
 
 type WikiPage = typeof wikiPages[0];
 const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
-    title: (a, b) => a.data.title.localeCompare(b.data.title),
+    title: (a, b) => a.data.title.localeCompare(b.data.title, locale),
     order: (a, b) => (a.data.order ?? 0) - (b.data.order ?? 0),
     date: (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0),
     updated: (a, b) => (b.data.updated?.getTime() ?? 0) - (a.data.updated?.getTime() ?? 0),
@@ -60,7 +59,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                     return (
                         <section class='sidebar-section'>
                             <button type="button" class='sidebar-section-title'>
-                                {section.icon && <i class={`${section.icon} fa-fw`}></i>}
+                                {section.icon && <i class={`${section.icon} fa-fw`} aria-hidden="true"></i>}
                                 {t(section.titleKey, locale)}
                                 <i class='fas fa-chevron-down sidebar-chevron' aria-hidden="true"></i>
                             </button>
@@ -97,7 +96,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                             href = getWikiUrl(page.id, locale);
                                             if (!item.i18nKey) label = page.data.title;
                                         } else {
-                                            href = ensureTrailingSlash(item.path === '/' ? localeBaseUrl : `${localeBaseUrl}${item.path}`);
+                                            href = getLocalePathUrl(locale, item.path);
                                         }
                                     }
                                     if (!href || !label) {

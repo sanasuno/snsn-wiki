@@ -185,7 +185,7 @@ export function getCurrentPath(url: URL): string {
 対象のスラッグが現在のパスを含む、もしくは一致するかどうかを判定する関数です。主にナビゲーションにおいて現在の位置を示すために使用されます。  
 この関数は対象のスラッグと現在のパスを引数として受け取ります。ただし、現在のパス `currentPath` は `Astro.url.pathname` を渡すことを想定していますが、これはサイトのベースURLやロケールを含むため、それらを取り除く必要があります。  
 そのため、まずは `getBaseUrl()` 関数でベースURLを取得し、 `currentPath` がベースURLで始まっている場合はこれを取り除き `relativePath` として代入します。なお、ベースURLで始まっていない場合は `relativePath` に `currentPath` をそのまま使用します。  
-次に、取り除いたパスを `/` で分割します。ただし `relativePath` は `/` で始まるので、分割した配列の2番目がロケールかどうかを `isLocale()` 関数で判定します。  
+次に、取り除いたパスを `/` で分割し、先頭の要素がロケールかどうかを `isLocale()` 関数で判定します。  
 ロケールが見つかった場合は残りの部分の先頭に `/` を挿入したものをスラッグとして、見つからなかった場合は `relativePath` 全体をスラッグとして扱います。  
 最後に、判定対象のスラッグが `/` だった場合はスラッグと一致するかどうか、それ以外の場合にはスラッグと一致するもしくはスラッグの末尾に `/` を挿入したもので始まるかどうかを判定して返します。
 
@@ -193,7 +193,7 @@ export function getCurrentPath(url: URL): string {
 export function isPathActive(targetSlug: string, currentPath: string): boolean {
     const base = getBaseUrl();
     const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length) : currentPath;
-    const [ _, maybeLocale, ...rest] = relativePath.split('/');
+    const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(rest.join('/'))}`
         : relativePath;

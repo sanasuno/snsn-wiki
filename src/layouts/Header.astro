@@ -8,7 +8,7 @@
  */
 import { t, locales, type Locale } from "@i18n/i18n.config";
 import { headerNavItems } from "@layouts/header.nav";
-import { ensureTrailingSlash, getCurrentPath, getLocaleBaseUrl, isPathActive } from "@lib/path";
+import { ensureTrailingSlash, getCurrentPath, getLocaleBaseUrl, getLocalePathUrl, isPathActive } from "@lib/path";
 
 interface Props {
     locale: Locale;
@@ -29,7 +29,7 @@ const showLanguageSwitcher: boolean = locales.length > 1;
     <nav class="header-nav" aria-label={t("header.nav.title", locale)}>
         {
             headerNavItems.map((item) => (
-                <a href={ensureTrailingSlash(localeBaseUrl + item.path)} class={isPathActive(item.path, currentPath) ? "active" : ""} aria-current={isPathActive(item.path, currentPath) ? "page" : undefined}>
+                <a href={getLocalePathUrl(locale, item.path)} class={isPathActive(item.path, currentPath) ? "active" : ""} aria-current={isPathActive(item.path, currentPath) ? "page" : undefined}>
                     {item.icon && <i class={item.icon} aria-hidden="true"></i>}
                     <span class="nav-label" data-i18n={item.i18nKey}>
                         {t(item.i18nKey, locale)}

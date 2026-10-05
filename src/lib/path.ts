@@ -124,6 +124,15 @@ export function getCurrentPath(url: URL): string {
     return ensureTrailingSlash(url.pathname);
 }
 
+/**
+ * ロケールとパスからURLを取得する関数
+ * @param locale ロケール
+ * @param path パス
+ * @returns URL
+ */
+export function getLocalePathUrl(locale: Locale, path: string): string {
+    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}${path.replace(/^\/+/, '')}`);
+}
 
 /**
  * 現在のパスが指定されたパスと一致するか判定する関数
@@ -134,7 +143,7 @@ export function getCurrentPath(url: URL): string {
 export function isPathActive(targetSlug: string, currentPath: string): boolean {
     const base = getBaseUrl();
     const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length) : currentPath;
-    const [ _, maybeLocale, ...rest] = relativePath.split('/');
+    const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
         : removeTrailingSlash(relativePath);

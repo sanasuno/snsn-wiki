@@ -99,9 +99,9 @@ const crumbIcons = {
         {title}
     </h1>
     <div class="page-meta">
-        {categoryLabel && (
+        {id && (
             <div class="page-meta-category">
-                <a href={`${localeBaseUrl}/category/${categoryString}`}>
+                <a href={`${localeBaseUrl}category/${categoryString}`}>
                     {getTranslatedCategory(id, locale, isSubPage)}
                 </a>
             </div>
@@ -128,7 +128,7 @@ const crumbIcons = {
         {tags.length > 0 && (
             <div class="page-tags">
                 {tags.map(tag => (
-                    <a href={`${localeBaseUrl}/tag/${encodeURIComponent(tag)}`} class="page-tag">
+                    <a href={`${localeBaseUrl}tag/${encodeURIComponent(tag)}`} class="page-tag">
                         #{tag}
                     </a>
                 ))}
