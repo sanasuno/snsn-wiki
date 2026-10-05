@@ -59,6 +59,8 @@ export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} 
 
 /**
  * スラッグを正規化する関数
+ * NFKC 正規化、小文字化、空白除去を行う。
+ * 末尾の "/index" を削除する。
  * @param rawSlug 正規化するスラッグ
  * @returns 正規化されたスラッグ
  */
@@ -135,7 +137,7 @@ export function getLocalePathUrl(locale: Locale, path: string): string {
 }
 
 /**
- * 現在のパスが指定されたパスと一致するか判定する関数
+ * 対象のスラッグが現在のパスでアクティブかどうかを判定する関数です。
  * @param targetSlug - 比較するスラッグ
  * @param currentPath - 現在のパス
  * @returns パスが一致する場合はtrue、そうでない場合はfalse
@@ -146,7 +148,7 @@ export function isPathActive(targetSlug: string, currentPath: string): boolean {
     const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
-        : removeTrailingSlash(relativePath);
+        : normalizeSlugLike(removeTrailingSlash(relativePath));
     return targetSlug === '/'
         ? currentSlug === '/'
         : currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);

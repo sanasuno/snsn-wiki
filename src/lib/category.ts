@@ -20,6 +20,12 @@ export function getCategory(pageId: string, isSubpage: boolean = false): string[
     }
 }
 
+/**
+ * ページIDからカテゴリ文字列を取得する関数
+ * @param pageId ページID
+ * @param isSubpage サブページかどうか
+ * @returns カテゴリ文字列
+ */
 export function getCategoryString(pageId: string, isSubpage: boolean = false): string {
     const category = getCategory(pageId, isSubpage);
     return category.join('/');

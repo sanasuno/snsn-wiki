@@ -4,15 +4,70 @@ order: 5
 tags: [開発記録]
 date: 2026-08-22
 ---
-## インストール
+## OGP 画像について
+各ページごとに OGP 画像を生成します。生成には `satori` と `resvg-js` を用います。
+画像には、サイト名、各ページのタイトルと説明、カテゴリを記述します。
+
+## カテゴリ
+カテゴリはウィキページのみ設定します。各ページの配置パスをもとにカテゴリを導出します。
+
+カテゴリ関連のユーティリティ関数は `@lib/category.ts` に記述します。
+
+### getCategory()
+ページ ID からカテゴリ配列を取得する関数です。
+
+ページ ID を `/` で分割し、最後の1つ（ページのファイル名）を除いた部分をカテゴリとして返します。
+
+`isSubPage = "true"` が設定されている場合、最後から2番目の要素も親ページのファイル名とみなすため、
+最後の2つを除いた部分を返します。
+
+```ts
+export function getCategory(pageId: string, isSubpage: boolean = false): string[] {
+    const parts = pageId.split('/');
+    if (isSubpage) {
+        return parts.slice(1, -2);
+    } else {
+        return parts.slice(1, -1);
+    }
+}
+```
+
+### getCategoryString()
+ページ ID からカテゴリを一つの文字列として取得する関数です。
+
+```ts
+export function getCategoryString(pageId: string, isSubpage: boolean = false): string {
+    const category = getCategory(pageId, isSubpage);
+    return category.join('/');
+}
+```
+
+### getTranslatedCategory()
+ページ ID から翻訳されたカテゴリ名を取得する関数です。
+
+カテゴリ配列を `.` で結合し、先頭に `category.` をつけた文字列を翻訳キーとして使用します。
+
+```ts
+export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage: boolean = false ): string {
+    const category = getCategory(pageId, isSubPage);
+    if (category.length === 0 || (category.length === 1 && category[0] === '')) return '';
+    
+    const key = `category.${category.join('.')}` as TranslationKey;
+    if (!isTranslationKey(key)) return '';
+    
+    return t(key, locale);
+}
+```
+
+## 画像生成ライブラリのインストール
 `satori` と `resvg-js` をインストールします。
 
 ```sh
 npm install satori @resvg/resvg-js
 ```
 
-## OGP画像生成スクリプト
-`@lib/og-image.ts` にOGP画像生成用のスクリプトを記述します。
+## OGP 画像生成スクリプト
+`@lib/og-image.ts` に OGP 画像生成用のスクリプトを記述します。
 
 ### フォントキャッシュ
 使用するフォントのキャッシュを用意します。
@@ -35,7 +90,7 @@ function loadFonts() {
 ```
 
 ### renderOgImage()
-OGP 画像のレンダーを実行する関数です。ページタイトル、説明、カテゴリ、サイト名を描画します。
+OGP 画像のレンダリングを実行する関数です。ページタイトル、説明、カテゴリ、サイト名を描画します。
 
 ```ts
 export async function renderOgImage({ title, description, category, siteName }: OgImageParams): Promise<Buffer> {
@@ -141,6 +196,10 @@ export async function renderOgImage({ title, description, category, siteName }: 
 ### getStaticPaths()
 各ページ用の OGP 画像を配置する URL を組み立てます。また、画像のレンダーに必要な各種情報も `props` として出力します。
 
+ウィキページでは `resolveWikiPages()` 関数を用いてページ情報を格納します。
+
+それ以外のページでは、ロケールごとにサイト全体の情報を記した同じものを使用し、 `slug: 'index'` として出力します。
+
 ```ts
 export const getStaticPaths = (async () => {
     const resolvedPages = await resolveWikiPages();
@@ -176,7 +235,7 @@ export const getStaticPaths = (async () => {
 ```
 
 ### GET
-OGP 画像をレンダーして返却します。
+OGP 画像をレンダリングして返します。
 
 ```ts
 export const GET: APIRoute = async ({ props }) => {
@@ -189,4 +248,29 @@ export const GET: APIRoute = async ({ props }) => {
         },
     });
 };
+```
+
+## OGP の記述
+`@layouts/MainLayout.astro` に、画像を含めた各種 OGP 設定を記述します。
+
+```astro
+---
+const ogSlug = currentPath.startsWith(wikiBaseUrl)
+    ? removeTrailingSlash(`${currentPath.slice(localeBaseUrl.length)}`)
+    : 'index';
+const ogImageUrl = new URL(`${localeBaseUrl}og/${ogSlug}.png`, Astro.url).href;
+---
+<meta property="og:title" content={title} />
+<meta property="og:description" content={pageDescription} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:type" content={currentPath.startsWith(wikiBaseUrl) ? 'article' : 'website'} />
+<meta property="og:site_name" content={siteTitle} />
+<meta property="og:locale" content={t('og.locale', locale)} />
+<meta property="og:image" content={ogImageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={pageDescription} />
+<meta name="twitter:image" content={ogImageUrl} />
 ```

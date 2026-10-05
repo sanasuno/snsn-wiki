@@ -23,6 +23,8 @@ export interface ResolvedWikiPage {
 
 /**
  * ウィキページを解決する関数
+ * wikiコレクションからページを収集し、ロケールとベーススラッグごとにグループ化する
+ * URL衝突を検証し、各ページのパスを生成する
  * @returns 解決されたウィキページ情報の配列
  */
 export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {

@@ -18,9 +18,7 @@ interface Props {
 
 /**
  * Astroの静的パス生成関数
- * wikiコレクションからページを収集し、ロケールとベーススラッグごとにグループ化する
- * URL衝突を検証し、各ページのパスを生成する
- * @returns {Promise<{ params: { locale: Locale; slug: string | undefined }; props: Props }[]>} パスとプロパティの配列
+ * @returns パスとプロパティの配列
  */
 export async function getStaticPaths() {
     const resolvedPages = await resolveWikiPages();

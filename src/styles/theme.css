@@ -6,7 +6,6 @@
 :root {
     color-scheme: light;
     /* レイアウト寸法 */
-    --content-max-width: 760px;
     --header-height: 56px;
     --sidebar-width: 260px;
     --subpanel-width: 220px;

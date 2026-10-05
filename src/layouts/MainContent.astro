@@ -4,7 +4,7 @@
  * メインコンテンツレイアウト
  */
 import { t, type Locale } from '@i18n/i18n.config';
-import { ensureTrailingSlash, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath } from '@lib/path';
+import { ensureTrailingSlash, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath, getLocalePathUrl } from '@lib/path';
 import { getCategory, getCategoryString, getTranslatedCategory } from '@lib/category';
 import { formatDate } from '@lib/date';
 
@@ -94,41 +94,43 @@ const crumbIcons = {
                 </ol>
             </nav>
         )}
+        <h1 class="page-title">
+            {title}
+        </h1>
+        {(id || date || updated) && (
+            <div class="page-meta">
+                {id && (
+                    <div class="page-meta-category">
+                        <a href={`${localeBaseUrl}category/${categoryString}`}>
+                            {getTranslatedCategory(id, locale, isSubPage)}
+                        </a>
+                    </div>
+                )}
+                {( date || updated) && (
+                    <div class="page-meta-dates">
+                        {date && (
+                            <span class="page-date">
+                                <i class="far fa-calendar-plus" aria-hidden="true"></i>
+                                {t('meta.created', locale)}: {formatDate(date, locale)}
+                            </span>
+                        )}
+                        {updated && (
+                            <span class="page-date">
+                                <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                                {t('meta.updated', locale)}: {formatDate(updated, locale)}
+                            </span>
+                        )}
+                    </div>
+                )}
+            </div>
+        )}
     </header>
-    <h1 class="page-title">
-        {title}
-    </h1>
-    <div class="page-meta">
-        {id && (
-            <div class="page-meta-category">
-                <a href={`${localeBaseUrl}category/${categoryString}`}>
-                    {getTranslatedCategory(id, locale, isSubPage)}
-                </a>
-            </div>
-        )}
-        {( date || updated) && (
-            <div class="page-meta-dates">
-                {date && (
-                    <span class="page-date">
-                        <i class="far fa-calendar-plus" aria-hidden="true"></i>
-                        {t('meta.created', locale)}: {formatDate(date, locale)}
-                    </span>
-                )}
-                {updated && (
-                    <span class="page-date">
-                        <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
-                        {t('meta.updated', locale)}: {formatDate(updated, locale)}
-                    </span>
-                )}
-            </div>
-        )}
-    </div>
     <article class="article-content">
         <slot />
         {tags.length > 0 && (
             <div class="page-tags">
                 {tags.map(tag => (
-                    <a href={`${localeBaseUrl}tag/${encodeURIComponent(tag)}`} class="page-tag">
+                    <a href={getLocalePathUrl(locale, `tag/${tag}`)} class="page-tag">
                         #{tag}
                     </a>
                 ))}

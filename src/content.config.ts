@@ -12,7 +12,7 @@ const wiki = defineCollection({
     schema: z.object({
         title: z.string(),
         description: z.string().optional(),
-        order: z.number().default(0),
+        order: z.number().default(99999999),
         aliases: z.array(z.string()).default([]),
         tags: z.array(z.string()).default([]),
         date: z.coerce.date().optional(),

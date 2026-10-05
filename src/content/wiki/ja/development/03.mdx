@@ -7,19 +7,36 @@ date: 2026-08-18
 では、いよいよウィキページの作成に取り掛かっていきます。
 
 ## 構成
-`./src/content/wiki/[locale]` 配下に配置した `md` および `mdx` ファイルをコレクションローダー `./src/content.config.ts` で収集し、 `./src/pages/[locale]/wiki/[...slug].astro` でページに変換します。  
+`./src/content/wiki/[locale]` 配下に配置した `md` および `mdx` ファイルをウィキページとみなします。
+このファイル群を `./src/content.config.ts` に記述したコレクションローダーで収集し、
+`./src/pages/[locale]/wiki/[...slug].astro` でページに変換します。  
 
-## mdx
-まずは、mdxファイルを取り扱うためのインテグレーションを追加します。  
-mdxによって、markdown内でjsxやコンポーネントを利用できるようになります。
+## mdxインテグレーション
+まずは、mdx ファイルを取り扱うためのインテグレーションを追加します。
+mdx によって、markdown 内で jsx やコンポーネントを利用できるようになります。
 
 ```sh
 npx astro add mdx
 ```
 
+`astro.config.ts` に mdx インテグレーションの設定を記述します。
+`shiki` によるコードブロックのテーマを設定します。
+
+```ts
+export default defineConfig({
+    markdown: {
+        shikiConfig: {
+            themes: { light: 'github-light', dark: 'github-dark' },
+        },
+    },
+    integrations: [mdx()],
+})
+```
+
 ## コレクションローダー
-ウィキページ用のコレクションローダーを `./src/content.config.ts` で作成します。  
-`./src/content/wiki` 配下にある `.md` または `.mdx` ファイルを収集して `wiki` コレクションとして利用できるように定義します。
+`./src/content.config.ts` にウィキページ用のコレクションローダーを記述します。
+`./src/content/wiki` 配下にある `.md` または `.mdx` ファイルを収集し、
+`wiki` コレクションとして定義します。
 
 ```ts
 import { defineCollection } from 'astro:content';
@@ -31,7 +48,7 @@ const wiki = defineCollection({
     schema: z.object({
         title: z.string(),
         description: z.string().optional(),
-        order: z.number().default(0),
+        order: z.number().default(99999999),
         aliases: z.array(z.string()).default([]),
         tags: z.array(z.string()).default([]),
         date: z.coerce.date().optional(),
@@ -48,12 +65,12 @@ export const collections = { wiki };
 `schema` の各項目の説明です。
 - `title`: ページのタイトル（必須）
 - `description`: ページの説明（任意）
-- `order`: ページの表示順（数値が小さい方が上に表示される）（任意、デフォルト0）
+- `order`: ページの表示順（数値が小さい方が上に表示される）（任意、デフォルト99999999）
 - `aliases`: ページの別名（任意）
 - `tags`: ページのタグ（任意）
 - `date`: ページの作成日（YYYY-MM-DD形式）（任意）
 - `updated`: ページの更新日（YYYY-MM-DD形式）（任意）
-- `draft`: ドラフトフラグ（true/false）（任意、デフォルトfalse）
+- `draft`: 下書きフラグ（true/false）（任意、デフォルトfalse）
 - `showSubpanel`: サブパネル表示フラグ（true/false）（任意、デフォルトtrue）
 - `isSubPage`: サブページフラグ（true/false）（任意、デフォルトfalse）
 
@@ -71,6 +88,7 @@ export function removeTrailingSlash(path: string): string {
 
 ### ensureTrailingSlash()
 末尾にスラッシュを付与する関数です。
+既に末尾にスラッシュがある場合は新たに付与せず、そのまま返します。
 
 ```ts
 export function ensureTrailingSlash(path: string): string {
@@ -79,8 +97,10 @@ export function ensureTrailingSlash(path: string): string {
 ```
 
 ### getLocale()
-ページIDからロケールを取得する関数です。ページIDを `/` で分割したときの先頭の要素をロケールとして扱います。  
-まず、切り出した部分が有効なロケールかどうかを `isLocale()` 関数で判定します。有効だった場合はそのロケールを返し、有効でない場合にはエラーをスローします。
+ページIDからロケールを取得する関数です。ページIDを `/` で分割したときの先頭の要素をロケールとして扱います。
+
+まず、切り出した部分が有効なロケールかどうかを `isLocale()` 関数で判定します。
+有効だった場合はそのロケールを返し、有効でない場合にはエラーをスローします。
 
 ```ts
 export function getLocale(pageId: string): Locale {
@@ -93,7 +113,9 @@ export function getLocale(pageId: string): Locale {
 ```
 
 ### getRawSlug()
-ページIDから正規化されていない生のスラッグを取得する関数です。ページIDを `/` で分割したときの、先頭（ロケール部分）を除いた要素を `/` で再結合して返します。
+ページIDから正規化されていない生のスラッグを取得する関数です。
+
+ページIDを `/` で分割したときの、先頭（ロケール部分）を除いた要素を `/` で再結合して返します。
 
 ```ts
 export function getRawSlug(pageId: string): string {
@@ -103,7 +125,10 @@ export function getRawSlug(pageId: string): string {
 ```
 
 ### dividePageId()
-ページIDを分割して、ロケールと生のベーススラッグを抽出する関数です。与えられたページIDに `getLocale()` 関数と `getRawSlug()` 関数でそれぞれロケールと生スラッグを取得し、まとめて返します。
+ページIDをロケールと生スラッグに分割する関数です。
+
+与えられたページIDに `getLocale()` 関数と `getRawSlug()` 関数を適用してロケールと生スラッグを取得し、
+まとめて返します。
 
 ```ts
 export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} {
@@ -114,7 +139,10 @@ export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} 
 ```
 
 ### normalizeSlugLike()
-スラッグを正規化する関数です。まず、与えられたスラッグを `NFKC` で正規化して小文字化し、先頭と末尾の空白を除去します。さらにその結果が `index` だった場合は空文字を返し、それ以外の場合では末尾の `/index` を削除します。
+スラッグを正規化する関数です。
+
+まず、与えられたスラッグを `NFKC` で正規化して小文字化し、先頭と末尾の空白を除去します。
+さらにその結果が `index` だった場合は空文字を返し、末尾に `/index` がある場合はそれを削除して返します。
 
 ```ts
 export function normalizeSlugLike(rawSlug: string): string {
@@ -126,7 +154,10 @@ export function normalizeSlugLike(rawSlug: string): string {
 ```
 
 ### getNormalizedSlug()
-ページIDから正規化されたスラッグを取得する関数です。与えられたページIDに `getRawSlug()` 関数を用いて生スラッグを取得し、さらに `normalizedSlugLike()` 関数で正規化します。
+ページIDから正規化されたスラッグを取得する関数です。
+
+与えられたページIDに `getRawSlug()` 関数を用いて生スラッグを取得し、
+さらに `normalizedSlugLike()` 関数で正規化します。
 
 ```ts
 export function getNormalizedSlug(pageId: string): string {
@@ -136,44 +167,55 @@ export function getNormalizedSlug(pageId: string): string {
 ```
 
 ### getBaseUrl()
-サイトのベースURLを取得する関数です。環境変数から `BASE_URL` を返します。
+サイトのベース URL を取得する関数です。
+
+環境変数から `BASE_URL` を取得し、 `ensureTrailingSlash()` 関数で末尾のスラッシュを確保してから返します。
 
 ```ts
 export function getBaseUrl(): string {
-    return removeTrailingSlash(import.meta.env.BASE_URL);
+    return ensureTrailingSlash(import.meta.env.BASE_URL);
 }
 ```
 
 ### getLocaleBaseUrl()
-与えられたロケールのロケールベースURLを取得する関数です。ベースURLの後ろに `/${locale}` をつけたURLを返します。
+与えられたロケールのロケールベース URL を取得する関数です。
+
+ベース URL の後ろに `${locale}` （各ロケール）をつけた URL を返します。
 
 ```ts
 export function getLocaleBaseUrl(locale: Locale): string {
-    return `${getBaseUrl()}/${locale}/`;
+    return ensureTrailingSlash(`${getBaseUrl()}${locale}`);
 }
 ```
 
 ### getWikiBaseUrl()
-与えられたロケールのWikiページのベースURLを取得する関数です。ロケールベースURLの後ろにさらに `/wiki` をつけたURLを返します。
+与えられたロケールの Wiki ページのベース URL を取得する関数です。
+
+ロケールベース URL の後ろにさらに `wiki` をつけた URL を返します。
 
 ```ts
 export function getWikiBaseUrl(locale: Locale): string {
-    return `${getLocaleBaseUrl(locale)}wiki/`;
+    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}wiki`);
 }
 ```
 
 ### getWikiUrl()
-与えられたWikiページのページIDから、そのページのURLを取得する関数です。スラッグの正規化処理を適用します。
+与えられた Wiki ページのページIDから、そのページの URL を取得する関数です。
+
+実際の URL となるので、スラッグを正規化してから Wiki ページのベース URL の後ろにつけ、
+`ensureTrailingSlash()` 関数で末尾のスラッシュを確保して返します。
 
 ```ts
 export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
-    return removeTrailingSlash(`${getWikiBaseUrl(locale)}${slug}/`);
+    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${slug}`);
 }
 ```
 
 ### getCurrentPath()
-与えられた `Astro.url` から現在のパスを取得する関数です。与えられたURLの `pathname` の末尾に `/` を付与して返します。
+与えられた `Astro.url` から現在のパスを取得する関数です。
+
+与えられた URL の `pathname` の末尾にスラッシュを確保して返します。
 
 ```ts
 export function getCurrentPath(url: URL): string {
@@ -181,13 +223,36 @@ export function getCurrentPath(url: URL): string {
 }
 ```
 
+### getLocalePathUrl()
+与えられたロケールとパスから全体の URL を構築する関数です。
+
+```ts
+export function getLocalePathUrl(locale: Locale, path: string): string {
+    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}${path.replace(/^\/+/, '')}`);
+}
+```
+
 ### isPathActive()
-対象のスラッグが現在のパスを含む、もしくは一致するかどうかを判定する関数です。主にナビゲーションにおいて現在の位置を示すために使用されます。  
-この関数は対象のスラッグと現在のパスを引数として受け取ります。ただし、現在のパス `currentPath` は `Astro.url.pathname` を渡すことを想定していますが、これはサイトのベースURLやロケールを含むため、それらを取り除く必要があります。  
-そのため、まずは `getBaseUrl()` 関数でベースURLを取得し、 `currentPath` がベースURLで始まっている場合はこれを取り除き `relativePath` として代入します。なお、ベースURLで始まっていない場合は `relativePath` に `currentPath` をそのまま使用します。  
-次に、取り除いたパスを `/` で分割し、先頭の要素がロケールかどうかを `isLocale()` 関数で判定します。  
-ロケールが見つかった場合は残りの部分の先頭に `/` を挿入したものをスラッグとして、見つからなかった場合は `relativePath` 全体をスラッグとして扱います。  
-最後に、判定対象のスラッグが `/` だった場合はスラッグと一致するかどうか、それ以外の場合にはスラッグと一致するもしくはスラッグの末尾に `/` を挿入したもので始まるかどうかを判定して返します。
+対象のスラッグが現在のパスでアクティブかどうかを判定する関数です。
+現在のパスが対象のスラッグ配下に含まれる、もしくは一致する場合にアクティブと判定されます。
+主にナビゲーションにおいて現在の位置を示すために使用されます。
+
+この関数は対象のスラッグと現在のパスを引数として受け取ります。
+ただし、現在のパス `currentPath` は `Astro.url.pathname` を渡すことを想定していますが、
+これはサイトのベース URL やロケールを含むため、それらを取り除く必要があります。
+
+まず、ベース URL を取り除きます。
+`currentPath` がベース URL で始まるかどうかを判定し、始まる場合は取り除き、 `relativePath` とします。
+なお、ベース URL で始まっていない場合は `relativePath` に `currentPath` をそのまま使用します。
+
+次に、取り除いたパスを `/` で分割し、先頭の要素がロケールかどうかを `isLocale()` 関数で判定します。
+ロケールが見つかった場合は残りの部分を `currentSlug` とし、
+見つからなかった場合は `relativePath` 全体を `currentSlug` とします。
+
+最後に、`targetSlug` と `currentSlug` を比較してアクティブ判定を行います。
+`targetSlug` が `/` だった場合は、 `targetSlug` が `currentSlug` と一致するかどうかを判定します。
+それ以外の場合には `targetSlug` が `currentSlug` と一致する、
+もしくは `${currentSlug}/` で始まるかどうかを判定して返します。
 
 ```ts
 export function isPathActive(targetSlug: string, currentPath: string): boolean {
@@ -195,8 +260,8 @@ export function isPathActive(targetSlug: string, currentPath: string): boolean {
     const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length) : currentPath;
     const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
-        ? `/${normalizeSlugLike(rest.join('/'))}`
-        : relativePath;
+        ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
+        : normalizeSlugLike(removeTrailingSlash(relativePath));
     return targetSlug === '/'
         ? currentSlug === '/'
         : currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
@@ -204,30 +269,40 @@ export function isPathActive(targetSlug: string, currentPath: string): boolean {
 ```
 
 ## 動的ルーティング
-`./src/pages/[locale]/wiki/[...slug].astro` を作成し、動的ルート用のページとします。   
-- スラッグ部分は `[...slug]` のレストパラメータ形式を採用することで、任意の深さのスラッグにマッチします。  
-`getStaticPaths()` 関数で `locale` と `slug` を出力することで、対応するページのパスを生成します。実際の処理は `@lib/pages` の `resolveWikiPages()` 関数で行います。
+`./src/pages/[locale]/wiki/[...slug].astro` は動的ルーティング用のページです。
+`getStaticPaths()` 関数で `locale` と `slug` を出力することで、対応するページのパスを生成します。
+- スラッグ部分は `[...slug]` のレストパラメータ形式を採用することで、任意の深さのスラッグにマッチします。
+
+実際の処理は `@lib/pages` の `resolveWikiPages()` 関数で行います。
 
 ### resolveWikiPages()
-ウィキページを解決する関数です。ウィキページ収集、スラッグ生成、衝突の検知、ロケールのフォールバック判定など、様々なロジックを処理します。
+ウィキページを解決する関数です。
+
+ウィキページ収集・格納、衝突の検知、フォールバック判定など、様々なロジックを処理します。
 
 #### ウィキページ収集
-`getCollection()` 関数を用いてウィキページを収集します。ただし、下書きページ（ `page.data.draft === true` のページ）は除外します。
+`getCollection()` 関数を用いてウィキページを収集します。
+ただし、下書きページ（ `page.data.draft === true` のページ）は除外します。
 
 ```ts
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
 ```
 
 #### ページデータ格納
-収集したページを `pagesBySlugLocale` に格納していきます。これは各ページのスラッグとロケールをキーとする配列です。  
-また、スラッグを生成するときに正規化を行いますが、この過程で衝突するファイルを検知するため、並行して正規化前後のページIDを `normalizedIdOwners` に格納します。
+収集したページを `pagesBySlugLocale` に格納していきます。
+これは各ページのスラッグとロケールをキーとする配列です。
+
+また、スラッグを生成するときに正規化を行いますが、この過程で起こりうるスラッグ名の衝突を検知するため、
+並行して正規化前後のページIDを `normalizedIdOwners` に格納します。
 
 ```ts
 const pagesBySlugLocale: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
 const normalizedIdOwners: Record<string, Set<string>> = {};
 ```
 
-各ページのページIDに `getLocale()` 関数と `getNormalizedSlug()` 関数をそれぞれ適用し、`locale` と `normalizedSlug` を取得します。各ページの `normalizedSlug` と `locale` をキーとして、ページ内容を `pagesBySlugLocale` に登録します。  
+各ページのページIDに `getLocale()` 関数と `getNormalizedSlug()` 関数をそれぞれ適用し、
+`locale` と `normalizedSlug` を取得します。
+各ページの `normalizedSlug` と `locale` をキーとして、ページ内容を `pagesBySlugLocale` に登録します。  
 
 ```ts
 for (const page of wikiPages) {
@@ -241,10 +316,17 @@ for (const page of wikiPages) {
 ```
 
 #### 衝突検証
-もし複数の異なるファイルが同じ `normalizedSlug` に正規化される場合、後から処理された方が先に処理された方を上書きしてしまいます。この衝突を避けるため、検出する必要があります。  
-そこで、正規化後のページID（ `normalizedId` ）をキー、正規化前のページID（ `page.id` ）を値として `normalizedIdOwners` に格納します。  
-衝突が起こった場合は、同じ `normalizedId` に対して複数の `page.id` が登録されます。これをチェックすることで衝突を検知できます。  
-なお、衝突判定は同一ロケール内だけで行う必要があるため、ロケール情報を持たないスラッグではなく、ロケール情報を含むページIDを用いて比較しています。
+もし複数の異なるファイルが同じ `normalizedSlug` に正規化される場合、
+後から処理された方が先に処理された方を上書きしてしまいます。この衝突を避けるため、検出する必要があります。
+
+そこで、正規化後のページID（ `normalizedId` ）をキー、正規化前のページID（ `page.id` ）を値として
+`normalizedIdOwners` に格納します。
+
+衝突が起こった場合は、同じ `normalizedId` に対して複数の `page.id` が登録されます。
+これをチェックすることで衝突を検知できます。
+
+なお、衝突判定は同一ロケール内だけで行う必要があるため、
+ロケール情報を持たないスラッグではなく、ロケール情報を含むページIDを用いて比較しています。
 
 ```ts
 const normalizedIdOwners: Record<string, Set<string>> = {};
@@ -264,8 +346,14 @@ for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
 
 #### フォールバック判定
 `pagesBySlugLocale` に格納した `locale` と `slug` の組み合わせで、各ページの URL を生成します。  
-あるロケールで元となるファイルがなくとも、別のロケールに同じスラッグのファイルがある場合、それをフォールバックとして代替使用します。このとき、ページには「これが別のロケールによるフォールバックである」という情報を渡します。  
-フォールバック解決の優先順位は、本来のロケール、デフォルトロケール、その他の翻訳があるロケール（ `locales` で定義された順番に検証）の順です。いずれのロケールでも翻訳が見つからない場合はエラーをスローします。  
+あるロケールで元となるファイルがなくとも、別のロケールに同じスラッグのファイルがある場合、
+それをフォールバックとして代替使用します。
+このとき、ページには「これが別のロケールによるフォールバックである」という情報を渡します。
+
+フォールバック解決の優先順位は、
+本来のロケール、デフォルトロケール、その他の翻訳があるロケール（ `locales` で定義された順番に検証）の順です。
+いずれのロケールでも翻訳が見つからない場合はエラーをスローします。
+
 最後に返すのは、 `locale` 、 `slug` 、 `page` 、 `isFallback` の4種類のデータの配列です。
 
 ```ts
@@ -289,7 +377,8 @@ return resolved;
 ```
 
 ### getStaticPaths()
-`getStaticPaths()` 関数では、URLの組み立てに必要な `locale` と `slug` および各種 `props` を出力します。実際の処理はほぼ `resolveWikiPages()` で行っているので、それを当てはめていきます。
+URL の組み立てに必要な `locale` と `slug` および各種 `props` を出力します。
+実際の処理はほぼ `resolveWikiPages()` で行っているので、それを当てはめていきます。
 
 ```ts
 export async function getStaticPaths() {

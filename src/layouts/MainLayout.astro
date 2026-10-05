@@ -50,24 +50,31 @@ const {
     showSubpanel = true,
 } = Astro.props;
 
+// ベース URL
 const baseUrl = getBaseUrl();
 const localeBaseUrl = getLocaleBaseUrl(locale);
 const wikiBaseUrl = getWikiBaseUrl(locale);
 
+// 現在のパス
 const currentPath = getCurrentPath(Astro.url);
 
+// カノニカル URL
 const canonicalUrl = new URL(currentPath, Astro.url).href;
 
+// OGP 用スラッグ
 const ogSlug = currentPath.startsWith(wikiBaseUrl)
-    ? removeTrailingSlash(`wiki/${currentPath.slice(wikiBaseUrl.length)}`)
+    ? removeTrailingSlash(`${currentPath.slice(localeBaseUrl.length)}`)
     : 'index';
 const ogImageUrl = new URL(`${localeBaseUrl}og/${ogSlug}.png`, Astro.url).href;
 
+// デフォルトの代替リンク
 const defaultAlternateLink = alternateLinks.find(link => link.locale === defaultLocale);
 
+// サイトタイトルと説明
 const siteTitle = t('site.title', locale);
 const siteDescription = t('site.description', locale);
 
+// ページタイトルと説明
 const pageTitle = `${title} | ${siteTitle}`;
 const pageDescription = description ?? siteDescription;
 ---
@@ -79,7 +86,6 @@ const pageDescription = description ?? siteDescription;
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <meta name="generator" content="snsn-wiki" />
-        {isFallback && <meta name="robots" content="noindex, follow" />}
         <link rel="icon" href={new URL(`${baseUrl}favicon.ico`, Astro.url).href} sizes="48x48" />
         <link rel="icon" href={new URL(`${baseUrl}favicon.svg`, Astro.url).href} type="image/svg+xml" />
         <link rel="sitemap" href={new URL(`${baseUrl}sitemap-index.xml`, Astro.url).href} />

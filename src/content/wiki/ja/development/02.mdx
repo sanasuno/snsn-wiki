@@ -6,38 +6,49 @@ tags: [開発記録]
 date: 2026-08-17
 ---
 ## i18nについて
-i18n（国際化）対応を行います。ここでは、ビルド時に実行されるサーバーサイド翻訳の実装を行っていきます。
-以下のファイルを記述していきます。
-- `@i18n/i18n.config.ts`: 翻訳ロジックの中心となる設定ファイル
-- `@i18n/keys.ts`, `@i18n/keys.custom.ts`: 翻訳キーのスキーマ定義ファイル
+i18n（国際化）対応を実装します。ここでは、ビルド時に実行されるサーバーサイド翻訳の実装をします。
+
+記述するのは以下のファイルです。
+- `@i18n/i18n.config.ts` : 翻訳ロジックの中心となる設定ファイル
+- `@i18n/keys.ts`, `@i18n/keys.custom.ts` : 翻訳キーのスキーマ定義ファイル
 - `@i18n/ja.ts`, `@i18n/ja.custom.ts`... : 各ロケールの翻訳を記述する辞書ファイル
-- `@lib/locale.ts`: ロケール関連のユーティリティ関数
+- `@lib/locale.ts` : ロケール関連のユーティリティ関数
 
 ## 翻訳辞書ファイル
-`snsn-wiki` 本体のアップデートによってユーザー独自の翻訳を上書きしないため、システム標準の翻訳キーとユーザー拡張用の翻訳キーを分離します。  
-システム標準のキーを `structuralKeys` として `keys.ts` に、ユーザー拡張用のキーを `customKeys` として `keys.custom.ts` に記述します。両者を結合したキー配列を `translationKeys` として、さらにその型も `TranslationKey` としてエクスポートします。  
-また、具体的な翻訳を記述する翻訳辞書ファイルも、`ja.ts` と `ja.custom.ts` のように分離して記述し、対応する翻訳キー型で型チェックします。  
-翻訳辞書は、`[key]: [value]` の形式で定義され、それらを各言語ごとにまとめて出力します。
+`snsn-wiki` 本体のアップデートによってユーザー独自の翻訳を上書きしないため、
+システム標準の翻訳キーとユーザー拡張用の翻訳キーを分離します。
+システム標準のキーは `structuralKeys` として `keys.ts` に、
+ユーザー拡張用のキーは `customKeys` として `keys.custom.ts` に記述します。
+
+`strucruralKeys` と `customKeys` の両者を結合したキー配列を `translationKeys` 、
+その型を `TranslationKey` としてエクスポートします。  
+
+また、具体的な翻訳を記述する翻訳辞書ファイルも、`ja.ts` と `ja.custom.ts` のように分離して記述し、
+対応する翻訳キー型で型チェックします。  
+翻訳辞書は `[key]: [value]` の形式で定義され、それらを各言語ごとにまとめて出力します。
 
 ## i18n.config.ts
-`i18n.config.ts` は、i18n関連の中心となるファイルです。各言語の翻訳辞書から型やロケール一覧などを派生的に定義します。
+`i18n.config.ts` は、i18n関連の中心となるファイルです。
+各言語の翻訳辞書から型やロケール一覧などを派生的に定義します。
 
 ### 翻訳キー
-i18n 関連のインポートをこのファイルから統一して行えるように、翻訳キーの型である `TranslationKey` 型を `keys.ts` からインポートして、そのままエクスポートします。
+i18n 関連のインポートをこのファイルから統一して行えるように、
+翻訳キーの型である `TranslationKey` 型を `keys.ts` からインポートして、そのままエクスポートします。
 
 ```ts
-import type { TranslationKey } from "./keys";
+import type { TranslationKey } from './keys';
 export type { TranslationKey };
 ```
 
 ### 翻訳辞書ファイルのインポート
-`i18n` ディレクトリ配下にある翻訳辞書ファイルをインポートし、すべてまとめて `translations` オブジェクトに格納します。  
+`i18n` ディレクトリ配下にある翻訳辞書ファイルをインポートし、
+すべてまとめて `translations` オブジェクトに格納します。  
 ロケールを追加するときは、ここに追記します。
 
 ```ts
-import { en } from "./en";
-import { eo } from "./eo";
-import { ja } from "./ja";
+import { en } from './en';
+import { eo } from './eo';
+import { ja } from './ja';
 export const translations = {
     en,
     eo,
@@ -52,24 +63,26 @@ export const translations = {
 export type Locale = keyof typeof translations;
 ```
 
-### デフォルトロケール
-翻訳やページ遷移のフォールバックとして使われるデフォルトロケール `defaultLocale` を決定します。デフォルトロケールは `Locale` 型の要素である必要があります。
-
-```ts
-export const defaultLocale = 'ja' satisfies Locale;
-```
-
 ### 利用可能なロケール一覧
-`translations` のキー配列から、利用可能なロケール一覧を `locales` として定義します。
+`translations` のキー配列を、利用可能なロケール一覧 `locales` として定義します。
 
 ```ts
 export const locales = Object.keys(translations) as Locale[];
 ```
 
+### デフォルトロケール
+翻訳やページ遷移のフォールバックとして使われるデフォルトロケール `defaultLocale` を決定します。
+デフォルトロケールは `Locale` 型の要素である必要があります。
+
+```ts
+export const defaultLocale = 'ja' satisfies Locale;
+```
+
 ### t()
-`t` 関数は、与えられた翻訳キーとロケールから、翻訳された文字列を取得する関数です。  
-`locale` パラメータを省略した場合は `defaultLocale` が使用されます。  
-指定されたロケールに翻訳が存在しない場合、デフォルトロケールの翻訳を返し、デフォルトロケールにも存在しない場合はキーの値をそのまま返します。
+`t` 関数は、与えられた翻訳キーとロケールから、翻訳された文字列を取得する関数です。
+`locale` パラメータを省略した場合は `defaultLocale` が使用されます。
+指定されたロケールに翻訳が存在しない場合、デフォルトロケールの翻訳を返します。
+デフォルトロケールにも翻訳が存在しない場合は、キーの値をそのまま返します。
 
 ```ts
 export function t(key: TranslationKey, locale: Locale = defaultLocale): string {
@@ -83,11 +96,12 @@ export function t(key: TranslationKey, locale: Locale = defaultLocale): string {
 ```
 
 ## defineConfig
-`astro.config.ts` の `defineConfig` に `i18n.config.ts` で設定した `locales` と `defaultLocale` を渡します。  
+`astro.config.ts` の `defineConfig` に `i18n.config.ts` で設定した `locales` と `defaultLocale` を渡します。
+
 また、全言語のURLの取り扱いを統一するため `prefixDefaultLocale` は `true` に設定します。
 
 ```ts
-import { locales, defaultLocale } from '@i18n/i18n.config';
+import { t, locales, defaultLocale } from './src/i18n/i18n.config';
 
 export default defineConfig({
     i18n: {
@@ -100,13 +114,15 @@ export default defineConfig({
 });
 ```
 
-- `astro.config.ts` ではエイリアスを利用できないため、`i18n.config.ts` およびそこからインポートされるファイルはエイリアスを使用できないことに注意が必要です。
+- `astro.config.ts` ではエイリアスを利用できないため、
+`i18n.config.ts` およびそこからインポートされるファイルはエイリアスを使用できないことに注意が必要です。
 
 ## ユーティリティ関数
 `@lib/locale.ts` にロケール関連のユーティリティ関数を記述します。
 
 ### isLocale()
-`isLocale()` は、対象の文字列が有効なロケールかどうかを判定する関数です。
+対象の文字列が有効なロケールかどうかを判定する関数です。
+引数が `locales` 配列に含まれているかをチェックします。
 
 ```ts
 import { locales, type Locale } from '@i18n/i18n.config';
@@ -116,7 +132,8 @@ export function isLocale(value: string): value is Locale {
 ```
 
 ### isTranslationKey()
-`isTranslationKey` は、対象の文字列が有効な翻訳キーかどうかを判定する関数です。
+対象の文字列が有効な翻訳キーかどうかを判定する関数です。
+引数が `translationKeys` 配列に含まれているかをチェックします。
 
 ```ts
 import { translationKeys, type TranslationKey } from '@i18n/keys';

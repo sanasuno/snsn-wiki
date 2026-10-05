@@ -87,8 +87,10 @@ npm install @types/node --save-dev
 snsn-wiki は MIT ライセンスなので、`./LICENSE` に MIT ライセンスの全文を記述します。
 
 ## URL管理
-Astro では、`astro.config.ts` に `site`（サイトのオリジン）と `base`（サブディレクトリに配置する場合の配信パス）の値を設定することで、サイトのURLを管理します。ただし、これらの値はユーザーが編集する対象なので、安全のために別ファイル（`./src/site.config.ts`）に記述し、それをインポートする形式にします。  
-まず `site.config.ts` には、`siteConfig` として `url` と `basePath` を設定します。
+Astro では、`astro.config.ts` に `site`（サイトのオリジン）と `base`（サブディレクトリに配置する場合の配信パス）の値を設定することで、サイトのURLを管理します。
+ただし、これらの値はユーザーが編集する対象なので、安全のために別ファイル（`./src/site.config.ts`）に記述し、それをインポートする形式にします。
+
+まず `site.config.ts` に `url` と `basePath` を `siteConfig` として設定します。
 これらを `astro.config.ts` でインポートし、検証と正規化をしてから `astro.config.ts` の `defineConfig` に渡します。
 
 ```ts
@@ -99,7 +101,8 @@ export const siteConfig = {
 ```
 
 ### site
-`siteConfig.url` が有効な URL であるかチェックし、失敗したらエラーをスローします。成功したら `string` 型に戻し、末尾の `/` を削除してから `site` に代入します。
+`siteConfig.url` が有効な URL であるかチェックし、失敗したらエラーをスローします。
+成功したら `string` 型に戻し、末尾の `/` を削除してから `site` に代入します。
 
 ```ts
 let site: string;
@@ -116,7 +119,9 @@ try {
 - `try` ブロック内で `site` に代入するため、まず `let` で `site` を宣言しておきます。
 
 ### base
-`siteConfig.basePath` が `/` で始まるかチェックし、失敗したらエラーをスローします。成功したら、末尾の `/` を削除してから `base` に代入します。なお、空文字列になった場合は `/` を代入します。
+`siteConfig.basePath` が `/` で始まるかチェックし、失敗したらエラーをスローします。
+成功したら、末尾の `/` を削除してから `base` に代入します。
+なお、空文字列になった場合は `/` を代入します。
 
 ```ts
 if (!siteConfig.basePath.startsWith('/')) {
@@ -129,10 +134,12 @@ const base = siteConfig.basePath.replace(/\/+$/, '') || '/';
 
 ### defineConfig
 設定した `site` と `base` を `defineConfig` に渡します。
+また、 `trailingSlash: 'always'` を設定し、URL の末尾に `/` が付くようにします。
 
 ```ts
 export default defineConfig({
     site,
     base,
+    trailingSlash: 'always',
 })
 ```

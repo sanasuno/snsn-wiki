@@ -45,7 +45,6 @@ export default defineConfig({
             prefixDefaultLocale: true
         }
     },
-
     integrations: [
         mdx(),
         sitemap({
