@@ -4,20 +4,21 @@
  */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import path from "node:path";
 import satori, { type FontWeight } from "satori";
 import { Resvg } from "@resvg/resvg-js";
 
-const FONT_DIR = fileURLToPath(new URL('../assets/fonts/', import.meta.url));
+const FONT_DIR = path.resolve(process.cwd(), 'src/assets/fonts');
 
 let fontsCache: { name: string; data: Buffer; weight: FontWeight; style: 'normal' }[] | null = null;
 
 function loadFonts() {
     if (fontsCache) return fontsCache;
     fontsCache = [
-        { name: 'Noto Sans', data: readFileSync(`${FONT_DIR}NotoSans-Regular.ttf`), weight: 400, style: 'normal' },
-        { name: 'Noto Sans', data: readFileSync(`${FONT_DIR}NotoSans-Bold.ttf`), weight: 700, style: 'normal' },
-        { name: 'Noto Sans JP', data: readFileSync(`${FONT_DIR}NotoSansJP-Regular.ttf`), weight: 400, style: 'normal' },
-        { name: 'Noto Sans JP', data: readFileSync(`${FONT_DIR}NotoSansJP-Bold.ttf`), weight: 700, style: 'normal' },
+        { name: 'Noto Sans', data: readFileSync(path.join(FONT_DIR, 'NotoSans-Regular.ttf')), weight: 400, style: 'normal' },
+        { name: 'Noto Sans', data: readFileSync(path.join(FONT_DIR, 'NotoSans-Bold.ttf')), weight: 700, style: 'normal' },
+        { name: 'Noto Sans JP', data: readFileSync(path.join(FONT_DIR, 'NotoSansJP-Regular.ttf')), weight: 400, style: 'normal' },
+        { name: 'Noto Sans JP', data: readFileSync(path.join(FONT_DIR, 'NotoSansJP-Bold.ttf')), weight: 700, style: 'normal' },
     ];
     return fontsCache;
 }

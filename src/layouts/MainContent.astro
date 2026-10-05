@@ -4,7 +4,7 @@
  * メインコンテンツレイアウト
  */
 import { t, type Locale } from '@i18n/i18n.config';
-import { getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath } from '@lib/path';
+import { ensureTrailingSlash, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath } from '@lib/path';
 import { getCategory, getCategoryString, getTranslatedCategory } from '@lib/category';
 import { formatDate } from '@lib/date';
 
@@ -35,59 +35,31 @@ const wikiBaseUrl = getWikiBaseUrl(locale);
 
 const currentPath = getCurrentPath(Astro.url);
 
+const categoryString = id ? getCategoryString(id, isSubPage) : '';
+
 type Crumb = {
+    kind: 'home' | 'category' | 'page';
     label: string;
     href: string;
-    categorySegment?: string | undefined;
 }
 
-const categoryString = id ? getCategoryString(id, isSubPage) : undefined;
+const categoryLabel = id ? getTranslatedCategory(id, locale, isSubPage) : '';
+const isWikiRoot = id ? getCategory(id, isSubPage).length === 0 : false;
 
-function buildCrumbs(): Crumb[] {
-    if (id) {
-        const category = getCategory(id, isSubPage);
-        const crumbs: Crumb[] = [
-            {
-                label: t('homepage.title', locale),
-                href: wikiBaseUrl
-            }
-        ]
-        let categoryAccumulated = '';
-        category.forEach((segment, index) => {
-            const isLast = index === category.length - 1;
-            categoryAccumulated += `/${segment}`;
-            
-            crumbs.push({
-                label: isLast ? title : segment,
-                href: isLast ? currentPath : `${localeBaseUrl}/category/${categoryAccumulated}`,
-                categorySegment: isLast ? segment : undefined,
-            })
-        })
-        return crumbs;
-    } else {
-        const currentSlug = currentPath.startsWith(localeBaseUrl)
-            ? currentPath.slice(localeBaseUrl.length)
-            : currentPath;
-        const segments = currentSlug.split('/').filter(Boolean);
-        const crumbs: Crumb[] = [
-            {
-                label: t('homepage.title', locale),
-                href: localeBaseUrl
-            }
-        ];
-        let accumulated = localeBaseUrl;
-        segments.forEach((segment, index) => {
-            accumulated += `${segment}`;
-            const isLast = index === segments.length -1;
-            crumbs.push({
-                label: isLast ? title : segment,
-                href: isLast ? currentPath : `${accumulated}`,
-            });
-        });
-        return crumbs;
-    }
+const crumbs: Crumb[] = [
+    {
+        kind: 'home',
+        label: t('homepage.title', locale),
+        href: ensureTrailingSlash(wikiBaseUrl)
+    },
+    ...(categoryLabel ? [{ kind: 'category', label: categoryLabel } as Crumb] : []),
+    ...(isWikiRoot ? [] : [{ kind: 'page', label: title } as Crumb]),
+];
+const crumbIcons = {
+    home: 'fas fa-house',
+    category: 'fas fa-folder',
+    page: 'far fa-file',
 }
-const crumbs = buildCrumbs();
 ---
 <div class="main-content" id="main-content">
     {isFallback && (
@@ -101,50 +73,23 @@ const crumbs = buildCrumbs();
             <nav class="breadcrumb">
                 <ol class="breadcrumbs">
                     {crumbs.map((crumb, index) => {
-                        const isHome = index === 0;
                         const isLast = index === crumbs.length -1;
-                        const isCategorySegment = !isLast && !isHome && id;
                         return (
                             <>
-                                <li class:list={[{ 'breadcrumb__current': isLast }]} aria-current={isLast ? 'page' : undefined}>
-                                    {isHome ? (
-                                        isLast
-                                            ? <>
-                                                <i class="fas fa-house" aria-hidden="true"></i>
-                                                <span>{crumb.label}</span>
-                                            </>
-                                            : <>
-                                                <i class="fas fa-house" aria-hidden="true"></i>
-                                                <a href={crumb.href}>
-                                                    {crumb.label}
-                                                </a>
-                                            </>
-                                    ) : isLast ? (
-                                        <>
-                                            <i class="far fa-file" aria-hidden="true"></i>
-                                            <span>{crumb.label}</span>
-                                        </>
-                                    ) : isCategorySegment ? (
-                                        <>
-                                            <i class="fas fa-folder" aria-hidden="true"></i>
-                                            <a href={crumb.href}>
-                                                {getTranslatedCategory(id, locale, isSubPage)}
-                                            </a>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <i class="far fa-file" aria-hidden="true"></i>
-                                            <a href={crumb.href}>{crumb.label}</a>
-                                        </>
-                                    )}
+                                <li class:list={{ 'breadcrumb__current': isLast}} aria-current={isLast ? 'page' : undefined}>
+                                    <i class={crumbIcons[crumb.kind]} aria-hidden="true"></i>
+                                    {crumb.href && !isLast
+                                        ? <a href={crumb.href}>{crumb.label}</a>
+                                        : <span>{crumb.label}</span>
+                                    }
                                 </li>
                                 {!isLast && (
-                                    <li class="breadcrump__separator" aria-hidden="true">
-                                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                    <li class="breadcrumb__separator" aria-hidden="true">
+                                        <i class="fas fa-chevron-right"></i>
                                     </li>
                                 )}
                             </>
-                        )
+                        );
                     })}
                 </ol>
             </nav>
@@ -154,7 +99,7 @@ const crumbs = buildCrumbs();
         {title}
     </h1>
     <div class="page-meta">
-        {id && (
+        {categoryLabel && (
             <div class="page-meta-category">
                 <a href={`${localeBaseUrl}/category/${categoryString}`}>
                     {getTranslatedCategory(id, locale, isSubPage)}

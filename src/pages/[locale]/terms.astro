@@ -16,8 +16,8 @@ const alternateLinks = locales.map(loc => ({
 ---
 
 <MainLayout
-    title={t('terms.title')}
-    description={t('terms.description')}
+    title={t('terms.title', locale)}
+    description={t('terms.description', locale)}
     locale={locale}
     alternateLinks={alternateLinks}
     showSubpanel={false}
