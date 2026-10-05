@@ -25,6 +25,7 @@ const slugMap : Record<string, (typeof uniquePages)[0]> = {};
 for (const page of uniquePages) {
     slugMap[getNormalizedSlug(page.id)] = page;
     const category: string[] = getCategory(page.id, page.data.isSubPage);
+    if (category.length === 0) continue;
     const key = category.length > 0 && autoGroupByLeafCategory
         ? category[category.length - 1]
         : category.join('/');
