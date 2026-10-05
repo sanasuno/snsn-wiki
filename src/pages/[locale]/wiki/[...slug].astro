@@ -38,7 +38,7 @@ const { page, locale, slug, isFallback } = Astro.props;
 // 代替リンク生成
 const alternateLinks = locales.map(altLocale => ({
     locale: altLocale,
-    href: ensureTrailingSlash(`${getWikiBaseUrl(altLocale)}/${slug}`)
+    href: ensureTrailingSlash(`${getWikiBaseUrl(altLocale)}${slug}`)
 }));
 
 const { Content, headings } = await render(page);

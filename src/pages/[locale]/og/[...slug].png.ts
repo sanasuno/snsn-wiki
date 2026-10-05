@@ -31,7 +31,7 @@ export const getStaticPaths = (async () => {
     const fallbackPaths = locales.map((locale) => ({
         params: {
             locale,
-            slug: 'index'
+            slug: 'index',
         },
         props: {
             title: t('site.title', locale),

@@ -483,7 +483,7 @@ body {
 }
 
 /* -------- フォールバック警告 -------- */
-.fallback-warning {
+.fallback-notice {
     display: flex;
     align-items: center;
     padding: 0.5rem 1rem;
@@ -494,7 +494,7 @@ body {
     margin-bottom: 24px;
 }
 
-.fallback-warning i {
+.fallback-notice i {
     font-size: 1.125rem;
 }
 
@@ -506,7 +506,7 @@ body {
 .breadcrumb {
     font-size: 0.825rem;
     margin-block-end: var(--space-3, 0.75rem);
-    color: var(--color-muted, #888);
+    color: var(--color-text-muted, #888);
 }
 
 .breadcrumb ol {
@@ -530,6 +530,11 @@ body {
 }
 
 .breadcrumb a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+}
+
+.breadcrumb a:visited {
     color: var(--color-text-muted);
     text-decoration: none;
 }
@@ -615,7 +620,6 @@ body {
     line-height: 1.3;
     letter-spacing: -0.01em;
     margin: 2em 0 0.75em;
-    scroll-margin-top: calc(var(--header-height) + 16px);
     color: var(--color-text);
 }
 
@@ -684,7 +688,7 @@ body {
   padding: 12px 20px;
   border-left: 4px solid var(--color-accent);
   background: var(--color-accent-light);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   color: var(--color-text-muted);
 }
 
@@ -700,7 +704,7 @@ body {
   display: block;
   margin-top: 8px;
   font-size: 0.85rem;
-  color: var(--color-text-subtle);
+  color: var(--color-text-muted);
   font-style: normal;
 }
 
@@ -771,14 +775,14 @@ body {
   margin: 2em 0;
 }
 
-.page-tags {
+.article-content .page-tags {
     margin-top: 12px;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
 }
 
-.page-tag {
+.article-content .page-tag {
     display: inline-block;
     padding: 2px 10px;
     border-radius: 999px;
@@ -790,7 +794,7 @@ body {
     transition: var(--transition);
 }
 
-.page-tag:hover {
+.article-content .page-tag:hover {
     background-color: var(--color-bg-accent);
     border-color: var(--color-border-accent);
     color: var(--color-accent) !important;
@@ -959,5 +963,9 @@ body {
 
     .subpanel.open {
         transform: translateX(0);
+    }
+
+    .subpanel:not(.open) {
+        visibility: hidden;
     }
 }

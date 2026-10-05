@@ -18,7 +18,7 @@ npx astro add mdx
 ```
 
 ## コレクションローダー
-ウィキページ用のコレクションローダーを `./src/content.config.ts` として作成します。  
+ウィキページ用のコレクションローダーを `./src/content.config.ts` で作成します。  
 `./src/content/wiki` 配下にある `.md` または `.mdx` ファイルを収集して `wiki` コレクションとして利用できるように定義します。
 
 ```ts
@@ -69,13 +69,20 @@ export function removeTrailingSlash(path: string): string {
 }
 ```
 
-### getLocale()
-ページIDからロケールを取得する関数です。ページIDを `/` で分割したときの先頭の要素をロケールとして扱います。有効なロケールかどうかを `isLocale()` 関数で判定し、有効ロケールだった場合はそのロケールを返し、有効ロケールでない場合にはエラーをスローします。
+### ensureTrailingSlash()
+末尾にスラッシュを付与する関数です。
 
 ```ts
-import type { Locale } from '@i18n/i18n.config';
-import { isLocale } from "@lib/locale";
+export function ensureTrailingSlash(path: string): string {
+    return path.endsWith('/') ? path : `${path}/`;
+}
+```
 
+### getLocale()
+ページIDからロケールを取得する関数です。ページIDを `/` で分割したときの先頭の要素をロケールとして扱います。  
+まず、切り出した部分が有効なロケールかどうかを `isLocale()` 関数で判定します。有効だった場合はそのロケールを返し、有効でない場合にはエラーをスローします。
+
+```ts
 export function getLocale(pageId: string): Locale {
     const parts = pageId.split('/');
     if (isLocale(parts[0])) {
@@ -86,7 +93,7 @@ export function getLocale(pageId: string): Locale {
 ```
 
 ### getRawSlug()
-ページIDから生のスラッグを取得する関数です。ページIDを `/` で分割したときの、先頭を除いた要素を `/` で再結合して返します。
+ページIDから正規化されていない生のスラッグを取得する関数です。ページIDを `/` で分割したときの、先頭（ロケール部分）を除いた要素を `/` で再結合して返します。
 
 ```ts
 export function getRawSlug(pageId: string): string {
@@ -142,7 +149,7 @@ export function getBaseUrl(): string {
 
 ```ts
 export function getLocaleBaseUrl(locale: Locale): string {
-    return `${getBaseUrl()}/${locale}`;
+    return `${getBaseUrl()}/${locale}/`;
 }
 ```
 
@@ -151,7 +158,7 @@ export function getLocaleBaseUrl(locale: Locale): string {
 
 ```ts
 export function getWikiBaseUrl(locale: Locale): string {
-    return `${getLocaleBaseUrl(locale)}/wiki`;
+    return `${getLocaleBaseUrl(locale)}wiki/`;
 }
 ```
 
@@ -161,21 +168,21 @@ export function getWikiBaseUrl(locale: Locale): string {
 ```ts
 export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
-    return removeTrailingSlash(`${getWikiBaseUrl(locale)}/${slug}`);
+    return removeTrailingSlash(`${getWikiBaseUrl(locale)}${slug}/`);
 }
 ```
 
 ### getCurrentPath()
-与えられた `Astro.url` から現在のパスを取得する関数です。与えられたURLの `pathname` を末尾の `/` を削除して返し、空になった場合は  `/` を返します。
+与えられた `Astro.url` から現在のパスを取得する関数です。与えられたURLの `pathname` の末尾に `/` を付与して返します。
 
 ```ts
 export function getCurrentPath(url: URL): string {
-    return removeTrailingSlash(url.pathname) || '/';
+    return ensureTrailingSlash(url.pathname);
 }
 ```
 
 ### isPathActive()
-対象のスラッグが現在のパスを含むもしくは一致するかどうかを判定する関数です。主にナビゲーションにおいて現在の位置を示すために使用されます。  
+対象のスラッグが現在のパスを含む、もしくは一致するかどうかを判定する関数です。主にナビゲーションにおいて現在の位置を示すために使用されます。  
 この関数は対象のスラッグと現在のパスを引数として受け取ります。ただし、現在のパス `currentPath` は `Astro.url.pathname` を渡すことを想定していますが、これはサイトのベースURLやロケールを含むため、それらを取り除く必要があります。  
 そのため、まずは `getBaseUrl()` 関数でベースURLを取得し、 `currentPath` がベースURLで始まっている場合はこれを取り除き `relativePath` として代入します。なお、ベースURLで始まっていない場合は `relativePath` に `currentPath` をそのまま使用します。  
 次に、取り除いたパスを `/` で分割します。ただし `relativePath` は `/` で始まるので、分割した配列の2番目がロケールかどうかを `isLocale()` 関数で判定します。  
@@ -282,7 +289,7 @@ return resolved;
 ```
 
 ### getStaticPaths()
-`./src/pages/[locale]/wiki/[...slug].astro` 内に `getStaticPaths()` 関数を記述し、`resolveWikiPages()` 関数を用いて URL を組み立て、各種 `props` を出力します。
+`getStaticPaths()` 関数では、URLの組み立てに必要な `locale` と `slug` および各種 `props` を出力します。実際の処理はほぼ `resolveWikiPages()` で行っているので、それを当てはめていきます。
 
 ```ts
 export async function getStaticPaths() {
@@ -295,6 +302,7 @@ export async function getStaticPaths() {
         props: { page, locale, slug, isFallback },
     }));
 }
+const { page, locale, slug, isFallback } = Astro.props;
 ```
 
 #### 代替リンク生成
@@ -303,7 +311,7 @@ export async function getStaticPaths() {
 ```ts
 const alternateLinks = locales.map(altLocale => ({
     locale: altLocale,
-    href: `${getWikiBaseUrl(altLocale)}/${slug}`
+    href: ensureTrailingSlash(`${getWikiBaseUrl(altLocale)}/${slug}`)
 }));
 ```
 
@@ -312,7 +320,22 @@ const alternateLinks = locales.map(altLocale => ({
 
 ```astro
 ---
-const { Content } = await render(page);
+const { Content, headings } = await render(page);
 ---
-<Content />
+<MainLayout
+    title={page.data.title}
+    description={page.data.description}
+    locale={locale}
+    alternateLinks={alternateLinks}
+    isFallback={isFallback}
+    tags={page.data.tags}
+    date={page.data.date}
+    updated={page.data.updated}
+    id={page.id}
+    isSubPage={page.data.isSubPage}
+    showSubpanel={page.data.showSubpanel}
+    headings={headings}
+>
+    <Content />
+</MainLayout>
 ```

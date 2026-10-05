@@ -35,6 +35,7 @@
     --color-accent: #08824f;
     --color-accent-hover: #066a3d;
     --color-accent-active: #04522b;
+    --color-accent-light: #c8e6c9;
 
     /* リンク色 */
     --color-link: #1976d2;
@@ -83,6 +84,7 @@
     --color-accent: #3ecf8e;
     --color-accent-hover: #2eb879;
     --color-accent-active: #259f68;
+    --color-accent-light: #1f3a2b;
     
     /* リンク色 */
     --color-link: #4fc3f7;

@@ -3,7 +3,6 @@
  * OGP画像生成用スクリプト
  */
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import path from "node:path";
 import satori, { type FontWeight } from "satori";
 import { Resvg } from "@resvg/resvg-js";

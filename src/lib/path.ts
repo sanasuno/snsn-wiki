@@ -84,7 +84,7 @@ export function getNormalizedSlug(pageId: string): string {
  * @returns ベースURL
  */
 export function getBaseUrl(): string {
-    return removeTrailingSlash(import.meta.env.BASE_URL);
+    return ensureTrailingSlash(import.meta.env.BASE_URL);
 }
 
 /**
@@ -93,7 +93,7 @@ export function getBaseUrl(): string {
  * @returns ロケールベースURL
  */
 export function getLocaleBaseUrl(locale: Locale): string {
-    return `${getBaseUrl()}/${locale}`;
+    return ensureTrailingSlash(`${getBaseUrl()}${locale}`);
 }
 
 /**
@@ -102,7 +102,7 @@ export function getLocaleBaseUrl(locale: Locale): string {
  * @returns WikiベースURL
  */
 export function getWikiBaseUrl(locale: Locale): string {
-    return `${getLocaleBaseUrl(locale)}/wiki`;
+    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}wiki`);
 }
 
 /**
@@ -112,7 +112,7 @@ export function getWikiBaseUrl(locale: Locale): string {
  */
 export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
-    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}/${slug}`);
+    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${slug}`);
 }
 
 /**
@@ -121,7 +121,7 @@ export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): 
  * @returns 現在のパス
  */
 export function getCurrentPath(url: URL): string {
-    return ensureTrailingSlash(url.pathname) || '/';
+    return ensureTrailingSlash(url.pathname);
 }
 
 

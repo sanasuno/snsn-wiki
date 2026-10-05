@@ -62,7 +62,7 @@ const pathNoSlash = removeTrailingSlash(currentPath);
 const ogSlug = pathNoSlash.startsWith(wikiBaseUrl)
     ? `wiki${pathNoSlash.slice(wikiBaseUrl.length)}`
     : 'index';
-const ogImageUrl = new URL(`${localeBaseUrl}/og/${ogSlug}.png`, Astro.url).href;
+const ogImageUrl = new URL(`${localeBaseUrl}og/${ogSlug}.png`, Astro.url).href;
 
 const defaultAlternateLink = alternateLinks.find(link => link.locale === defaultLocale);
 
@@ -81,9 +81,9 @@ const pageDescription = description ?? siteDescription;
         <meta name="description" content={pageDescription} />
         <meta name="generator" content="snsn-wiki" />
         {isFallback && <meta name="robots" content="noindex, follow" />}
-        <link rel="icon" href={new URL(`${baseUrl}/favicon.ico`, Astro.url).href} sizes="48x48" />
-        <link rel="icon" href={new URL(`${baseUrl}/favicon.svg`, Astro.url).href} type="image/svg+xml" />
-        <link rel="sitemap" href={new URL(`${baseUrl}/sitemap-index.xml`, Astro.url).href} />
+        <link rel="icon" href={new URL(`${baseUrl}favicon.ico`, Astro.url).href} sizes="48x48" />
+        <link rel="icon" href={new URL(`${baseUrl}favicon.svg`, Astro.url).href} type="image/svg+xml" />
+        <link rel="sitemap" href={new URL(`${baseUrl}sitemap-index.xml`, Astro.url).href} />
         <link rel="canonical" href={canonicalUrl} />
         {defaultAlternateLink && <link rel="alternate" href={new URL(defaultAlternateLink.href, Astro.url).href} hreflang="x-default" />}
         {alternateLinks.map(link => <link rel="alternate" href={new URL(link.href, Astro.url).href} hreflang={link.locale} />)}
