@@ -191,7 +191,7 @@ export async function renderOgImage({ title, description, category, siteName }: 
 ```
 
 ## 画像配信エンドポイント
-`./src/pages/[locale]/og/[...slug]/og/[...slug].png.ts` に、画像配信エンドポイントを記述します。
+`./src/pages/[locale]/og/[...slug].png.ts` に、画像配信エンドポイントを記述します。
 
 ### getStaticPaths()
 各ページ用の OGP 画像を配置する URL を組み立てます。また、画像のレンダーに必要な各種情報も `props` として出力します。

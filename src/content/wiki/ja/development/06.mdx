@@ -4,6 +4,12 @@ order: 6
 tags: [開発記録]
 date: 2026-08-28
 ---
+## CSS 構成
+CSS は、以下の3ファイルに記述します。
+- `@styles/global.css` : 全体のスタイルを記述するファイル
+- `@styles/theme.css` : テーマカラーなどの CSS 変数を記述するファイル
+- `@styles/custom.css` : ユーザーカスタム CSS 用のファイル
+
 ## CSS Grid
 CSS Gridを使って、レイアウトの各コンポーネントごとに配置を決定します。  
 `header`、`sidebar`、`main`、`sub`の4つの領域を配置します。
@@ -82,3 +88,13 @@ CSS Gridを使って、レイアウトの各コンポーネントごとに配置
     }
 }
 ```
+
+`.site-header` は `grid-area: 1 / 1 / -1 / -1` で全行にまたがらせ、
+`align-self: start` で 56px に抑えています。
+`grid item` の `position: sticky` は自身の `grid area` の中でしか動けないため、
+`row 1` だけに置くと追従しません。
+`grid-template-areas` の `header` は、ここでは実質ダミーです。
+カラムは `1fr` ではなく `minmax(0, 1fr)` にします。
+`1fr` は `minmax(auto, 1fr)` なので、
+長いコードブロックの `min-content` 幅でカラムが押し広げられます。
+`.main-panel` の `min-width: 0` も同じ理由です。

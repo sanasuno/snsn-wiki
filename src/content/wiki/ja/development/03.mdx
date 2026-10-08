@@ -400,7 +400,7 @@ const { page, locale, slug, isFallback } = Astro.props;
 ```ts
 const alternateLinks = locales.map(altLocale => ({
     locale: altLocale,
-    href: ensureTrailingSlash(`${getWikiBaseUrl(altLocale)}/${slug}`)
+    href: ensureTrailingSlash(`${getWikiBaseUrl(altLocale)}${slug}`)
 }));
 ```
 
