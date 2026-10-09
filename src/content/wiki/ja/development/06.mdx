@@ -1,5 +1,5 @@
 ---
-title: 開発記録6 CSS Gridレイアウト
+title: 開発記録6 CSS レイアウト
 order: 6
 tags: [開発記録]
 date: 2026-08-28
@@ -9,6 +9,82 @@ CSS は、以下の3ファイルに記述します。
 - `@styles/global.css` : 全体のスタイルを記述するファイル
 - `@styles/theme.css` : テーマカラーなどの CSS 変数を記述するファイル
 - `@styles/custom.css` : ユーザーカスタム CSS 用のファイル
+
+## ユニバーサルセレクタのリセット
+全要素（疑似要素を含む）に対し、 `margin` と `padding` といった余白をゼロにします。
+
+また、 `box-sizing: border-box` により、
+`width` / `height` に `padding` と `border` を含めます。
+これにより、パディング分はみ出すズレを防げます。
+
+```css
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+```
+
+## 基本設定
+`html` 要素に基本設定を適用します。
+
+```css
+html {
+    font-size: 16px;
+    scroll-padding-top: calc(var(--header-height) + 8px);
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+```
+
+- `font-size` : `rem` 単位の基準値となるフォントのサイズを設定します。
+- `scroll-padding-top` : アンカーリンクでのジャンプ時、
+見出しが固定ヘッダーに触れないように余白を確保します。
+- `scroll-behavior` : ページ内スクロールをスムーズにします。
+- `font-smoothing` : フォント描画をなめらかにします。
+
+## モーション軽減対応
+`prefers-reduced-motion: reduce` のユーザーに対し、スクロールのスムーズを無効化します。
+
+```css
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+```
+
+## ベーススタイル
+`body` 要素に対してベーススタイルを設定します。
+
+```css
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.6;
+    transition: var(--transition);
+}
+```
+
+- `margin: 0;` `padding: 0;` はユニバーサルセレクタでも設定していますが、
+防御的記述として保証しています。
+
+## 隠し要素
+`[hidden]` 属性を持つ要素を非表示にします。
+
+```css
+[hidden] {
+    display: none !important;
+}
+```
+
+- `!important` で確実に非表示にします。
 
 ## CSS Grid
 CSS Gridを使って、レイアウトの各コンポーネントごとに配置を決定します。  

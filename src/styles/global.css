@@ -12,6 +12,7 @@
     box-sizing: border-box;
 }
 
+/* 基本設定 */
 html {
     font-size: 16px;
     scroll-padding-top: calc(var(--header-height) + 8px);
@@ -46,7 +47,7 @@ body {
     grid-template-rows: var(--header-height) 1fr;
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--subpanel-width);
     grid-template-areas: 
-        "header header header"
+        ". . ."
         "sidebar main sub";
     min-height: 100dvh;
 }
@@ -54,7 +55,7 @@ body {
 .layout.no-subpanel {
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
     grid-template-areas:
-        "header header"
+        ". ."
         "sidebar main";
 }
 
@@ -62,7 +63,7 @@ body {
     .layout{
         grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
         grid-template-areas:
-            "header header"
+            ". ."
             "sidebar main";
     }
 }
@@ -71,7 +72,7 @@ body {
     .layout, .layout.no-subpanel {
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas:
-            "header"
+            "."
             "main";
     }
 }
