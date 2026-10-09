@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sanasuno/snsn-wiki)
+
 # Astro Starter Kit: Minimal
 
 ```sh
