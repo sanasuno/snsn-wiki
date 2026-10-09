@@ -87,8 +87,13 @@ body {
 - `!important` で確実に非表示にします。
 
 ## CSS Grid
-CSS Gridを使って、レイアウトの各コンポーネントごとに配置を決定します。  
-`header`、`sidebar`、`main`、`sub`の4つの領域を配置します。
+CSS Grid を使って、レイアウトの各コンポーネントごとに配置を決定します。
+
+ヘッダー（画面上部）、サイドバー（左側）、メインパネル（真ん中）、サブパネル（右側）
+の4つの領域を配置します。
+
+1行目は `.` で空けて全体にわたる領域を配置し、
+2行目は左から `sidebar` `main` `sub` の3つの領域を配置します。
 
 ```css
 .layout {
@@ -96,7 +101,7 @@ CSS Gridを使って、レイアウトの各コンポーネントごとに配置
     grid-template-rows: var(--header-height) 1fr;
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--subpanel-width);
     grid-template-areas: 
-        "header header header"
+        ". . ."
         "sidebar main sub";
     min-height: 100dvh;
 }
