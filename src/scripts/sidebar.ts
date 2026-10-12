@@ -18,7 +18,7 @@ function setSidebarToggleBtnState(btn: HTMLButtonElement, isOpen: boolean) {
 }
 
 /**
- * サイドバー切り替えを初期化する関数
+ * サイドバー切り替えボタンの動作を制御する関数
  */
 export function sidebarToggle() {
     const sidebar = document.getElementById('sidebar');

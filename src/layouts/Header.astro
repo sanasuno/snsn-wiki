@@ -6,9 +6,9 @@
  * @param localeBaseUrl ロケールベースURL
  * @param currentPath 現在のパス
  */
-import { t, locales, type Locale } from "@i18n/i18n.config";
-import { headerNavItems } from "@layouts/header.nav";
-import { ensureTrailingSlash, getCurrentPath, getLocaleBaseUrl, getLocalePathUrl, isPathActive } from "@lib/path";
+import { t, locales, type Locale } from '@i18n/i18n.config';
+import { headerNavItems } from '@layouts/header.nav';
+import { ensureTrailingSlash, getCurrentPath, getLocaleBaseUrl, getLocalePathUrl, isPathActive } from '@lib/path';
 
 interface Props {
     locale: Locale;
@@ -40,8 +40,8 @@ const showLanguageSwitcher: boolean = locales.length > 1;
     </nav>
     
     <button type="button" class="theme-toggle" id="theme-toggle" aria-label={t("header.theme.toggle", locale)} aria-pressed="false">
-        <i class="fas fa-sun icon-light" aria-hidden="true"></i>
-        <i class="fas fa-moon icon-dark" aria-hidden="true"></i>
+        <i class="fas fa-moon icon-to-light" aria-hidden="true"></i>
+        <i class="fas fa-sun icon-to-dark" aria-hidden="true"></i>
     </button>
 
     { showLanguageSwitcher && (
