@@ -137,16 +137,17 @@ CSS Grid を使って各コンポーネントの配置レイアウトを決定�
         background-color: var(--color-bg);
         border-left: 1px solid var(--color-border);
         box-shadow: var(--shadow-lg);
-        z-index: 999;
+        z-index: var(--z-drawer);
         padding: 20px 16px;
         overflow-y: auto;
         transform: translateX(100%);
-        transition: transform 150ms ease;
+        transition: transform 150ms ease, visibility 150ms ease;
         scrollbar-width: thin;
     }
 
     .subpanel.open {
         transform: translateX(0);
+        transition: transform 150ms ease, visibility 150ms ease;
     }
 
     .subpanel:not(.open) {
@@ -168,7 +169,6 @@ CSS Grid を使って各コンポーネントの配置レイアウトを決定�
 
 @media(width <= 768px) {
     .sidebar {
-        display: block;
         position: fixed;
         top: var(--header-height);
         left: calc(-1 * var(--sidebar-width));
@@ -180,9 +180,11 @@ CSS Grid を使って各コンポーネントの配置レイアウトを決定�
     .sidebar.open {
         left: 0;
         width: var(--sidebar-width);
-        z-index: 1000;
+        z-index: var(--z-drawer);
         overflow-y: auto;
         visibility: visible;
+        border-right: 1px solid var(--color-border);
+        box-shadow: 2px 0 8px rgb(0 0 0 / 0.15);
     }
 }
 ```

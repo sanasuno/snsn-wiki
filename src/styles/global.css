@@ -286,7 +286,7 @@ body {
     background-color: var(--color-bg);
 }
 
-@media (width >= 769px) {
+@media (width > 768px) {
     .sidebar {
         position: sticky;
         top: var(--header-height);
@@ -857,13 +857,12 @@ code {
     top: var(--header-height);
     height: calc(100dvh - var(--header-height));
     overflow-y: auto;
-    margin-top: 10px;
     padding: 10px 16px 0;
     border-left: 1px solid var(--color-border);
     scrollbar-width: thin;
 }
 
-@media(min-width: 1201px) {
+@media(width > 1200px) {
     .subpanel {
         align-self: start;
     }
@@ -956,7 +955,6 @@ code {
         inset: var(--header-height) 0 0 auto;
         width: min(320px, 90vw);
         height: calc(100dvh - var(--header-height));
-        margin-top: 0;
         background-color: var(--color-bg);
         border-left: 1px solid var(--color-border);
         box-shadow: var(--shadow-lg);
@@ -964,12 +962,13 @@ code {
         padding: 20px 16px;
         overflow-y: auto;
         transform: translateX(100%);
-        transition: transform 150ms ease;
+        transition: transform 150ms ease, visibility 150ms ease;
         scrollbar-width: thin;
     }
 
     .subpanel.open {
         transform: translateX(0);
+        transition: transform 150ms ease, visibility 150ms ease;
     }
 
     .subpanel:not(.open) {
