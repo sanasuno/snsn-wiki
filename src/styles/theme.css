@@ -6,10 +6,15 @@
 :root {
     color-scheme: light;
     /* レイアウト寸法 */
-    --content-max-width: 760px;
+    --content-max-width: 800px;
     --header-height: 56px;
     --sidebar-width: 260px;
     --subpanel-width: 220px;
+
+    /* z-index */
+    --z-header: 100;
+    --z-drawer: 999;
+    --z-drawer-button: 1000;
 
     /* 背景色 */
     --color-bg: #f0f0f0;

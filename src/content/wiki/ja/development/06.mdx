@@ -89,26 +89,21 @@ body {
 ## CSS Grid
 CSS Grid を使って各コンポーネントの配置レイアウトを決定します。
 
-画面上部にヘッダーを固定し、その下に左からサイドバー、メインパネル、サブパネルの順に配置します。
+画面上部にヘッダーを `position: sticky;` で固定し、
+その下に CSS Grid を使って左からサイドバー、メインパネル、サブパネルの順に配置します。
 
-ヘッダーの固定には `position: sticky;` を用いますが、
-CSS Grid では自身の `grid area` 内でしか動けないため、`row 1` に置くと追従が機能しません。
-そこで、ヘッダー自体は `grid-area: 1 / 1 / -1 / -1;` でグリッド全体に配置し、
-CSS Grid 側にヘッダーの高さ分の空白のエリアを配置することで対応します。
+3列のグリッドに分割し、左から `sidebar` `main` `sub` の3つを配置します。
+これらを CSS Grid の `grid-template-areas` で指定します。
 
-2行×3列のグリッドに分割し、1行目は `.` で空け、2行目は左から `sidebar` `main` `sub` の3つを配置します。
 サイドバーとサブパネルの横幅は CSS 変数で指定し、
 メインパネルの横幅ははみ出しを防ぐために `minmax(0, 1fr)` を指定します。
 
 ```css
 .layout {
     display: grid;
-    grid-template-rows: var(--header-height) 1fr;
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--subpanel-width);
-    grid-template-areas: 
-        ". . ."
-        "sidebar main sub";
-    min-height: 100dvh;
+    grid-template-areas: "sidebar main sub";
+    min-height: calc(100dvh - var(--header-height));
 }
 ```
 
@@ -117,28 +112,45 @@ CSS Grid 側にヘッダーの高さ分の空白のエリアを配置するこ�
 ```css
 .layout.no-subpanel {
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-    grid-template-areas:
-        ". ."
-        "sidebar main";
+    grid-template-areas: "sidebar main";
 }
 ```
 
 ### レスポンシブ対応
-画面幅が1200px以下の場合、サブパネルを配置せず、表示もしません。
+画面幅が1200px以下の場合、サブパネルは配置されず、ドロワーとして表示されます。
 
 ```css
-@media(max-width: 1200px) {
-    .layout{
+@media(width <= 1200px) {
+    .layout, .layout.no-subpanel {
         grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-        grid-template-areas:
-            ". ."
-            "sidebar main";
+        grid-template-areas: "sidebar main";
     }
 }
 
-@media(max-width: 1200px) {
+@media (width <= 1200px) {
     .subpanel {
-        display: none;
+        position: fixed;
+        inset: var(--header-height) 0 0 auto;
+        width: min(320px, 90vw);
+        height: calc(100dvh - var(--header-height));
+        margin-top: 0;
+        background-color: var(--color-bg);
+        border-left: 1px solid var(--color-border);
+        box-shadow: var(--shadow-lg);
+        z-index: 999;
+        padding: 20px 16px;
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform 150ms ease;
+        scrollbar-width: thin;
+    }
+
+    .subpanel.open {
+        transform: translateX(0);
+    }
+
+    .subpanel:not(.open) {
+        visibility: hidden;
     }
 }
 ```
@@ -147,16 +159,14 @@ CSS Grid 側にヘッダーの高さ分の空白のエリアを配置するこ�
 サイドバーは`.open`クラスが付与された場合のみ表示します。
 
 ```css
-@media (max-width: 768px) {
+@media (width <= 768px) {
     .layout, .layout.no-subpanel {
         grid-template-columns: minmax(0, 1fr);
-        grid-template-areas:
-            "."
-            "main";
+        grid-template-areas: "main";
     }
 }
 
-@media(max-width: 768px) {
+@media(width <= 768px) {
     .sidebar {
         display: block;
         position: fixed;

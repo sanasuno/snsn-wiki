@@ -135,10 +135,10 @@ const pageDescription = description ?? siteDescription;
         </script>
     </head>
     <body>
+        <Header
+            locale={locale}
+        />
         <div class={`layout${showSubpanel ? '' : ' no-subpanel'}`}>
-            <Header
-                locale={locale}
-            />
             <Sidebar
                 locale={locale}
             />
