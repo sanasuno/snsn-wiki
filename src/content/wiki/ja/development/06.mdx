@@ -87,9 +87,18 @@ body {
 - `!important` で確実に非表示にします。
 
 ## CSS Grid
-CSS Grid を使ってレイアウトの各コンポーネントの配置を決定します。
+CSS Grid を使って各コンポーネントの配置レイアウトを決定します。
+
+画面上部にヘッダーを固定し、その下に左からサイドバー、メインパネル、サブパネルの順に配置します。
+
+ヘッダーの固定には `position: sticky;` を用いますが、
+CSS Grid では自身の `grid area` 内でしか動けないため、`row 1` に置くと追従が機能しません。
+そこで、ヘッダー自体は `grid-area: 1 / 1 / -1 / -1;` でグリッド全体に配置し、
+CSS Grid 側にヘッダーの高さ分の空白のエリアを配置することで対応します。
 
 2行×3列のグリッドに分割し、1行目は `.` で空け、2行目は左から `sidebar` `main` `sub` の3つを配置します。
+サイドバーとサブパネルの横幅は CSS 変数で指定し、
+メインパネルの横幅ははみ出しを防ぐために `minmax(0, 1fr)` を指定します。
 
 ```css
 .layout {
@@ -109,11 +118,12 @@ CSS Grid を使ってレイアウトの各コンポーネントの配置を決�
 .layout.no-subpanel {
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
     grid-template-areas:
-        "header header"
+        ". ."
         "sidebar main";
 }
 ```
 
+### レスポンシブ対応
 画面幅が1200px以下の場合、サブパネルを配置せず、表示もしません。
 
 ```css
@@ -121,7 +131,7 @@ CSS Grid を使ってレイアウトの各コンポーネントの配置を決�
     .layout{
         grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
         grid-template-areas:
-            "header header"
+            ". ."
             "sidebar main";
     }
 }
@@ -133,14 +143,15 @@ CSS Grid を使ってレイアウトの各コンポーネントの配置を決�
 }
 ```
 
-さらに、画面幅が768px以下の場合、メインコンテンツのみ表示し、サイドバーは`.open`クラスが付与された場合のみ表示されます。
+さらに、画面幅が768px以下の場合はメインパネルのみを表示し、
+サイドバーは`.open`クラスが付与された場合のみ表示します。
 
 ```css
 @media (max-width: 768px) {
     .layout, .layout.no-subpanel {
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas:
-            "header"
+            "."
             "main";
     }
 }
@@ -165,13 +176,3 @@ CSS Grid を使ってレイアウトの各コンポーネントの配置を決�
     }
 }
 ```
-
-`.site-header` は `grid-area: 1 / 1 / -1 / -1` で全行にまたがらせ、
-`align-self: start` で 56px に抑えています。
-`grid item` の `position: sticky` は自身の `grid area` の中でしか動けないため、
-`row 1` だけに置くと追従しません。
-`grid-template-areas` の `header` は、ここでは実質ダミーです。
-カラムは `1fr` ではなく `minmax(0, 1fr)` にします。
-`1fr` は `minmax(auto, 1fr)` なので、
-長いコードブロックの `min-content` 幅でカラムが押し広げられます。
-`.main-panel` の `min-width: 0` も同じ理由です。
