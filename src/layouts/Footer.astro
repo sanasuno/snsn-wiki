@@ -5,6 +5,7 @@
  */
 import { t, type Locale } from '@i18n/i18n.config';
 import { getLocaleBaseUrl, getLocalePathUrl } from '@lib/path';
+import { footerNavItems } from '@layouts/footer.nav';
 
 interface Props {
     locale: Locale,
@@ -18,8 +19,9 @@ const year = new Date().getFullYear();
 ---
 <footer class="site-footer">
     <div class="site-footer-links">
-        <a href={getLocalePathUrl(locale, 'privacy')}>{t('privacy.title', locale)}</a>
-        <a href={getLocalePathUrl(locale, 'terms')}>{t('terms.title', locale)}</a>
+        {footerNavItems.map((item) => (
+            <a href={getLocalePathUrl(locale, item.path)}>{t(item.i18nKey, locale)}</a>
+        ))}
     </div>
     <div class="site-footer-credit">
         © {startYear === year ? startYear : `${startYear} - ${year}`} {t('site.title', locale)}.

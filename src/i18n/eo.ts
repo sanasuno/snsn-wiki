@@ -25,13 +25,10 @@ export const eo = {
     
     'fallback.notice': 'Ĉi tiu paĝo ankoraŭ ne havas esperantan tradukon.',
     
+    'meta.nocategory': 'Neniu kategorio',
+    
     'meta.created': 'Kreita',
     'meta.updated': 'Ĝisdatigita',
-    
-    'privacy.title': 'Privateca politiko',
-    'privacy.description': 'Privateca politiko priskribo',
-    'terms.title': 'Uzantkondiĉoj',
-    'terms.description': 'Uzantkondiĉoj priskribo',
     
     'subpanel.open': 'Malfermi enhavtabelon',
     'subpanel.close': 'Fermi enhavtabelon',

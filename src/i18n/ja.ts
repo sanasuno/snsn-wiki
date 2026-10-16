@@ -25,16 +25,13 @@ export const ja = {
 
     'fallback.notice': 'このページには現在日本語訳がありません。',
 
+    'meta.nocategory': 'カテゴリなし',
+
     'meta.created': '作成日',
     'meta.updated': '更新日',
 
     '404.title': '404',
     '404.description': 'ページが見つかりません',
-    
-    'privacy.title': 'プライバシーポリシー',
-    'privacy.description': 'プライバシーポリシーの説明',
-    'terms.title': '利用規約',
-    'terms.description': '利用規約の説明',
     
     'subpanel.open': '目次を開く',
     'subpanel.close': '目次を閉じる',

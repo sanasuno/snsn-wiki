@@ -24,14 +24,10 @@ export const structuralKeys = [
 
     'fallback.notice',
 
+    'meta.nocategory',
+
     'meta.created',
     'meta.updated',
-
-    'privacy.title',
-    'privacy.description',
-
-    'terms.title',
-    'terms.description',
     
     'subpanel.open',
     'subpanel.close',

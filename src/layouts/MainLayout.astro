@@ -128,9 +128,9 @@ const pageDescription = description ?? siteDescription;
             })();
         </script>
 
-        <!-- i18n初期化スクリプト -->
+        <!-- 言語初期化スクリプト -->
         <script>
-            import { initI18n } from '@scripts/i18n';
+            import { initI18n } from '@scripts/languageSwitch';
             initI18n();
         </script>
     </head>
@@ -142,7 +142,7 @@ const pageDescription = description ?? siteDescription;
             <Sidebar
                 locale={locale}
             />
-            <main class="main-panel">
+            <div class="main-panel">
                 <MainContent
                     title={title}
                     locale={locale}
@@ -158,7 +158,7 @@ const pageDescription = description ?? siteDescription;
                 <Footer
                     locale={locale}
                 />
-            </main>
+            </div>
             {showSubpanel && (
                 <>
                     <aside class="subpanel" id="subpanel">

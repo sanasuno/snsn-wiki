@@ -30,7 +30,7 @@ date: 2026-09-04
     background-color: var(--color-bg);
     border-bottom: 1px solid var(--color-border);
 }
-@media(max-width: 768px) {
+@media (width <= 768px) {
     .site-header {
         gap: 8px;
         padding: 0 12px;
@@ -45,7 +45,7 @@ date: 2026-09-04
 
 ```astro
 <header class="site-header">
-    <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label={t("header.sidebar.toggle", locale)} aria-expanded="false" aria-controls="sidebar">
+    <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label={t('header.sidebar.toggle', locale)} aria-expanded="false" aria-controls="sidebar">
         <i class="fas fa-bars" aria-hidden="true"></i>
     </button>
 </header>
@@ -62,7 +62,7 @@ date: 2026-09-04
     font-size: 1.1rem;
 }
 
-@media(width <= 768px) {
+@media (width <= 768px) {
     .sidebar-toggle {
         display: block;
     }
@@ -149,6 +149,17 @@ document.addEventListener('click', (e) => {
 });
 ```
 
+画面幅が 768px を超えた場合、サイドバーを閉じ、切り替えボタンの状態も閉じた状態に更新します。
+
+```ts
+window.matchMedia('(width <= 768px)').addEventListener('change', (e) => {
+    if (!e.matches) {
+        sidebar.classList.remove('open');
+        setSidebarToggleBtnState(sidebarToggleBtn, false);
+    }
+});
+```
+
 ### サイドバー切り替え関数の呼び出し
 
 `@scripts/main.ts` から `sidebarToggle()` 関数を呼び出します。
@@ -182,7 +193,7 @@ const localeBaseUrl = getLocaleBaseUrl(locale);
 ---
 <header class="site-header">
     <a href={localeBaseUrl} class="site-title">
-        {t("site.title", locale)}
+        {t('site.title', locale)}
     </a>
 </header>
 ```
@@ -190,6 +201,41 @@ const localeBaseUrl = getLocaleBaseUrl(locale);
 ## ヘッダーナビゲーション
 `@layouts/header.nav.ts` 内に記述したアイテムをナビゲーションとして配置します。
 
+### ナビゲーション型定義
+ナビゲーションアイテムの方を定義します。
+ナビゲーション先のパス、表示用の翻訳キー、およびアイコン（Font Awesomeクラス）を指定します。
+
+```ts
+export type HeaderNavItem = {
+    path: string;
+    i18nKey: TranslationKey;
+    icon?: string;
+}
+```
+
+### ナビゲーション表示
+
+ナビゲーションアイテムを読み込み、ループして表示します。
+
+```astro
+---
+import { headerNavItems } from '@layouts/header.nav';
+---
+<header class="site-header">
+    <nav class="header-nav" aria-label={t('header.nav.title', locale)}>
+        {
+            headerNavItems.map((item) => (
+                <a href={getLocalePathUrl(locale, item.path)} class={isPathActive(item.path, currentPath) ? "active" : ""} aria-current={isPathActive(item.path, currentPath) ? "page" : undefined}>
+                    {item.icon && <i class={item.icon} aria-hidden="true"></i>}
+                    <span class="nav-label" data-i18n={item.i18nKey}>
+                        {t(item.i18nKey, locale)}
+                    </span>
+                </a>
+            ))
+        }
+    </nav>
+</header>
+```
 
 ## テーマ切り替え
 ### テーマ切り替えボタン
@@ -287,6 +333,8 @@ export function getLocalStorage(key: string): string | null {
 ### テーマ制御スクリプト
 テーマ切り替えボタンの動作を制御するスクリプトを `@scripts/theme.ts` に記述します。
 
+ボタンのクリックイベントで、現在のテーマを取得し、次のテーマに切り替えます。
+
 ```ts
 import { setLocalStorage } from "@scripts/localStorage";
 export function themeToggle() {
@@ -326,4 +374,270 @@ themeToggle();
 <script>
     import "@scripts/main";
 </script>
+```
+
+## 言語切り替え
+### 言語切り替えトグルボタン
+対応しているロケールが2つ以上存在する場合、言語切り替え用のトグルボタンを設置します。
+
+```astro
+---
+const showLanguageSwitcher: boolean = locales.length > 1;
+---
+<header class="site-header">
+    { showLanguageSwitcher && (
+        <div class="language-switcher">
+            <i class="fas fa-language" aria-hidden="true"></i>
+            <select id="language-list" class="language-list" aria-label={t('header.language.select', locale)}>
+                {locales.map((loc) => (
+                    <option value={loc} selected={loc === locale}>
+                        {t('lang.name', loc)}
+                    </option>
+                ))}
+            </select>
+            <i class="fas fa-chevron-down language-arrow" aria-hidden="true"></i>
+        </div>
+    )}
+</header>
+```
+
+```css
+.language-switcher {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    gap: 5px;
+    padding: 5px 9px;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.language-switcher:hover {
+    color: var(--color-text);
+}
+
+.language-list {
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0 24px 0 0;
+    font-size: 1rem;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    transition: var(--transition);
+}
+
+.language-list option {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+.language-list option:hover {
+    background-color: var(--color-bg-hover);
+}
+
+.language-list option[selected] {
+    background-color: var(--color-bg-accent)
+}
+
+.language-list:hover {
+    color: var(--color-text);
+}
+
+.language-arrow {
+    position: absolute;
+    right: 9px;
+    font-size: 0.6rem;
+    pointer-events: none;
+}
+```
+
+### 言語切り替えスクリプト
+`@scripts/languageSwitch.ts` に、言語切り替え用のスクリプトを記述します。
+
+#### resolveLocale()
+HTMLの `lang` 属性からロケールを解決する関数です。
+
+与えられた `htmlLang` が有効なロケールであればそれを返し、そうでなければローカルストレージに保存されたロケールを確認します。
+それも存在しなければ、デフォルトのロケールを返します。
+
+```ts
+function resolveLocale(htmlLang: string): Locale {
+    if (isLocale(htmlLang)) {
+        return htmlLang;
+    }
+    const storedLocale = getLocalStorage('locale');
+    if (storedLocale && isLocale(storedLocale)) {
+        return storedLocale;
+    }
+    return defaultLocale;
+}
+```
+
+#### updateLanguageSwitcher()
+
+言語切り替えボタンの状態を更新する関数です。
+
+`language-list` の `select` 要素を取得し、現在のロケールに合わせて選択状態を更新します。
+
+```ts
+function updateLanguageSwitcher(): void {
+    const selected = document.getElementById('language-list') as HTMLSelectElement | null;
+    if (!selected) return;
+
+    const locale = document.documentElement.lang || getLocalStorage('locale');
+    if (locale) {
+        selected.value = locale;
+    }
+}
+```
+
+#### handlers
+翻訳ハンドラの定義です。`data-i18n` 属性を持つ要素に対して、翻訳された文字列を設定します。
+
+```ts
+const handlers: Record<string, (el: Element, text: string) => void> = {
+    'data-i18n': (el, text) => {
+        el.textContent = text;
+    }
+};
+```
+
+#### applyTranslations()
+
+翻訳を適用する関数です。
+
+翻訳ハンドラをループし、`data-i18n` 属性を持つ要素に対して翻訳を適用します。
+
+```ts
+function applyTranslations(): void {
+    const locale = getLocalStorage('locale');
+    if (!locale || !isLocale(locale)) return;
+
+    Object.entries(handlers).forEach(([attr, handler]) => {
+        const elements = document.querySelectorAll(`[${attr}]`);
+        elements.forEach((el) => {
+            const key = el.getAttribute(attr);
+            if (key && isTranslationKey(key)) {
+                handler(el, t(key, locale));
+            }
+        });
+    });
+}
+```
+
+#### refreshI18nUI()
+
+i18n UI を更新する関数です。
+
+言語スイッチャーの状態を更新し、翻訳を適用します。
+
+```ts
+function refreshI18nUI(): void {
+    updateLanguageSwitcher();
+    applyTranslations();
+}
+```
+
+#### initI18n()
+
+i18n を初期化する関数です。
+
+まず、初期化済みかどうかを判定し、すでに初期化済みであれば処理を終了します。
+
+HTML の `lang` 属性からロケールを解決し、HTML の `lang` 属性とローカルストレージを同期します。
+もし、ページが読み込み中であれば `DOMContentLoaded` イベントで `refreshI18nUI()` を、読み込みが完了していれば、すぐに `refreshI18nUI()` を呼び出します。
+
+```ts
+let i18nInitialized = false;
+export function initI18n(): void {
+    if (i18nInitialized) return;
+    i18nInitialized = true;
+
+    const htmlLang = document.documentElement.dataset.lang ?? '';
+    const resolvedLocale = resolveLocale(htmlLang);
+
+    document.documentElement.lang = resolvedLocale;
+    setLocalStorage('locale', resolvedLocale);
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', refreshI18nUI, { once: true });
+    } else {
+        refreshI18nUI();
+    }
+}
+```
+
+#### languageSwitch()
+言語スイッチャーのイベントを設定する関数です。
+
+まず、`language-list` の `select` 要素を取得し、存在しなければ処理を終了します。
+また、二重登録を防ぐため、`dataset.languageSwitchInitialized` を使って初期化済みかどうかを判定します。
+
+言語が切り替えられたとき、選択されたロケールを検証し、ローカルストレージに保存します。
+その後、`hreflang` リンクを使って対応する言語ページにナビゲートします。
+もし、対応する言語ページが存在しなければ、`x-default` のリンクにフォールバックし、それも存在しなければページをリロードします。
+
+```ts
+export function languageSwitch(): void {
+    const languageList = document.getElementById('language-list') as HTMLSelectElement | null;
+    if (!languageList) return;
+
+    if (languageList.dataset.languageSwitchInitialized === 'true') return;
+    languageList.dataset.languageSwitchInitialized = 'true';
+
+    languageList.addEventListener('change', () => {
+        const selectedLocale = languageList.value;
+
+        if (!isLocale(selectedLocale)) {
+            console.warn(`Invalid locale: ${selectedLocale}`);
+            return;
+        }
+
+        setLocalStorage('locale', selectedLocale);
+
+        const altLink = document.querySelector<HTMLLinkElement>(
+            `link[rel="alternate"][hreflang="${selectedLocale}"]`
+        );
+        if (altLink?.href) {
+            window.location.href = altLink.href;
+            return;
+        }
+
+        const defaultLocaleLink = document.querySelector<HTMLLinkElement>(
+            'link[rel="alternate"][hreflang="x-default"]'
+        );
+        if (defaultLocaleLink?.href) {
+            window.location.href = defaultLocaleLink.href;
+            return;
+        }
+
+        window.location.reload();
+    });
+}
+```
+
+### スクリプト呼び出し
+`MainLayout.astro` 内で `initI18n()` を呼び出します。
+
+```astro
+<head>
+    <script>
+        import { initI18n } from '@scripts/languageSwitch';
+        initI18n();
+    </script>
+</head>
+```
+
+`@scripts/main.ts` から `languageSwitch()` 関数を呼び出します。
+
+```ts
+import { languageSwitch } from '@scripts/languageSwitch';
+languageSwitch();
 ```

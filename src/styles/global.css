@@ -50,20 +50,20 @@ body {
     min-height: calc(100dvh - var(--header-height));
 }
 
-.layout.no-subpanel {
+.layout:where(.no-subpanel) {
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
     grid-template-areas: "sidebar main";
 }
 
-@media(width <= 1200px) {
-    .layout, .layout.no-subpanel {
+@media (width <= 1376px) {
+    .layout {
         grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
         grid-template-areas: "sidebar main";
     }
 }
 
 @media (width <= 768px) {
-    .layout, .layout.no-subpanel {
+    .layout {
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas: "main";
     }
@@ -83,7 +83,7 @@ body {
     border-bottom: 1px solid var(--color-border);
 }
 
-@media(width <= 768px) {
+@media (width <= 768px) {
     .site-header {
         gap: 8px;
         padding: 0 12px;
@@ -101,7 +101,7 @@ body {
     font-size: 1.1rem;
 }
 
-@media(width <= 768px) {
+@media (width <= 768px) {
     .sidebar-toggle {
         display: block;
     }
@@ -146,7 +146,7 @@ body {
     text-overflow: ellipsis;
 }
 
-@media(width <= 768px) {
+@media (width <= 768px) {
     .header-nav a {
         display: none;
     }
@@ -166,7 +166,7 @@ body {
     margin-left: 4px;
 }
 
-@media(width <= 1200px) {
+@media (width <= 1376px) {
     .nav-label {
         position: absolute;
         width: 1px;
@@ -284,6 +284,7 @@ body {
 .sidebar {
     grid-area: sidebar;
     background-color: var(--color-bg);
+    scrollbar-width: thin;
 }
 
 @media (width > 768px) {
@@ -297,14 +298,14 @@ body {
     }
 }
 
-@media(width <= 768px) {
+@media (width <= 768px) {
     .sidebar {
         position: fixed;
         top: var(--header-height);
         left: calc(-1 * var(--sidebar-width));
         width: var(--sidebar-width);
         height: calc(100dvh - var(--header-height));
-        transition: var(--transition);
+        transition: left 150ms ease, visibility 150ms ease;
         visibility: hidden;
     }
     .sidebar.open {
@@ -390,6 +391,7 @@ body {
     color: var(--color-accent);
 }
 
+/* メインパネル */
 .main-panel {
     grid-area: main;
     min-width: 0;
@@ -400,25 +402,12 @@ body {
 .main-content {
     flex: 1;
     width: 100%;
-    max-width: calc(var(--content-max-width) + 96px);
-    margin-inline: auto;
-    padding: 32px 48px;
+    max-width: calc(var(--content-max-width) + 2 * var(--content-padding));
+    padding: 32px var(--content-padding);
 }
 
 .main-content > :first-child {
     margin-top: 0;
-}
-
-@media(width <= 1200px) {
-    .main-content {
-        padding: 32px 24px;
-    }
-}
-
-@media(width <= 768px) {
-    .main-content {
-        padding: 24px 16px;
-    }
 }
 
 .main-content :is(h2, h3, h4, h5, h6) {
@@ -598,6 +587,10 @@ code {
     color: var(--color-text-muted);
     text-decoration: none;
     transition: var(--transition);
+}
+
+.page-meta-category a:visited {
+    color: var(--color-text-muted);
 }
 
 .page-meta-category a:hover {
@@ -810,22 +803,11 @@ code {
     color: var(--color-accent);
 }
 
+/* サイトフッター */
 .site-footer {
-    padding: 24px 48px;
+    padding: 24px var(--content-padding);
     font-size: 0.8rem;
     color: var(--color-text-muted);
-}
-
-@media(width <= 1200px) {
-    .site-footer {
-        padding: 24px;
-    }
-}
-
-@media(width <= 768px) {
-    .site-footer {
-        padding: 16px;
-    }
 }
 
 .site-footer-links {
@@ -851,6 +833,7 @@ code {
     align-items: center;
 }
 
+/* サブパネル */
 .subpanel {
     grid-area: sub;
     position: sticky;
@@ -862,12 +845,13 @@ code {
     scrollbar-width: thin;
 }
 
-@media(width > 1200px) {
+@media (width > 1376px) {
     .subpanel {
         align-self: start;
     }
 }
 
+/* 目次 */
 .toc-title {
     font-size: 0.75rem;
     font-weight: 700;
@@ -922,7 +906,7 @@ code {
     display: none;
 }
 
-@media (width <= 1200px) {
+@media (width <= 1376px) {
     .subpanel-drawer-button {
         display: flex;
         align-items: center;
@@ -949,7 +933,7 @@ code {
     }
 }
 
-@media (width <= 1200px) {
+@media (width <= 1376px) {
     .subpanel {
         position: fixed;
         inset: var(--header-height) 0 0 auto;

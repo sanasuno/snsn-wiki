@@ -19,14 +19,14 @@ const currentPath = getCurrentPath(Astro.url);
 const showLanguageSwitcher: boolean = locales.length > 1;
 ---
 <header class="site-header">
-    <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label={t("header.sidebar.toggle", locale)} aria-expanded="false" aria-controls="sidebar">
+    <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label={t('header.sidebar.toggle', locale)} aria-expanded="false" aria-controls="sidebar">
         <i class="fas fa-bars" aria-hidden="true"></i>
     </button>
 
     <a href={ensureTrailingSlash(localeBaseUrl)} class="site-title">
-        {t("site.title", locale)}
+        {t('site.title', locale)}
     </a>
-    <nav class="header-nav" aria-label={t("header.nav.title", locale)}>
+    <nav class="header-nav" aria-label={t('header.nav.title', locale)}>
         {
             headerNavItems.map((item) => (
                 <a href={getLocalePathUrl(locale, item.path)} class={isPathActive(item.path, currentPath) ? "active" : ""} aria-current={isPathActive(item.path, currentPath) ? "page" : undefined}>
@@ -39,7 +39,7 @@ const showLanguageSwitcher: boolean = locales.length > 1;
         }
     </nav>
     
-    <button type="button" class="theme-toggle" id="theme-toggle" aria-label={t("header.theme.toggle", locale)} aria-pressed="false">
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-label={t('header.theme.toggle', locale)} aria-pressed="false">
         <i class="fas fa-moon icon-to-light" aria-hidden="true"></i>
         <i class="fas fa-sun icon-to-dark" aria-hidden="true"></i>
     </button>
@@ -47,10 +47,10 @@ const showLanguageSwitcher: boolean = locales.length > 1;
     { showLanguageSwitcher && (
         <div class="language-switcher">
             <i class="fas fa-language" aria-hidden="true"></i>
-            <select id="language-list" class="language-list" aria-label={t("header.language.select", locale)}>
+            <select id="language-list" class="language-list" aria-label={t('header.language.select', locale)}>
                 {locales.map((loc) => (
                     <option value={loc} selected={loc === locale}>
-                        {t("lang.name", loc)}
+                        {t('lang.name', loc)}
                     </option>
                 ))}
             </select>

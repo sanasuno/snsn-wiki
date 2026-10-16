@@ -6,6 +6,9 @@ import type { TranslationKey } from "@i18n/i18n.config";
 
 /**
  * ナビゲーションアイテムの型定義
+ * @param path ナビゲーション先のパス
+ * @param i18nKey ナビゲーションの表示名の翻訳キー
+ * @param icon ナビゲーションアイテムのアイコン（Font Awesomeクラス）
  */
 export type HeaderNavItem = {
     path: string;

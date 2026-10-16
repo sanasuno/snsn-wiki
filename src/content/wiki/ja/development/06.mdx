@@ -117,17 +117,17 @@ CSS Grid を使って各コンポーネントの配置レイアウトを決定�
 ```
 
 ### レスポンシブ対応
-画面幅が1200px以下の場合、サブパネルは配置されず、ドロワーとして表示されます。
+画面幅が1376px以下の場合、サブパネルは配置されず、ドロワーとして表示されます。
 
 ```css
-@media(width <= 1200px) {
+@media (width <= 1376px) {
     .layout, .layout.no-subpanel {
         grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
         grid-template-areas: "sidebar main";
     }
 }
 
-@media (width <= 1200px) {
+@media (width <= 1376px) {
     .subpanel {
         position: fixed;
         inset: var(--header-height) 0 0 auto;
@@ -167,7 +167,7 @@ CSS Grid を使って各コンポーネントの配置レイアウトを決定�
     }
 }
 
-@media(width <= 768px) {
+@media (width <= 768px) {
     .sidebar {
         position: fixed;
         top: var(--header-height);

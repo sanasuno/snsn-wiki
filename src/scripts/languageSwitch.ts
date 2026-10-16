@@ -1,6 +1,6 @@
 /**
- * @scripts/i18n.ts
- * i18n関連スクリプト
+ * @scripts/languageSwitch.ts
+ * 言語切り替え関連スクリプト
  */
 
 import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
@@ -16,7 +16,7 @@ function resolveLocale(htmlLang: string): Locale {
     if (isLocale(htmlLang)) {
         return htmlLang;
     }
-    const storedLocale = getLocalStorage("locale");
+    const storedLocale = getLocalStorage('locale');
     if (storedLocale && isLocale(storedLocale)) {
         return storedLocale;
     }
@@ -27,10 +27,10 @@ function resolveLocale(htmlLang: string): Locale {
  * 言語スイッチャーを更新する関数
  */
 function updateLanguageSwitcher(): void {
-    const selected = document.getElementById("language-list") as HTMLSelectElement | null;
+    const selected = document.getElementById('language-list') as HTMLSelectElement | null;
     if (!selected) return;
 
-    const locale = document.documentElement.lang || getLocalStorage("locale");
+    const locale = document.documentElement.lang || getLocalStorage('locale');
     if (locale) {
         selected.value = locale;
     }
@@ -49,7 +49,7 @@ const handlers: Record<string, (el: Element, text: string) => void> = {
  * すべての翻訳を適用する関数
  */
 function applyTranslations(): void {
-    const locale = getLocalStorage("locale");
+    const locale = getLocalStorage('locale');
     if (!locale || !isLocale(locale)) return;
 
     Object.entries(handlers).forEach(([attr, handler]) => {
@@ -85,8 +85,9 @@ export function initI18n(): void {
 
     // HTML lang 属性と LocalStorage を同期
     document.documentElement.lang = resolvedLocale;
-    setLocalStorage("locale", resolvedLocale);
+    setLocalStorage('locale', resolvedLocale);
 
+    // 読み込み完了後にUIを更新
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', refreshI18nUI, { once: true });
     } else {
@@ -98,14 +99,14 @@ export function initI18n(): void {
  * 言語スイッチャーのイベントを設定する関数
  */
 export function languageSwitch(): void {
-    const languageList = document.getElementById("language-list") as HTMLSelectElement | null;
+    const languageList = document.getElementById('language-list') as HTMLSelectElement | null;
     if (!languageList) return;
 
     // 二重登録防止
     if (languageList.dataset.languageSwitchInitialized === 'true') return;
     languageList.dataset.languageSwitchInitialized = 'true';
 
-    languageList.addEventListener("change", () => {
+    languageList.addEventListener('change', () => {
         const selectedLocale = languageList.value;
 
         // ロケール検証
@@ -115,7 +116,7 @@ export function languageSwitch(): void {
         }
 
         // LocalStorage に保存
-        setLocalStorage("locale", selectedLocale);
+        setLocalStorage('locale', selectedLocale);
 
         // hreflang リンクで言語ページへナビゲート
         const altLink = document.querySelector<HTMLLinkElement>(

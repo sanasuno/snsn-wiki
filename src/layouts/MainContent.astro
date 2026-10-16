@@ -61,7 +61,7 @@ const crumbIcons = {
     page: 'far fa-file',
 }
 ---
-<div class="main-content" id="main-content">
+<main class="main-content" id="main-content">
     {isFallback && (
         <div class="fallback-notice" role="note">
             <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
@@ -101,8 +101,12 @@ const crumbIcons = {
             <div class="page-meta">
                 {id && (
                     <div class="page-meta-category">
-                        <a href={`${localeBaseUrl}category/${categoryString}`}>
-                            {getTranslatedCategory(id, locale, isSubPage)}
+                        <a href={`${localeBaseUrl}category/${categoryString}/`}>
+                            {
+                                isWikiRoot
+                                    ? t('meta.nocategory', locale)
+                                    : getTranslatedCategory(id, locale, isSubPage)
+                            }
                         </a>
                     </div>
                 )}
@@ -130,11 +134,11 @@ const crumbIcons = {
         {tags.length > 0 && (
             <div class="page-tags">
                 {tags.map(tag => (
-                    <a href={getLocalePathUrl(locale, `tag/${tag}`)} class="page-tag">
+                    <a href={getLocalePathUrl(locale, `tag/${tag}/`)} class="page-tag">
                         #{tag}
                     </a>
                 ))}
             </div>
         )}
     </article>
-</div>
+</main>

@@ -4,7 +4,7 @@
  */
 import { themeToggle } from '@scripts/theme';
 import { sidebarToggle, sidebarSections } from '@scripts/sidebar';
-import { languageSwitch } from '@scripts/i18n';
+import { languageSwitch } from '@scripts/languageSwitch';
 import { setUpToc } from '@scripts/toc';
 import { setupSubpanelDrawer } from '@scripts/subpanel';
 

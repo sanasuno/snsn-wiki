@@ -24,13 +24,10 @@ export const en = {
     
     'fallback.notice': 'This page does not have an English translation yet.',
     
+    'meta.nocategory': 'No category',
+    
     'meta.created': 'Created',
     'meta.updated': 'Updated',
-    
-    'privacy.title': 'Privacy Policy',
-    'privacy.description': 'Privacy Policy description',
-    'terms.title': 'Terms of Service',
-    'terms.description': 'Terms of Service description',
     
     'subpanel.open': 'Open table of contents',
     'subpanel.close': 'Close table of contents',

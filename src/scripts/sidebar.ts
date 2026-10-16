@@ -50,6 +50,13 @@ export function sidebarToggle() {
             setSidebarToggleBtnState(sidebarToggleBtn, false);
         }
     });
+
+    window.matchMedia('(width <= 768px)').addEventListener('change', (e) => {
+        if (!e.matches) {
+            sidebar.classList.remove('open');
+            setSidebarToggleBtnState(sidebarToggleBtn, false);
+        }
+    });
 }
 
 /**
