@@ -3,9 +3,9 @@
  * @layouts/Sidebar.astro
  * サイドバーコンポーネント
  */
-import { getCollection } from "astro:content";
-import { t, type Locale, type TranslationKey } from "@i18n/i18n.config";
-import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from "@layouts/sidebar.nav";
+import { getCollection } from 'astro:content';
+import { t, type Locale, type TranslationKey } from '@i18n/i18n.config';
+import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from '@layouts/sidebar.nav';
 import { getUniquePagesByLocale } from '@lib/pages';
 import { normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
 import { getCategory } from '@lib/category';
@@ -42,7 +42,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
 };
 ---
 <aside class="sidebar" id="sidebar">
-    <nav aria-label={t("sidebar.nav.title", locale)}>
+    <nav aria-label={t('sidebar.nav.title', locale)}>
         {
             sidebarNavItems.map((section) => {
                 const defaultCollapsed = section.collapsed ?? false;
@@ -58,10 +58,10 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
 
                     return (
                         <section class='sidebar-section'>
-                            <button type="button" class='sidebar-section-title'>
+                            <button type="button" class="sidebar-section-title">
                                 {section.icon && <i class={`${section.icon} fa-fw`} aria-hidden="true"></i>}
                                 {t(section.titleKey, locale)}
-                                <i class='fas fa-chevron-down sidebar-chevron' aria-hidden="true"></i>
+                                <i class="fas fa-chevron-down sidebar-chevron" aria-hidden="true"></i>
                             </button>
                             <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
                                 {
@@ -79,11 +79,11 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                     );
                 } else if (section.items) {
                     return (
-                        <section class='sidebar-section'>
-                            <button type="button" class='sidebar-section-title'>
+                        <section class="sidebar-section">
+                            <button type="button" class="sidebar-section-title">
                                 {section.icon && <i class={`${section.icon} fa-fw`}></i>}
                                 {t(section.titleKey, locale)}
-                                <i class='fas fa-chevron-down sidebar-chevron' aria-hidden="true"></i>
+                                <i class="fas fa-chevron-down sidebar-chevron" aria-hidden="true"></i>
                             </button>
                             <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
                                 {section.items.map(item => {
@@ -102,10 +102,10 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                     if (!href || !label) {
                                         return null;
                                     }
-                                    return <a href={href} rel={item.external ? 'noopener noreferrer' :null} aria-current={!item.external && isPathActive(item.path, currentPath) ? 'page' : undefined}>
+                                    return <a href={href} rel={item.external ? "noopener noreferrer" : null} aria-current={!item.external && isPathActive(item.path, currentPath) ? "page" : undefined}>
                                         {item.icon
                                             ? <i class={`${item.icon} fa-fw`} aria-hidden="true"></i>
-                                            : <i class='far fa-file-lines fa-fw' aria-hidden="true"></i>
+                                            : <i class="far fa-file-lines fa-fw" aria-hidden="true"></i>
                                         }
                                         {' '}
                                         {label}
@@ -128,20 +128,20 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                 (a, b) => a.data.title.localeCompare(b.data.title)
             );
             return (
-                <section class='sidebar-section'>
-                    <button type="button" class='sidebar-section-title'>
-                        <i class='fas fa-folder fa-fw' aria-hidden="true"></i>
+                <section class="sidebar-section">
+                    <button type="button" class="sidebar-section-title">
+                        <i class="fas fa-folder fa-fw" aria-hidden="true"></i>
                         {category === ''
                             ? t('homepage.title', locale)
                             : t(`category.${category}` as TranslationKey, locale)
                         }
-                        <i class='fas fa-chevron-down sidebar-chevron' aria-hidden="true"></i>
+                        <i class="fas fa-chevron-down sidebar-chevron" aria-hidden="true"></i>
                     </button>
-                    <div class='sidebar-nav'>
+                    <div class="sidebar-nav">
                         {sorted.map((page) => {
                             return (
-                                <a href={getWikiUrl(page.id, locale)} aria-current={getWikiUrl(page.id, locale) === currentPath ? 'page' : undefined}>
-                                    <i class='far fa-file-lines fa-fw' aria-hidden="true"></i>
+                                <a href={getWikiUrl(page.id, locale)} aria-current={getWikiUrl(page.id, locale) === currentPath ? "page" : undefined}>
+                                    <i class="far fa-file-lines fa-fw" aria-hidden="true"></i>
                                     {page.data.title}
                                 </a>
                             )
