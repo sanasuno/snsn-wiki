@@ -12,6 +12,7 @@ export const eo = {
     'og.locale': 'eo',
     'og.font': 'Noto Sans',
 
+    'header.skip': 'Salti al ĉefa enhavo',
     'header.sidebar.toggle': 'baskuligi flankan strion',
     'header.theme.toggle': 'baskuligi temon',
     'header.language.select': 'Elekti lingvon',

@@ -12,6 +12,7 @@ export const ja = {
     'og.locale': 'ja_JP',
     'og.font': 'Noto Sans JP',
 
+    'header.skip': 'メインコンテンツへ移動',
     'header.sidebar.toggle': 'サイドバー切り替え',
     'header.theme.toggle': 'テーマ切り替え',
     'header.language.select': '言語選択',

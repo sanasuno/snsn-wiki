@@ -11,6 +11,7 @@ export const en = {
     'og.locale': 'en_US',
     'og.font': 'Noto Sans',
     
+    'header.skip': 'Skip to main content',
     'header.sidebar.toggle': 'Toggle sidebar',
     'header.theme.toggle': 'Toggle theme',
     'header.language.select': 'Select language',

@@ -116,6 +116,19 @@ export function getCurrentPath(url: URL): string {
 }
 
 /**
+ * URLのパスをデコードする関数
+ * @param url URL
+ * @returns デコードされたパス
+ */
+export function getDecodedCurrentPath(url: URL): string {
+    try {
+        return ensureTrailingSlash(decodeURIComponent(url.pathname));
+    } catch {
+        return ensureTrailingSlash(url.pathname);
+    }
+}
+
+/**
  * ロケールとパスからURLを取得する関数
  * @param locale ロケール
  * @param path パス

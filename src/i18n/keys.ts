@@ -11,6 +11,7 @@ export const structuralKeys = [
     'og.locale',
     'og.font',
 
+    'header.skip',
     'header.sidebar.toggle',
     'header.theme.toggle',
     'header.language.select',

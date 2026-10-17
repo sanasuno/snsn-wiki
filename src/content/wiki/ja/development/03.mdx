@@ -210,6 +210,19 @@ export function getCurrentPath(url: URL): string {
 }
 ```
 
+### getDecodedCurrentPath()
+与えられた URL の `pathname` をデコードして返す関数です。
+
+```ts
+export function getDecodedCurrentPath(url: URL): string {
+    try {
+        return ensureTrailingSlash(decodeURIComponent(url.pathname));
+    } catch {
+        return ensureTrailingSlash(url.pathname);
+    }
+}
+```
+
 ### getLocalePathUrl()
 与えられたロケールとパスから全体の URL を構築する関数です。
 
@@ -242,16 +255,17 @@ export function getLocalePathUrl(locale: Locale, path: string): string {
 もしくは `${currentSlug}/` で始まるかどうかを判定して返します。
 
 ```ts
-export function isPathActive(targetSlug: string, currentPath: string): boolean {
+export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
     const base = getBaseUrl();
     const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length) : currentPath;
     const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
         : normalizeSlugLike(removeTrailingSlash(relativePath));
-    return targetSlug === '/'
-        ? currentSlug === '/'
-        : currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
+    if (exact || targetSlug === '/') {
+        return currentSlug === targetSlug;
+    }
+    return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
 }
 ```
 

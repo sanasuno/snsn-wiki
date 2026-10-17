@@ -7,11 +7,33 @@ date: 2026-09-04
 ---
 ## ヘッダー構成
 ヘッダーは、`@layouts/Header.astro` に記述します。
+先頭にはメインコンテンツへのスキップリンクを置きます。
 
 ```astro
+<a href="#main-content" class="skip-link">
+    {t('header.skip', locale)}
+</a>
 <header class="site-header">
     /* ここにヘッダー内容を記述 */
 </header>
+```
+
+```css
+.skip-link {
+    position: absolute;
+    left: 8px;
+    top: -100px;
+    z-index: calc(var(--z-header) + 1);
+    padding: 8px 12px;
+    background-color: var(--color-bg);
+    color: var(--color-accent-text);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.skip-link:focus {
+    top: 8px;
+}
 ```
 
 `.site-header` クラスにヘッダーのスタイルを記述します。
@@ -42,6 +64,15 @@ date: 2026-09-04
 }
 
 .site-header :is(a, button, select):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.site-header .language-switcher-list:focus-visible {
+    outline: none;
+}
+
+.language-switcher:has(.language-switcher-list:focus-visible) {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
 }
@@ -206,7 +237,7 @@ const localeBaseUrl = getLocaleBaseUrl(locale);
 .header-site-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--color-accent);
+    color: var(--color-accent-text);
     text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
@@ -248,11 +279,17 @@ export const headerNavItems: HeaderNavItem[] = [
 ```astro
 ---
 import { headerNavItems } from '@layouts/header.nav';
+const decodedCurrentPath = getDecodedCurrentPath(Astro.url);
+const navItems = headerNavItems.map((item) => ({
+    ...item,
+    href: getLocalePathUrl(locale, item.path),
+    active: isPathActive(item.path, decodedCurrentPath, item.exact),
+}));
 ---
 <header class="site-header">
     <nav class="header-nav" aria-label={t('header.nav.title', locale)}>
         {navItems.map((item) => (
-            <a href={item.href} class:list={['header-nav-link', { active: item.active }]} aria-current={item.active ? "page" : undefined}>
+            <a href={item.href} class:list={['header-nav-link', { active: item.active, 'has-icon': !!item.icon }]} aria-current={item.active ? "page" : undefined}>
                 {item.icon && <i class={item.icon} aria-hidden="true"></i>}
                 <span class="header-nav-label" data-i18n={item.i18nKey}>
                     {t(item.i18nKey, locale)}
@@ -288,7 +325,7 @@ import { headerNavItems } from '@layouts/header.nav';
 }
 
 @media (width <= 768px) {
-    .header-nav a {
+    .header-nav {
         display: none;
     }
 }
@@ -300,11 +337,23 @@ import { headerNavItems } from '@layouts/header.nav';
 
 .header-nav a.active {
     background-color: var(--color-bg-accent);
-    color: var(--color-accent);
+    color: var(--color-accent-text);
 }
 
-.header-nav-label {
+.header-nav-link.has-icon .header-nav-label {
     margin-left: 4px;
+}
+
+@media (width <= 1376px) {
+    .header-nav-link.has-icon .header-nav-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
 }
 ```
 
@@ -328,13 +377,20 @@ import { headerNavItems } from '@layouts/header.nav';
     border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
-    padding: 5px 9px;
+    padding: 0 9px;
+    height: 36px;
     gap: 5px;
     white-space: nowrap;
     font-size: 1rem;
     cursor: pointer;
     color: var(--color-text-muted);
     transition: var(--transition);
+}
+
+@media (width <= 768px) {
+    .theme-toggle {
+        margin-left: auto;
+    }
 }
 
 .theme-toggle:hover {
@@ -466,14 +522,14 @@ const showLanguageSwitcher: boolean = locales.length > 1;
     { showLanguageSwitcher && (
         <div class="language-switcher">
             <i class="fas fa-language" aria-hidden="true"></i>
-            <select id="language-list" class="language-list" aria-label={t('header.language.select', locale)}>
+            <select id="language-list" class="language-switcher-list" aria-label={t('header.language.select', locale)}>
                 {locales.map((loc) => (
                     <option value={loc} selected={loc === locale}>
                         {t('lang.name', loc)}
                     </option>
                 ))}
             </select>
-            <i class="fas fa-chevron-down language-arrow" aria-hidden="true"></i>
+            <i class="fas fa-chevron-down language-switcher-arrow" aria-hidden="true"></i>
         </div>
     )}
 </header>
@@ -488,7 +544,8 @@ const showLanguageSwitcher: boolean = locales.length > 1;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     gap: 5px;
-    padding: 5px 9px;
+    padding: 0 9px;
+    height: 36px;
     color: var(--color-text-muted);
     font-size: 1rem;
     transition: var(--transition);
