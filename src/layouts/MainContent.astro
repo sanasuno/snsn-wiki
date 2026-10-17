@@ -101,7 +101,7 @@ const crumbIcons = {
             <div class="page-meta">
                 {id && (
                     <div class="page-meta-category">
-                        <a href={`${localeBaseUrl}category/${categoryString}/`}>
+                        <a href={ensureTrailingSlash(`${localeBaseUrl}category/${categoryString}`)}>
                             {
                                 isWikiRoot
                                     ? t('meta.nocategory', locale)

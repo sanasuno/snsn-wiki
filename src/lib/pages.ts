@@ -9,10 +9,10 @@ import { getLocale, getNormalizedSlug, normalizeSlugLike } from '@lib/path';
 
 /**
  * ウィキページの情報
- * - locale: ページのロケール
- * - slug: ページのスラッグ
- * - page: ページデータ
- * - isFallback: フォールバックページかどうか
+ * @param locale ページのロケール
+ * @param slug ページのスラッグ
+ * @param page ページデータ
+ * @param isFallback フォールバックページかどうか
  */
 export interface ResolvedWikiPage {
     locale: Locale;

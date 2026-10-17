@@ -43,6 +43,11 @@ export const getStaticPaths = (async () => {
     return [...wikiPaths, ...fallbackPaths];
 }) satisfies GetStaticPaths;
 
+/**
+ * OGP 画像をレンダリングして返す API ルート
+ * @param param0 Astro のコンテキスト
+ * @returns OGP 画像のレスポンス
+ */
 export const GET: APIRoute = async ({ props }) => {
     const { title, description, category, siteName } = props as { title: string; description?: string; category?: string; siteName: string; };
     const png = await renderOgImage({ title, description, category, siteName });

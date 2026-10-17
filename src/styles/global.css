@@ -90,13 +90,27 @@ body {
     }
 }
 
+/* ヘッダー内容その縮小防止 */
+.site-header > :not(.header-site-title) {
+    flex-shrink: 0;
+}
+
+/* キーボードフォーカス */
+.site-header :is(a, button, select):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
 /* サイドバー切り替えボタン */
 .sidebar-toggle {
     display: none;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 4px;
+    min-width: 40px;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
     color: var(--color-text-muted);
     font-size: 1.1rem;
 }
@@ -112,7 +126,7 @@ body {
 }
 
 /* サイトタイトル */
-.site-title {
+.header-site-title {
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--color-accent);
@@ -120,6 +134,8 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+    flex: 0 1 auto;
 }
 
 /* ヘッダーナビゲーション */
@@ -162,7 +178,7 @@ body {
     color: var(--color-accent);
 }
 
-.nav-label {
+.header-nav-label {
     margin-left: 4px;
 }
 
@@ -200,27 +216,27 @@ body {
     border-color: var(--color-border-hover);
 }
 
-.theme-toggle .icon-to-light {
+.theme-toggle .theme-icon-light {
     display: inline;
 }
 
-.theme-toggle .icon-to-dark {
+.theme-toggle .theme-icon-dark {
     display: none;
 }
 
-:root[data-theme="dark"] .theme-toggle .icon-to-light {
+:root[data-theme="dark"] .theme-toggle .theme-icon-light {
     display: none;
 }
 
-:root[data-theme="dark"] .theme-toggle .icon-to-dark {
+:root[data-theme="dark"] .theme-toggle .theme-icon-dark {
     display: inline;
 }
 
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme]) .theme-toggle .icon-to-light {
+    :root:not([data-theme]) .theme-toggle .theme-icon-light {
         display: none;
     }
-    :root:not([data-theme]) .theme-toggle .icon-to-dark {
+    :root:not([data-theme]) .theme-toggle .theme-icon-dark {
         display: inline;
     }
 }
@@ -244,7 +260,7 @@ body {
     color: var(--color-text);
 }
 
-.language-list {
+.language-switcher-list {
     appearance: none;
     background-color: transparent;
     border: none;
@@ -257,30 +273,23 @@ body {
     transition: var(--transition);
 }
 
-.language-list option {
+.language-switcher-list option {
     background-color: var(--color-bg);
     color: var(--color-text);
 }
 
-.language-list option:hover {
-    background-color: var(--color-bg-hover);
-}
-
-.language-list option[selected] {
-    background-color: var(--color-bg-accent)
-}
-
-.language-list:hover {
+.language-switcher-list:hover {
     color: var(--color-text);
 }
 
-.language-arrow {
+.language-switcher-arrow {
     position: absolute;
     right: 9px;
     font-size: 0.6rem;
     pointer-events: none;
 }
 
+/* サイドバー */
 .sidebar {
     grid-area: sidebar;
     background-color: var(--color-bg);

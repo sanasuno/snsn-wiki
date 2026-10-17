@@ -124,24 +124,10 @@ export function getRawSlug(pageId: string): string {
 }
 ```
 
-### dividePageId()
-ページIDをロケールと生スラッグに分割する関数です。
-
-与えられたページIDに `getLocale()` 関数と `getRawSlug()` 関数を適用してロケールと生スラッグを取得し、
-まとめて返します。
-
-```ts
-export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} {
-    const locale = getLocale(pageId);
-    const rawSlug = getRawSlug(pageId);
-    return {locale, rawSlug};
-}
-```
-
 ### normalizeSlugLike()
 スラッグを正規化する関数です。
 
-まず、与えられたスラッグを `NFKC` で正規化して小文字化し、先頭と末尾の空白を除去します。
+まず、与えられたスラッグに `NFKC` 正規化、小文字化、前後の空白除去を、順に行います。
 さらにその結果が `index` だった場合は空文字を返し、末尾に `/index` がある場合はそれを削除して返します。
 
 ```ts
@@ -200,7 +186,8 @@ export function getWikiBaseUrl(locale: Locale): string {
 ```
 
 ### getWikiUrl()
-与えられた Wiki ページのページIDから、そのページの URL を取得する関数です。
+与えられたロケールと Wiki ページのページ ID から、そのページの URL を取得する関数です。
+ロケールが指定されていない場合、ページ ID からロケールを取得します。
 
 実際の URL となるので、スラッグを正規化してから Wiki ページのベース URL の後ろにつけ、
 `ensureTrailingSlash()` 関数で末尾のスラッシュを確保して返します。

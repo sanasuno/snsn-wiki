@@ -12,11 +12,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "^7.0.5",
-    "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/mdx": "^8.1.0",
+    "@astrojs/sitemap": "^3.7.4",
     "@fortawesome/fontawesome-free": "^7.3.1",
     "@resvg/resvg-js": "^2.6.2",
-    "astro": "^7.2.1",
+    "astro": "^7.4.0",
     "satori": "^0.33.4"
   },
   "devDependencies": {

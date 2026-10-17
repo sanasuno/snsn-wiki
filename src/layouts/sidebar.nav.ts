@@ -9,6 +9,7 @@ export type SidebarNavItem = {
     external?: boolean;
     i18nKey?: TranslationKey;
     icon?: string;
+    exact?: boolean;
 }
 
 export type SortMode = 'title' | 'order' | 'date' | 'updated';
@@ -30,7 +31,7 @@ export const sidebarNavItems: SidebarNavSection[] = [
     {
         titleKey: 'sidebar.quickLinks',
         items: [
-            { path: '/', i18nKey: 'sidebar.home', icon: 'fas fa-house' },
+            { path: '/wiki', i18nKey: 'sidebar.home', icon: 'fas fa-house', exact: true },
             // { path: '/category', i18nKey: 'sidebar.category', icon: 'fas fa-folder' },
             // { path: '/tags', i18nKey: 'sidebar.tags', icon: 'fas fa-tags' },
             // { path: '/graph', i18nKey: 'sidebar.graph', icon: 'fas fa-diagram-project' }

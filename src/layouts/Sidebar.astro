@@ -102,7 +102,7 @@ const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
                                     if (!href || !label) {
                                         return null;
                                     }
-                                    return <a href={href} rel={item.external ? "noopener noreferrer" : null} aria-current={!item.external && isPathActive(item.path, currentPath) ? "page" : undefined}>
+                                    return <a href={href} rel={item.external ? "noopener noreferrer" : null} aria-current={!item.external && isPathActive(item.path, currentPath, item.exact) ? "page" : undefined}>
                                         {item.icon
                                             ? <i class={`${item.icon} fa-fw`} aria-hidden="true"></i>
                                             : <i class="far fa-file-lines fa-fw" aria-hidden="true"></i>

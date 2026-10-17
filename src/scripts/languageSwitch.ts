@@ -4,7 +4,7 @@
  */
 
 import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
-import { isLocale, isTranslationKey } from "@lib/locale";
+import { isLocale, isTranslationKey } from "@lib/i18n";
 import { getLocalStorage, setLocalStorage } from "@scripts/localStorage";
 
 /**

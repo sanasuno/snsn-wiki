@@ -3,7 +3,7 @@
  * パス関連のユーティリティ関数
  */
 import type { Locale } from '@i18n/i18n.config';
-import { isLocale } from '@lib/locale';
+import { isLocale } from '@lib/i18n';
 /**
  * 末尾のスラッシュを削除する関数
  * @param path 削除するパス
@@ -44,17 +44,6 @@ export function getLocale(pageId: string): Locale {
 export function getRawSlug(pageId: string): string {
     const parts = pageId.split('/');
     return parts.slice(1).join('/');
-}
-
-/**
- * ページIDをロケールと生のスラッグに分割する関数
- * @param pageId ページID (例: "en/example-page")
- * @returns ロケールと生のスラッグのオブジェクト
- */
-export function dividePageId(pageId: string): {locale: Locale, rawSlug: string} {
-    const locale = getLocale(pageId);
-    const rawSlug = getRawSlug(pageId);
-    return {locale, rawSlug};
 }
 
 /**
@@ -118,7 +107,7 @@ export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): 
 }
 
 /**
- * Astro.urlから現在のパスを取得する関数
+ * Astro.url から現在のパスを取得する関数
  * @param url Astro.url
  * @returns 現在のパス
  */
@@ -137,19 +126,21 @@ export function getLocalePathUrl(locale: Locale, path: string): string {
 }
 
 /**
- * 対象のスラッグが現在のパスでアクティブかどうかを判定する関数です。
+ * 対象のスラッグが現在のパスでアクティブかどうかを判定する関数
  * @param targetSlug - 比較するスラッグ
  * @param currentPath - 現在のパス
+ * @param exact - 絶対一致かどうか
  * @returns パスが一致する場合はtrue、そうでない場合はfalse
  */
-export function isPathActive(targetSlug: string, currentPath: string): boolean {
+export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
     const base = getBaseUrl();
     const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length) : currentPath;
     const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
         : normalizeSlugLike(removeTrailingSlash(relativePath));
-    return targetSlug === '/'
-        ? currentSlug === '/'
-        : currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
+    if (exact || targetSlug === '/') {
+        return currentSlug === targetSlug;
+    }
+    return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
 }

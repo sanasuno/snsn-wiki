@@ -13,7 +13,7 @@ function setSidebarToggleBtnState(btn: HTMLButtonElement, isOpen: boolean) {
     const icon = btn.querySelector('i');
     if (icon) {
         icon.classList.toggle('fa-bars', !isOpen);
-        icon.classList.toggle('fa-times', isOpen);
+        icon.classList.toggle('fa-xmark', isOpen);
     }
 }
 

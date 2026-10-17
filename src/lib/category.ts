@@ -3,7 +3,7 @@
  * カテゴリ関連のユーティリティ関数
  */
 import { t, type Locale, type TranslationKey } from '@i18n/i18n.config';
-import { isTranslationKey } from '@lib/locale';
+import { isTranslationKey } from '@lib/i18n';
 
 /**
  * ページIDからカテゴリを取得する関数

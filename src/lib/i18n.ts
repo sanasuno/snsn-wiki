@@ -1,6 +1,6 @@
 /**
- * @lib/locale.ts
- * ロケール関連のユーティリティ関数
+ * @lib/i18n.ts
+ * i18n関連のユーティリティ関数
  */
 
 import { locales, type Locale } from '@i18n/i18n.config';
