@@ -1,0 +1,51 @@
+---
+/**
+ * ./src/pages/[locale]/categpru/[...category].astro
+ * カテゴリページ
+ */
+import { getCollection } from 'astro:content';
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { getCategoryString } from '@lib/category';
+import MainLayout from '@layouts/MainLayout.astro';
+
+import { t, locales, type Locale, type TranslationKey } from '@i18n/i18n.config';
+
+export async function getStaticPaths() {
+    const pages = await getCollection('wiki', (p) => !p.data.draft);
+    const categorySet = new Set<string>();
+    for (const page of pages) {
+        const categoryString = getCategoryString(page.id, page.data.isSubPage);
+        categorySet.add(categoryString);
+    }
+    const paths: { params: { locale: Locale; category: string }; props: { locale: Locale; category: string } }[] = [];
+    for (const locale of locales) {
+        for (const category of categorySet) {
+            paths.push({
+                params: { locale, category },
+                props: { locale, category },
+            });
+        }
+    }
+    return paths;
+}
+
+interface Props {
+    locale: Locale;
+    category: string;
+}
+
+const { locale, category } = Astro.props as Props;
+
+const alternateLinks = locales.map((loc) => ({
+    locale: loc,
+    href: getRelativeLocaleUrl(loc, `/category/${category}`),
+}))
+---
+<MainLayout
+    title={t(`category.${category}` as TranslationKey, locale)}
+    description={t('categorypage.description', locale)}
+    locale={locale}
+    alternateLinks={alternateLinks}
+    showSubpanel={false}
+>
+</MainLayout>

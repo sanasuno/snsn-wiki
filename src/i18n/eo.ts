@@ -39,6 +39,9 @@ export const eo = {
     'homepage.title': 'Hejmo',
     'homepage.description': 'Hejma paĝa priskribo',
     
+    'categorypage.title': 'Kategorio',
+    'categorypage.description': 'Kategoria paĝa priskribo',
+    
     'graph.title': 'Grafiko',
     'graph.description': 'Grafika paĝa priskribo',
 

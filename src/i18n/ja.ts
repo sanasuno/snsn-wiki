@@ -42,6 +42,9 @@ export const ja = {
     'homepage.title': 'ホーム',
     'homepage.description': 'ホームページの説明',
 
+    'categorypage.title': 'カテゴリ',
+    'categorypage.description': 'カテゴリの説明',
+
     'graph.title': 'グラフ',
     'graph.description': 'グラフの説明',
     

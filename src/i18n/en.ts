@@ -38,6 +38,9 @@ export const en = {
     'homepage.title': 'Home',
     'homepage.description': 'Home page description',
     
+    'categorypage.title': 'Category',
+    'categorypage.description': 'Category page description',
+    
     'graph.title': 'Graph',
     'graph.description': 'Graph page description',
 
