@@ -5,13 +5,13 @@
  */
 import { t, locales, type Locale } from '@i18n/i18n.config';
 import { headerNavItems } from '@layouts/header.nav';
-import { ensureTrailingSlash, getCurrentPath, getLocaleBaseUrl, getLocalePathUrl, isPathActive } from '@lib/path';
+import { ensureTrailingSlash, getCurrentPath, getWikiBaseUrl, getLocalePathUrl, isPathActive } from '@lib/path';
 
 interface Props {
     locale: Locale;
 }
 const { locale }: Props = Astro.props;
-const localeBaseUrl = getLocaleBaseUrl(locale);
+const wikiBaseUrl = getWikiBaseUrl(locale);
 const currentPath = getCurrentPath(Astro.url);
 const showLanguageSwitcher: boolean = locales.length > 1;
 
@@ -26,7 +26,7 @@ const navItems = headerNavItems.map((item) => ({
         <i class="fas fa-bars" aria-hidden="true"></i>
     </button>
 
-    <a href={ensureTrailingSlash(localeBaseUrl)} class="header-site-title">
+    <a href={ensureTrailingSlash(wikiBaseUrl)} class="header-site-title">
         {t('site.title', locale)}
     </a>
     

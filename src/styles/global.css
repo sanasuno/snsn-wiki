@@ -183,7 +183,7 @@ body {
 }
 
 @media (width <= 1376px) {
-    .nav-label {
+    .header-nav-label {
         position: absolute;
         width: 1px;
         height: 1px;
