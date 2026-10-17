@@ -143,7 +143,7 @@ body {
 
 @media (width <= 768px) {
     .sidebar-toggle {
-        display: block;
+        display: flex;
     }
 }
 
@@ -263,15 +263,6 @@ body {
 
 :root[data-theme="dark"] .theme-toggle .theme-icon-dark {
     display: inline;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme]) .theme-toggle .theme-icon-light {
-        display: none;
-    }
-    :root:not([data-theme]) .theme-toggle .theme-icon-dark {
-        display: inline;
-    }
 }
 
 /* 言語切り替え */

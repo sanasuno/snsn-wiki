@@ -107,7 +107,7 @@ date: 2026-09-04
 
 @media (width <= 768px) {
     .sidebar-toggle {
-        display: block;
+        display: flex;
     }
 }
 
@@ -219,15 +219,15 @@ sidebarToggle();
 ```astro
 ---
 import { t, type Locale } from '@i18n/i18n.config';
-import { getLocaleBaseUrl } from '@lib/path';
+import { getWikiBaseUrl, ensureTrailingSlash } from '@lib/path';
 interface Props {
     locale: Locale;
 }
 const { locale }: Props = Astro.props;
-const localeBaseUrl = getLocaleBaseUrl(locale);
+const wikiBaseUrl = getWikiBaseUrl(locale);
 ---
 <header class="site-header">
-    <a href={ensureTrailingSlash(localeBaseUrl)} class="header-site-title">
+    <a href={ensureTrailingSlash(wikiBaseUrl)} class="header-site-title">
         {t('site.title', locale)}
     </a>
 </header>
@@ -418,15 +418,6 @@ const navItems = headerNavItems.map((item) => ({
 :root[data-theme="dark"] .theme-toggle .theme-icon-dark {
     display: inline;
 }
-
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme]) .theme-toggle .theme-icon-light {
-        display: none;
-    }
-    :root:not([data-theme]) .theme-toggle .theme-icon-dark {
-        display: inline;
-    }
-}
 ```
 
 ### テーマ初期化
@@ -571,14 +562,6 @@ const showLanguageSwitcher: boolean = locales.length > 1;
 .language-switcher-list option {
     background-color: var(--color-bg);
     color: var(--color-text);
-}
-
-.language-switcher-list option:hover {
-    background-color: var(--color-bg-hover);
-}
-
-.language-switcher-list option[selected] {
-    background-color: var(--color-bg-accent)
 }
 
 .language-switcher-list:hover {
