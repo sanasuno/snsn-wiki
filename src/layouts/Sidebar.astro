@@ -3,152 +3,155 @@
  * @layouts/Sidebar.astro
  * サイドバーコンポーネント
  */
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 import { t, type Locale, type TranslationKey } from '@i18n/i18n.config';
-import { sidebarNavItems, autoAddUnknownCategories, autoGroupByLeafCategory } from '@layouts/sidebar.nav';
+import { sidebarNavItems, autoAddUnknownCategories, type SortMode } from '@layouts/sidebar.nav';
 import { getUniquePagesByLocale } from '@lib/pages';
-import { normalizeSlugLike, getNormalizedSlug, getWikiUrl, getDecodedCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
-import { getCategory } from '@lib/category';
+import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getDecodedCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
+import { getCategory, getCategoryLabel } from '@lib/category';
 
 interface Props {
     locale: Locale;
 }
 const { locale }: Props = Astro.props;
 
+type WikiPage = CollectionEntry<'wiki'>;
+type SidebarLink = {
+    href: string;
+    label: string;
+    icon: string;
+    current: boolean;
+    external: boolean;
+    lang?: string;
+};
+type SidebarSectionView = {
+    title: string;
+    icon?: string;
+    collapsed: boolean;
+    links: SidebarLink[];
+};
+
 const decodedCurrentPath = getDecodedCurrentPath(Astro.url);
 
+// ---- ページ収集 ----
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
 const uniquePages = getUniquePagesByLocale(wikiPages, locale);
-const pagesByCategory : Record<string, typeof uniquePages> = {};
-const slugMap : Record<string, (typeof uniquePages)[0]> = {};
+
+const pagesByCategory = new Map<string, WikiPage[]>();
+
+const slugMap = new Map<string, WikiPage>();
 for (const page of uniquePages) {
-    slugMap[getNormalizedSlug(page.id)] = page;
+    slugMap.set(getNormalizedSlug(page.id), page);
     const category: string[] = getCategory(page.id, page.data.isSubPage);
     if (category.length === 0) continue;
-    const key = category.length > 0 && autoGroupByLeafCategory
-        ? category[category.length - 1]
-        : category.join('/');
-    (pagesByCategory[key] ??= []).push(page);
+    const key = category.join('/');
+    const list = pagesByCategory.get(key) ?? [];
+    list.push(page);
+    pagesByCategory.set(key, list);
 }
 
-const renderedCategories = new Set<string>();
-
-type WikiPage = typeof wikiPages[0];
-const sorters: Record<string, (a: WikiPage, b: WikiPage) => number> = {
+// ---- ソート関数 ----
+const sorters: Record<SortMode, (a: WikiPage, b: WikiPage) => number> = {
     title: (a, b) => a.data.title.localeCompare(b.data.title, locale),
-    order: (a, b) => (a.data.order ?? 0) - (b.data.order ?? 0),
+    order: (a, b) => a.data.order - b.data.order,
     date: (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0),
     updated: (a, b) => (b.data.updated?.getTime() ?? 0) - (a.data.updated?.getTime() ?? 0),
 };
+const sortPages = (pages: WikiPage[], mode: SortMode) => 
+    [...pages].sort((a, b) => sorters[mode](a, b) || sorters['title'](a, b));
+
+// ---- リンク生成 ----
+const toPageLink = (page: WikiPage): SidebarLink => {
+    const href = getWikiUrl(page.id, locale);
+    const pageLocale = getLocale(page.id);
+    return {
+        href,
+        label: page.data.title,
+        icon: 'far fa-file-lines',
+        current: href === decodedCurrentPath,
+        external: false,
+        lang: pageLocale !== locale ? pageLocale : undefined,
+    };
+}
+
+// ---- セクション構築 ----
+const configuredCategories = new Set(
+    sidebarNavItems.flatMap((s) => s.category ? [s.category] : [])
+);
+const sections: SidebarSectionView[] = [];
+
+for (const section of sidebarNavItems) {
+    const title = t(section.titleKey, locale);
+    const collapsed = section.collapsed ?? false;
+
+    if (section.category) {
+        const pages = pagesByCategory.get(section.category);
+        if (!pages?.length) continue;
+        sections.push({
+            title,
+            icon: section.icon,
+            collapsed,
+            links: sortPages(pages, section.sort ?? 'title').map(toPageLink),
+        });
+    } else if (section.items) {
+        const links = section.items.flatMap((item): SidebarLink[] => {
+            const wikiSlug = item.external ? undefined: item.path.match(/^\/wiki\/(.+?)\/?$/)?.[1];
+            const page = wikiSlug ? slugMap.get(normalizeSlugLike(wikiSlug)) : undefined;
+            const href = item.external
+                ? item.path
+                : page
+                    ? getWikiUrl(page.id, locale)
+                    : getLocalePathUrl(locale, item.path);
+            const label = item.i18nKey ? t(item.i18nKey, locale) : page?.data.title;
+            if (!href || !label) return [];
+            return [{
+                href,
+                label,
+                icon: item.icon ?? 'far fa-file-lines',
+                current: !item.external && isPathActive(item.path, decodedCurrentPath, item.exact),
+                external: !!item.external,
+            }];
+        });
+        sections.push({
+            title,
+            icon: section.icon,
+            collapsed,
+            links,
+        });
+    }
+}
+
+if (autoAddUnknownCategories) {
+    for (const [category, pages] of pagesByCategory) {
+        if (configuredCategories.has(category)) continue;
+        const title = getCategoryLabel(category, locale);
+        sections.push({
+            title,
+            icon: 'fas fa-folder',
+            collapsed: false,
+            links: sortPages(pages, 'title').map(toPageLink),
+        });
+    }
+}
 ---
 <aside class="sidebar" id="sidebar">
     <nav aria-label={t('sidebar.nav.title', locale)}>
-        {
-            sidebarNavItems.map((section) => {
-                const defaultCollapsed = section.collapsed ?? false;
-                if (section.category) {
-                    const categoryPages = pagesByCategory[section.category] || [];
-                    if (categoryPages.length === 0) {
-                        return null;
-                    }
-                    renderedCategories.add(section.category);
-                    const sorted = [...categoryPages].sort((a, b) => {
-                        return sorters[section.sort ?? 'title'](a, b);
-                    });
-
-                    return (
-                        <section class='sidebar-section'>
-                            <button type="button" class="sidebar-section-title">
-                                {section.icon && <i class={`${section.icon} fa-fw`} aria-hidden="true"></i>}
-                                {t(section.titleKey, locale)}
-                                <i class="fas fa-chevron-down sidebar-chevron" aria-hidden="true"></i>
-                            </button>
-                            <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
-                                {
-                                    sorted.map(page => {
-                                        return (
-                                            <a href={getWikiUrl(page.id, locale)} aria-current={getWikiUrl(page.id, locale) === decodedCurrentPath ? 'page' : undefined} class='sidebar-nav-title'>
-                                                <i class='far fa-file-lines fa-fw' aria-hidden="true"></i>
-                                                {page.data.title}
-                                            </a>
-                                        )
-                                    })
-                                }
-                            </div>
-                        </section>
-                    );
-                } else if (section.items) {
-                    return (
-                        <section class="sidebar-section">
-                            <button type="button" class="sidebar-section-title">
-                                {section.icon && <i class={`${section.icon} fa-fw`}></i>}
-                                {t(section.titleKey, locale)}
-                                <i class="fas fa-chevron-down sidebar-chevron" aria-hidden="true"></i>
-                            </button>
-                            <div class={`sidebar-nav sidebar-collapsible${defaultCollapsed ? ' collapsed' : ''}`}>
-                                {section.items.map(item => {
-                                    let href = item.path;
-                                    let label = item.i18nKey ? t(item.i18nKey, locale): '';
-                                    if (!item.external) {
-                                        const key = normalizeSlugLike(item.path.replace(/^\/+|\/+$/g, ''));
-                                        const page = key ? slugMap[key] : undefined;
-                                        if (page) {
-                                            href = getWikiUrl(page.id, locale);
-                                            if (!item.i18nKey) label = page.data.title;
-                                        } else {
-                                            href = getLocalePathUrl(locale, item.path);
-                                        }
-                                    }
-                                    if (!href || !label) {
-                                        return null;
-                                    }
-                                    return <a href={href} rel={item.external ? "noopener noreferrer" : null} aria-current={!item.external && isPathActive(item.path, decodedCurrentPath, item.exact) ? "page" : undefined}>
-                                        {item.icon
-                                            ? <i class={`${item.icon} fa-fw`} aria-hidden="true"></i>
-                                            : <i class="far fa-file-lines fa-fw" aria-hidden="true"></i>
-                                        }
-                                        {' '}
-                                        {label}
-                                    </a>
-                                })}
-                            </div>
-                        </section>
-                    );
-                } else {
-                    return null;
-                }
-            })
-        }
-
-        {autoAddUnknownCategories && Object.entries(pagesByCategory).map(([category, categoryPages]) => {
-            if (renderedCategories.has(category)) {
-                return null;
-            }
-            const sorted = [...categoryPages].sort(
-                (a, b) => a.data.title.localeCompare(b.data.title)
-            );
-            return (
-                <section class="sidebar-section">
-                    <button type="button" class="sidebar-section-title">
-                        <i class="fas fa-folder fa-fw" aria-hidden="true"></i>
-                        {category === ''
-                            ? t('homepage.title', locale)
-                            : t(`category.${category}` as TranslationKey, locale)
-                        }
-                        <i class="fas fa-chevron-down sidebar-chevron" aria-hidden="true"></i>
-                    </button>
-                    <div class="sidebar-nav">
-                        {sorted.map((page) => {
-                            return (
-                                <a href={getWikiUrl(page.id, locale)} aria-current={getWikiUrl(page.id, locale) === decodedCurrentPath ? "page" : undefined}>
-                                    <i class="far fa-file-lines fa-fw" aria-hidden="true"></i>
-                                    {page.data.title}
-                                </a>
-                            )
-                        })}
-                    </div>
-                </section>
-            )
-        })}
+        {sections.map((section, i) => (
+            <section class="sidebar-section">
+                <button type="button" class="sidebar-section-title" aria-expanded={String(!section.collapsed)} aria-controls={`sidebar-section-${i}`}>
+                    {section.icon && <i class={`${section.icon} fa-fw`} aria-hidden="true"></i>}
+                    {section.title}
+                    <i class="fas fa-chevron-down fa-fw sidebar-chevron" aria-hidden="true"></i>
+                </button>
+                <div class:list={['sidebar-nav', 'sidebar-collapsible', { collapsed: section.collapsed }]} id={`sidebar-section-${i}`}>
+                    {section.links.map((link) => (
+                        <a href={link.href} lang={link.lang} rel={link.external ? 'noopener noreferrer' : undefined} aria-current={link.current ? 'page' : undefined}>
+                            <i class={`${link.icon} fa-fw`} aria-hidden="true"></i>
+                            {link.label}
+                        </a>
+                    ))} 
+                </div>
+            </section>
+        ))}
     </nav>
 </aside>

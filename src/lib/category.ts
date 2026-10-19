@@ -47,3 +47,15 @@ export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage:
     
     return t(key, locale);
 }
+
+/**
+ * カテゴリのラベルを取得する関数
+ * @param category カテゴリ
+ * @param locale ロケール
+ * @returns ラベル
+ */
+export function getCategoryLabel(category: string, locale: Locale): string {
+    const parts = category.split('/');
+    const key = `category.${parts.join('.')}`;
+    return isTranslationKey(key) ? t(key, locale) : parts[parts.length - 1];
+}

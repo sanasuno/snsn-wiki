@@ -25,8 +25,6 @@ export type SidebarNavSection = {
 
 export const autoAddUnknownCategories = true;
 
-export const autoGroupByLeafCategory = true;
-
 export const sidebarNavItems: SidebarNavSection[] = [
     {
         titleKey: 'sidebar.quickLinks',
