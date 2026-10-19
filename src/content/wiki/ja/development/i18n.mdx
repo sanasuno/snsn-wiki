@@ -1,5 +1,5 @@
 ---
-title: 開発記録2 翻訳設定
+title: 翻訳設定
 description: i18n（国際化）対応の開発記録です。
 order: 2
 tags: [開発記録]
@@ -15,11 +15,12 @@ i18n（国際化）対応を実装します。ここでは、ビルド時に実�
 - `@lib/i18n.ts` : i18n 関連のユーティリティ関数
 
 ## 翻訳辞書ファイル
-`snsn-wiki` 本体のアップデートによってユーザー独自の翻訳を上書きしないため、
-システム標準の翻訳キーとユーザー拡張用の翻訳キーを分離します。
+`snsn-wiki` 本体のアップデートによってユーザー独自の翻訳を上書きしないように、
+システム標準の翻訳キーとユーザー拡張用の翻訳キーを分離しておきます。
 システム標準のキーは `structuralKeys` として `keys.ts` に、
 ユーザー拡張用のキーは `customKeys` として `keys.custom.ts` に記述します。
 
+`keys.ts` に `customKeys` をインポートし、
 `structuralKeys` と `customKeys` の両者を結合したキー配列を `translationKeys` 、
 その型を `TranslationKey` としてエクスポートします。  
 
@@ -43,7 +44,7 @@ export type { TranslationKey };
 ### 翻訳辞書ファイルのインポート
 `i18n` ディレクトリ配下にある翻訳辞書ファイルをインポートし、
 すべてまとめて `translations` オブジェクトに格納します。  
-ロケールを追加するときは、ここに追記します。
+ロケールを追加・削除するときは、ここを編集します。
 
 ```ts
 import { en } from './en';
@@ -57,7 +58,7 @@ export const translations = {
 ```
 
 ### ロケール型
-`translations` オブジェクトのキーを `Locale` 型として定義します。
+`translations` のキーを、ロケール型 `Locale` として定義します。
 
 ```ts
 export type Locale = keyof typeof translations;
@@ -72,17 +73,17 @@ export const locales = Object.keys(translations) as Locale[];
 
 ### デフォルトロケール
 翻訳やページ遷移のフォールバックとして使われるデフォルトロケール `defaultLocale` を決定します。
-デフォルトロケールは `Locale` 型の要素である必要があります。
+- デフォルトロケールは `Locale` 型の要素である必要があります。
 
 ```ts
 export const defaultLocale = 'ja' satisfies Locale;
 ```
 
 ### t()
-`t` 関数は、与えられた翻訳キーとロケールから、翻訳された文字列を取得する関数です。
-`locale` パラメータを省略した場合は `defaultLocale` が使用されます。
-指定されたロケールに翻訳が存在しない場合、デフォルトロケールの翻訳を返します。
-デフォルトロケールにも翻訳が存在しない場合は、キーの値をそのまま返します。
+メインの翻訳関数です。与えられた翻訳キーとロケールから、翻訳された文字列を取得します。
+- `locale` パラメータを省略した場合は `defaultLocale` が使用されます。
+- 指定されたロケールに翻訳が存在しない場合、デフォルトロケールの翻訳を返します。
+- デフォルトロケールにも翻訳が存在しない場合は、キーの値をそのまま返します。
 
 ```ts
 export function t(key: TranslationKey, locale: Locale = defaultLocale): string {
@@ -98,7 +99,10 @@ export function t(key: TranslationKey, locale: Locale = defaultLocale): string {
 ## defineConfig
 `astro.config.ts` の `defineConfig` に `i18n.config.ts` で設定した `locales` と `defaultLocale` を渡します。
 
-また、全言語のURLの取り扱いを統一するため `prefixDefaultLocale` は `true` に設定します。
+また、URLでの取り扱いを全言語で統一するため、 `prefixDefaultLocale` は `true` に設定します。
+
+- `astro.config.ts` ではエイリアスを利用できないため、
+`i18n.config.ts` およびそこからインポートされるファイルでもエイリアスを使用できません。
 
 ```ts
 import { t, locales, defaultLocale } from './src/i18n/i18n.config';
@@ -113,9 +117,6 @@ export default defineConfig({
     }
 });
 ```
-
-- `astro.config.ts` ではエイリアスを利用できないため、
-`i18n.config.ts` およびそこからインポートされるファイルはエイリアスを使用できないことに注意が必要です。
 
 ## ユーティリティ関数
 `@lib/i18n.ts` にロケール関連のユーティリティ関数を記述します。

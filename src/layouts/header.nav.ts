@@ -23,7 +23,7 @@ export type HeaderNavItem = {
  */
 export const headerNavItems: HeaderNavItem[] = [
     { path: '/wiki', i18nKey: 'header.nav.home', icon: 'fas fa-house', exact: true },
-    // { path: '/category', i18nKey: 'header.nav.category', icon: 'fas fa-folder' },
+    { path: '/category', i18nKey: 'header.nav.category', icon: 'fas fa-folder' },
     // { path: '/tags', i18nKey: 'header.nav.tags', icon: 'fas fa-tags' },
     // { path: '/special/graph', i18nKey: 'header.nav.graph', icon: 'fas fa-diagram-project' }
 ]

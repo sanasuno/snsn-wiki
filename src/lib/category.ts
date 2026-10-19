@@ -6,39 +6,47 @@ import { t, type Locale } from '@i18n/i18n.config';
 import { isTranslationKey } from '@lib/i18n';
 
 /**
- * ページIDからカテゴリ配列を取得する関数
- * @param pageID ページID
- * @param isSubpage サブページかどうか
- * @returns カテゴリ配列
- */
-export function getCategory(pageId: string, isSubpage: boolean = false): string[] {
-    const parts = pageId.split('/');
-    if (isSubpage) {
-        return parts.slice(1, -2);
-    } else {
-        return parts.slice(1, -1);
-    }
-}
-
-/**
  * ページIDからカテゴリ文字列を取得する関数
  * @param pageId ページID
  * @param isSubpage サブページかどうか
  * @returns カテゴリ文字列
  */
-export function getCategoryString(pageId: string, isSubpage: boolean = false): string {
-    const category = getCategory(pageId, isSubpage);
-    return category.join('/');
+export function getCategory(pageId: string, isSubpage: boolean = false): string {
+    const parts = pageId.split('/');
+    if (isSubpage) {
+        return parts.slice(1, -2).join('/');
+    } else {
+        return parts.slice(1, -1).join('/');
+    }
 }
 
 /**
- * カテゴリのラベルを取得する関数
+ * ページIDからカテゴリ配列を取得する関数
+ * @param pageID ページID
+ * @param isSubpage サブページかどうか
+ * @returns カテゴリ配列
+ */
+export function getCategoryArray(pageId: string, isSubPage: boolean = false): string[] {
+    const parts = pageId.split('/').slice(1, isSubPage ? -2 : -1);
+    const categories: string[] = [];
+    for (const part of parts) {
+        if (categories.length === 0) {
+            categories.push(part);
+        } else {
+            categories.push(...categories.map(c => `${c}/${part}`));
+        }
+    }
+    return categories;
+}
+
+/**
+ * カテゴリの翻訳を取得する関数
  * @param category カテゴリ
  * @param locale ロケール
- * @returns ラベル
+ * @returns 翻訳
  */
-export function getCategoryLabel(categoryString: string, locale: Locale): string {
-    const parts = categoryString.split('/');
+export function translateCategory(category: string, locale: Locale): string {
+    const parts = category.split('/');
     const key = `category.${parts.join('.')}`;
     return isTranslationKey(key) ? t(key, locale) : parts.join(' / ');
 }
@@ -51,8 +59,8 @@ export function getCategoryLabel(categoryString: string, locale: Locale): string
  * @returns 翻訳されたカテゴリ名
  */
 export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage: boolean = false ): string {
-    const category = getCategory(pageId, isSubPage);
+    const category = getCategoryArray(pageId, isSubPage);
     if (category.length === 0 || (category.length === 1 && category[0] === '')) return '';
     
-    return getCategoryLabel(category.join('/'), locale);
+    return translateCategory(category.join('/'), locale);
 }

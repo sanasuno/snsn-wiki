@@ -88,7 +88,7 @@ export function getLocaleBaseUrl(locale: Locale): string {
 }
 
 /**
- * WikiベースURLを取得する関数
+ * ウィキベースURLを取得する関数
  * @param locale ロケール
  * @returns WikiベースURL
  */
@@ -97,7 +97,7 @@ export function getWikiBaseUrl(locale: Locale): string {
 }
 
 /**
- * ページIDからWikiページのURLを取得する関数
+ * ページIDからウィキページのURLを取得する関数
  * @param pageId ページID
  * @returns WikiページのURL
  */

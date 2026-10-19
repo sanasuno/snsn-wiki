@@ -1,0 +1,71 @@
+---
+title: カテゴリ
+description: カテゴリの開発記録です。
+order: 5
+tags: [開発記録]
+date: 2026-08-22
+---
+## カテゴリ
+カテゴリはウィキページのみ設定します。各ページの配置パスをもとにカテゴリを導出します。
+
+カテゴリ関連のユーティリティ関数は `@lib/category.ts` に記述します。
+
+### getCategory()
+ページ ID からカテゴリを取得する関数です。
+- ページ ID を `/` で分割したときの、最後の1つ（ページのファイル名）を除いた部分をカテゴリとして返します。
+- `isSubPage = true` が設定されている場合、最後から2番目の要素も親ページのファイル名とみなして除きます。
+
+```ts
+export function getCategory(pageId: string, isSubpage: boolean = false): string {
+    const parts = pageId.split('/');
+    if (isSubpage) {
+        return parts.slice(1, -2).join('/');
+    } else {
+        return parts.slice(1, -1).join('/');
+    }
+}
+```
+
+### getCategoryArray()
+ページ ID からカテゴリ配列を取得する関数です。
+- ページ ID を `/` で分割したときの、最後の1つ（ページのファイル名）を除いた部分をカテゴリ配列として返します。
+- `isSubPage = true` が設定されている場合、最後から2番目の要素も親ページのファイル名とみなして除きます。
+
+```ts
+export function getCategoryArray(pageId: string, isSubPage: boolean = false): string[] {
+    const parts = pageId.split('/').slice(1, isSubPage ? -2 : -1);
+    const categories: string[] = [];
+    for (const part of parts) {
+        if (categories.length === 0) {
+            categories.push(part);
+        } else {
+            categories.push(...categories.map(c => `${c}/${part}`));
+        }
+    }
+    return categories;
+}
+```
+
+### getCategoryLabel()
+カテゴリのラベルを取得する関数です。
+- カテゴリ配列を `.` で結合し、先頭に `category.` をつけた文字列を翻訳キーとして使用します。
+
+```ts
+export function getCategoryLabel(category: string, locale: Locale): string {
+    const parts = category.split('/');
+    const key = `category.${parts.join('.')}`;
+    return isTranslationKey(key) ? t(key, locale) : parts.join(' / ');
+}
+```
+
+### getTranslatedCategory()
+ページ ID から翻訳されたカテゴリ名を取得する関数です。
+
+```ts
+export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage: boolean = false ): string {
+    const category = getCategoryArray(pageId, isSubPage);
+    if (category.length === 0 || (category.length === 1 && category[0] === '')) return '';
+    
+    return getCategoryLabel(category.join('/'), locale);
+}
+```

@@ -371,6 +371,7 @@ body {
     border: none;
     border-radius: var(--radius-sm);
     font: inherit;
+    font-size: 14px;
     font-weight: 700;
     color: var(--color-text);
     text-align: left;
@@ -410,7 +411,7 @@ body {
     padding: 6px 10px;
     border-radius: var(--radius-sm);
     font-size: 0.875rem;
-    color: var(--color-text-muted);
+    color: var(--color-text);
     text-decoration: none;
     transition: var(--transition);
 }
@@ -418,11 +419,13 @@ body {
 .sidebar-nav a:hover {
     background-color: var(--color-bg-hover);
     color: var(--color-text);
+    font-weight: 600;
 }
 
 .sidebar-nav a[aria-current="page"] {
     background-color: var(--color-bg-accent);
     color: var(--color-accent-text);
+    font-weight: 700;
 }
 
 /* メインパネル */

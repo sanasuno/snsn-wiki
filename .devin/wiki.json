@@ -183,6 +183,17 @@
       ]
     },
     {
+      "title": "Category",
+      "purpose": "category.ts, category page routing and rendering logic.",
+      "parent": null,
+      "page_notes": [
+        {
+          "content": "",
+          "author": null
+        }
+      ]
+    },
+    {
       "title": "Glossary",
       "purpose": "Definitions of project-specific terms: base slug, raw base slug, route key, isFallback, TranslationKey, defaultLocale, no-toc layout, custom dictionary, x-default, etc., with code pointers.",
       "parent": null,

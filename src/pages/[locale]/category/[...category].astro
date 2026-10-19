@@ -5,7 +5,7 @@
  */
 import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
-import { getCategoryString, getCategoryLabel } from '@lib/category';
+import { getCategory, translateCategory } from '@lib/category';
 import { getLocaleBaseUrl } from '@lib/path';
 import MainLayout from '@layouts/MainLayout.astro';
 
@@ -15,7 +15,7 @@ export async function getStaticPaths() {
     const pages = await getCollection('wiki', (p) => !p.data.draft);
     const categorySet = new Set<string>();
     for (const page of pages) {
-        const categoryString = getCategoryString(page.id, page.data.isSubPage);
+        const categoryString = getCategory(page.id, page.data.isSubPage);
         categorySet.add(categoryString);
     }
     const paths: { params: { locale: Locale; category: string | undefined }; props: { locale: Locale; categoryString: string } }[] = [];
@@ -52,11 +52,12 @@ const alternateLinks = locales.map((loc) => ({
 }))
 ---
 <MainLayout
-    title={categoryString === '' ? t('categorypage.title', locale) : getCategoryLabel(categoryString, locale)}
+    title={categoryString === '' ? t('categorypage.title', locale) : translateCategory(categoryString, locale)}
     description={t('categorypage.description', locale)}
     locale={locale}
     alternateLinks={alternateLinks}
     showSubpanel={false}
+    isSubPage={category.length > 0}
 >
     <div class="sppage-title">
         <div class="sppage-back">
@@ -64,7 +65,7 @@ const alternateLinks = locales.map((loc) => ({
                 ? (
                     <a href={`${localeBaseUrl}category/${category.slice(0, -1).join('/')}/`}>
                         <i class="fas fa-arrow-left"></i>
-                        {getCategoryLabel(category[category.length - 2], locale)}
+                        {translateCategory(category[category.length - 2], locale)}
                     </a>
                 ) : (
                     <a href={`${localeBaseUrl}category/`}>
@@ -76,6 +77,20 @@ const alternateLinks = locales.map((loc) => ({
         </div>
         <h1 class="indexpage-title">
             <i class="fas fa-folder"></i>
+            {category.map((cat, index) => {
+                const isLast = index === category.length -1;
+                return (
+                    <>
+                        {index > 0 &&
+                            <span class="category-separator"> / </span>
+                        }
+                        {isLast
+                            ? <span>{translateCategory(cat, locale)}</span>
+                            : <a href={`${localeBaseUrl}category/${category.slice(0, index + 1).join('/')}/`}>{translateCategory(cat, locale)}</a>
+                        }
+                    </>
+                );
+            })}
         </h1>
     </div>
 </MainLayout>

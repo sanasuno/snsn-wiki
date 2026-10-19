@@ -5,7 +5,7 @@
  */
 import { t, type Locale } from '@i18n/i18n.config';
 import { ensureTrailingSlash, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath, getLocalePathUrl } from '@lib/path';
-import { getCategory, getCategoryString, getTranslatedCategory } from '@lib/category';
+import { getCategory, getCategoryArray, getTranslatedCategory } from '@lib/category';
 import { formatDate } from '@lib/date';
 
 interface Props {
@@ -35,7 +35,7 @@ const wikiBaseUrl = getWikiBaseUrl(locale);
 
 const currentPath = getCurrentPath(Astro.url);
 
-const categoryString = id ? getCategoryString(id, isSubPage) : '';
+const categoryString = id ? getCategory(id, isSubPage) : '';
 
 type Crumb = {
     kind: 'home' | 'category' | 'page';
@@ -44,7 +44,7 @@ type Crumb = {
 }
 
 const categoryLabel = id ? getTranslatedCategory(id, locale, isSubPage) : '';
-const isWikiRoot = id ? getCategory(id, isSubPage).length === 0 : false;
+const isWikiRoot = id ? getCategoryArray(id, isSubPage).length === 0 : false;
 
 const crumbs: Crumb[] = [
     {

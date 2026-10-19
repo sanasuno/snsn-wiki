@@ -8,7 +8,7 @@ import { t, type Locale } from '@i18n/i18n.config';
 import { sidebarNavItems, autoAddUnknownCategories, type SortMode } from '@layouts/sidebar.nav';
 import { getUniquePagesByLocale } from '@lib/pages';
 import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getDecodedCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
-import { getCategory, getCategoryLabel } from '@lib/category';
+import { getCategoryArray, translateCategory } from '@lib/category';
 
 interface Props {
     locale: Locale;
@@ -42,7 +42,7 @@ const pagesByCategory = new Map<string, WikiPage[]>();
 const slugMap = new Map<string, WikiPage>();
 for (const page of uniquePages) {
     slugMap.set(getNormalizedSlug(page.id), page);
-    const category: string[] = getCategory(page.id, page.data.isSubPage);
+    const category: string[] = getCategoryArray(page.id, page.data.isSubPage);
     if (category.length === 0) continue;
     const key = category.join('/');
     const list = pagesByCategory.get(key) ?? [];
@@ -128,7 +128,7 @@ if (autoAddUnknownCategories) {
     const unknownCategories = [...pagesByCategory].sort(([a], [b]) => a.localeCompare(b, locale));
     for (const [category, pages] of unknownCategories) {
         if (configuredCategories.has(category)) continue;
-        const title = getCategoryLabel(category, locale);
+        const title = translateCategory(category, locale);
         sections.push({
             title,
             icon: 'fas fa-folder',
@@ -140,14 +140,14 @@ if (autoAddUnknownCategories) {
 ---
 <aside class="sidebar" id="sidebar">
     <nav aria-label={t('sidebar.nav.title', locale)}>
-        {sections.map((section, i) => (
+        {sections.map((section, index) => (
             <section class="sidebar-section">
-                <button type="button" class="sidebar-section-title" aria-expanded={String(!section.collapsed)} aria-controls={`sidebar-section-${i}`}>
+                <button type="button" class="sidebar-section-title" aria-expanded={!section.collapsed} aria-controls={`sidebar-section-${index}`}>
                     {section.icon && <i class={`${section.icon} fa-fw`} aria-hidden="true"></i>}
                     {section.title}
                     <i class="fas fa-chevron-down fa-fw sidebar-chevron" aria-hidden="true"></i>
                 </button>
-                <div class:list={['sidebar-nav', { collapsed: section.collapsed }]} id={`sidebar-section-${i}`}>
+                <div class:list={['sidebar-nav', { collapsed: section.collapsed }]} id={`sidebar-section-${index}`}>
                     {section.links.map((link) => (
                         <a href={link.href} lang={link.lang} rel={link.external ? 'noopener noreferrer' : undefined} aria-current={link.current ? 'page' : undefined}>
                             <i class={`${link.icon} fa-fw`} aria-hidden="true"></i>

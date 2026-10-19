@@ -1,63 +1,13 @@
 ---
-title: 開発記録5 OGP画像生成
-order: 5
+title: OGP
+description: OGP の開発記録です。
+order: 6
 tags: [開発記録]
 date: 2026-08-22
 ---
 ## OGP 画像について
 各ページごとに OGP 画像を生成します。生成には `satori` と `resvg-js` を用います。
 画像には、サイト名、各ページのタイトルと説明、カテゴリを記述します。
-
-## カテゴリ
-カテゴリはウィキページのみ設定します。各ページの配置パスをもとにカテゴリを導出します。
-
-カテゴリ関連のユーティリティ関数は `@lib/category.ts` に記述します。
-
-### getCategory()
-ページ ID からカテゴリ配列を取得する関数です。
-
-ページ ID を `/` で分割し、最後の1つ（ページのファイル名）を除いた部分をカテゴリとして返します。
-
-`isSubPage = "true"` が設定されている場合、最後から2番目の要素も親ページのファイル名とみなすため、
-最後の2つを除いた部分を返します。
-
-```ts
-export function getCategory(pageId: string, isSubpage: boolean = false): string[] {
-    const parts = pageId.split('/');
-    if (isSubpage) {
-        return parts.slice(1, -2);
-    } else {
-        return parts.slice(1, -1);
-    }
-}
-```
-
-### getCategoryString()
-ページ ID からカテゴリを一つの文字列として取得する関数です。
-
-```ts
-export function getCategoryString(pageId: string, isSubpage: boolean = false): string {
-    const category = getCategory(pageId, isSubpage);
-    return category.join('/');
-}
-```
-
-### getTranslatedCategory()
-ページ ID から翻訳されたカテゴリ名を取得する関数です。
-
-カテゴリ配列を `.` で結合し、先頭に `category.` をつけた文字列を翻訳キーとして使用します。
-
-```ts
-export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage: boolean = false ): string {
-    const category = getCategory(pageId, isSubPage);
-    if (category.length === 0 || (category.length === 1 && category[0] === '')) return '';
-    
-    const key = `category.${category.join('.')}` as TranslationKey;
-    if (!isTranslationKey(key)) return '';
-    
-    return t(key, locale);
-}
-```
 
 ## 画像生成ライブラリのインストール
 `satori` と `resvg-js` をインストールします。
