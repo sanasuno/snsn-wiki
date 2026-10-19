@@ -2,7 +2,7 @@
  * @lib/category.ts
  * カテゴリ関連のユーティリティ関数
  */
-import { t, type Locale, type TranslationKey } from '@i18n/i18n.config';
+import { t, type Locale } from '@i18n/i18n.config';
 import { isTranslationKey } from '@lib/i18n';
 
 /**
@@ -32,6 +32,18 @@ export function getCategoryString(pageId: string, isSubpage: boolean = false): s
 }
 
 /**
+ * カテゴリのラベルを取得する関数
+ * @param category カテゴリ
+ * @param locale ロケール
+ * @returns ラベル
+ */
+export function getCategoryLabel(category: string, locale: Locale): string {
+    const parts = category.split('/');
+    const key = `category.${parts.join('.')}`;
+    return isTranslationKey(key) ? t(key, locale) : parts[parts.length - 1];
+}
+
+/**
  * ページIDから翻訳されたカテゴリ名を取得する関数
  * @param pageId ページID
  * @param locale ロケール
@@ -42,20 +54,5 @@ export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage:
     const category = getCategory(pageId, isSubPage);
     if (category.length === 0 || (category.length === 1 && category[0] === '')) return '';
     
-    const key = `category.${category.join('.')}` as TranslationKey;
-    if (!isTranslationKey(key)) return '';
-    
-    return t(key, locale);
-}
-
-/**
- * カテゴリのラベルを取得する関数
- * @param category カテゴリ
- * @param locale ロケール
- * @returns ラベル
- */
-export function getCategoryLabel(category: string, locale: Locale): string {
-    const parts = category.split('/');
-    const key = `category.${parts.join('.')}`;
-    return isTranslationKey(key) ? t(key, locale) : parts[parts.length - 1];
+    return getCategoryLabel(category.join('/'), locale);
 }

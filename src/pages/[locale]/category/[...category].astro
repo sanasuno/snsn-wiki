@@ -5,10 +5,10 @@
  */
 import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
-import { getCategoryString } from '@lib/category';
+import { getCategoryString, getCategoryLabel } from '@lib/category';
 import MainLayout from '@layouts/MainLayout.astro';
 
-import { t, locales, type Locale, type TranslationKey } from '@i18n/i18n.config';
+import { t, locales, type Locale } from '@i18n/i18n.config';
 
 export async function getStaticPaths() {
     const pages = await getCollection('wiki', (p) => !p.data.draft);
@@ -42,7 +42,7 @@ const alternateLinks = locales.map((loc) => ({
 }))
 ---
 <MainLayout
-    title={t(`category.${category}` as TranslationKey, locale)}
+    title={category === '' ? t('categorypage.title', locale) : getCategoryLabel(category, locale)}
     description={t('categorypage.description', locale)}
     locale={locale}
     alternateLinks={alternateLinks}

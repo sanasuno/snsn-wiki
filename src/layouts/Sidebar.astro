@@ -4,7 +4,7 @@
  * サイドバーコンポーネント
  */
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { t, type Locale, type TranslationKey } from '@i18n/i18n.config';
+import { t, type Locale } from '@i18n/i18n.config';
 import { sidebarNavItems, autoAddUnknownCategories, type SortMode } from '@layouts/sidebar.nav';
 import { getUniquePagesByLocale } from '@lib/pages';
 import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getDecodedCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
@@ -87,11 +87,12 @@ for (const section of sidebarNavItems) {
     if (section.category) {
         const pages = pagesByCategory.get(section.category);
         if (!pages?.length) continue;
+        const links = sortPages(pages, section.sort ?? 'title').map(toPageLink);
         sections.push({
             title,
             icon: section.icon,
-            collapsed,
-            links: sortPages(pages, section.sort ?? 'title').map(toPageLink),
+            collapsed: collapsed && !links.some((link) => link.current),
+            links,
         });
     } else if (section.items) {
         const links = section.items.flatMap((item): SidebarLink[] => {
@@ -115,14 +116,15 @@ for (const section of sidebarNavItems) {
         sections.push({
             title,
             icon: section.icon,
-            collapsed,
+            collapsed: collapsed && !links.some((link) => link.current),
             links,
         });
     }
 }
 
 if (autoAddUnknownCategories) {
-    for (const [category, pages] of pagesByCategory) {
+    const unknownCategories = [...pagesByCategory].sort(([a], [b]) => a.localeCompare(b, locale));
+    for (const [category, pages] of unknownCategories) {
         if (configuredCategories.has(category)) continue;
         const title = getCategoryLabel(category, locale);
         sections.push({
@@ -143,7 +145,7 @@ if (autoAddUnknownCategories) {
                     {section.title}
                     <i class="fas fa-chevron-down fa-fw sidebar-chevron" aria-hidden="true"></i>
                 </button>
-                <div class:list={['sidebar-nav', 'sidebar-collapsible', { collapsed: section.collapsed }]} id={`sidebar-section-${i}`}>
+                <div class:list={['sidebar-nav', { collapsed: section.collapsed }]} id={`sidebar-section-${i}`}>
                     {section.links.map((link) => (
                         <a href={link.href} lang={link.lang} rel={link.external ? 'noopener noreferrer' : undefined} aria-current={link.current ? 'page' : undefined}>
                             <i class={`${link.icon} fa-fw`} aria-hidden="true"></i>
