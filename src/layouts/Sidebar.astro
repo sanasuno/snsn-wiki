@@ -113,12 +113,14 @@ for (const section of sidebarNavItems) {
                 external: !!item.external,
             }];
         });
-        sections.push({
-            title,
-            icon: section.icon,
-            collapsed: collapsed && !links.some((link) => link.current),
-            links,
-        });
+        if (links.length > 0) {
+            sections.push({
+                title,
+                icon: section.icon,
+                collapsed: collapsed && !links.some((link) => link.current),
+                links,
+            });
+        }
     }
 }
 

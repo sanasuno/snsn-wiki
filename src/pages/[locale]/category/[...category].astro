@@ -6,6 +6,7 @@
 import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import { getCategoryString, getCategoryLabel } from '@lib/category';
+import { getLocaleBaseUrl } from '@lib/path';
 import MainLayout from '@layouts/MainLayout.astro';
 
 import { t, locales, type Locale } from '@i18n/i18n.config';
@@ -17,12 +18,18 @@ export async function getStaticPaths() {
         const categoryString = getCategoryString(page.id, page.data.isSubPage);
         categorySet.add(categoryString);
     }
-    const paths: { params: { locale: Locale; category: string }; props: { locale: Locale; category: string } }[] = [];
+    const paths: { params: { locale: Locale; category: string | undefined }; props: { locale: Locale; categoryString: string } }[] = [];
     for (const locale of locales) {
         for (const category of categorySet) {
             paths.push({
-                params: { locale, category },
-                props: { locale, category },
+                params: {
+                    locale,
+                    category: category === '' ? undefined : category,
+                },
+                props: {
+                    locale,
+                    categoryString : category,
+                },
             });
         }
     }
@@ -31,21 +38,44 @@ export async function getStaticPaths() {
 
 interface Props {
     locale: Locale;
-    category: string;
+    categoryString: string;
 }
 
-const { locale, category } = Astro.props as Props;
+const { locale, categoryString } = Astro.props as Props;
 
+const category = categoryString.split('/');
+
+const localeBaseUrl = getLocaleBaseUrl(locale);
 const alternateLinks = locales.map((loc) => ({
     locale: loc,
-    href: getRelativeLocaleUrl(loc, `/category/${category}`),
+    href: getRelativeLocaleUrl(loc, `/category/${categoryString}`),
 }))
 ---
 <MainLayout
-    title={category === '' ? t('categorypage.title', locale) : getCategoryLabel(category, locale)}
+    title={categoryString === '' ? t('categorypage.title', locale) : getCategoryLabel(categoryString, locale)}
     description={t('categorypage.description', locale)}
     locale={locale}
     alternateLinks={alternateLinks}
     showSubpanel={false}
 >
+    <div class="sppage-title">
+        <div class="sppage-back">
+            {category.length > 1
+                ? (
+                    <a href={`${localeBaseUrl}category/${category.slice(0, -1).join('/')}/`}>
+                        <i class="fas fa-arrow-left"></i>
+                        {getCategoryLabel(category[category.length - 2], locale)}
+                    </a>
+                ) : (
+                    <a href={`${localeBaseUrl}category/`}>
+                        <i class="fas fa-arrow-left"></i>
+                        {t('categorypage.title', locale)}
+                    </a>
+                )
+            }
+        </div>
+        <h1 class="indexpage-title">
+            <i class="fas fa-folder"></i>
+        </h1>
+    </div>
 </MainLayout>

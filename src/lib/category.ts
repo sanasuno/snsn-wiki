@@ -6,7 +6,7 @@ import { t, type Locale } from '@i18n/i18n.config';
 import { isTranslationKey } from '@lib/i18n';
 
 /**
- * ページIDからカテゴリを取得する関数
+ * ページIDからカテゴリ配列を取得する関数
  * @param pageID ページID
  * @param isSubpage サブページかどうか
  * @returns カテゴリ配列
@@ -37,10 +37,10 @@ export function getCategoryString(pageId: string, isSubpage: boolean = false): s
  * @param locale ロケール
  * @returns ラベル
  */
-export function getCategoryLabel(category: string, locale: Locale): string {
-    const parts = category.split('/');
+export function getCategoryLabel(categoryString: string, locale: Locale): string {
+    const parts = categoryString.split('/');
     const key = `category.${parts.join('.')}`;
-    return isTranslationKey(key) ? t(key, locale) : parts[parts.length - 1];
+    return isTranslationKey(key) ? t(key, locale) : parts.join(' / ');
 }
 
 /**
