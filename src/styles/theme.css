@@ -6,10 +6,16 @@
 :root {
     /* レイアウト寸法 */
     --content-max-width: 800px;
-    --content-padding: 48px;
     --header-height: 56px;
     --sidebar-width: 260px;
     --subpanel-width: 220px;
+
+    --three-column-content-padding: 48px;
+    --two-column-content-padding: 24px;
+    --one-column-content-padding: 16px;
+
+    --three-column-min-width: calc(var(--sidebar-width) + var(--subpanel-width) + var(--content-max-width) + var(--three-column-content-padding) * 2);
+    --two-column-min-width: calc(var(--sidebar-width) + var(--content-max-width) + var(--two-column-content-padding) * 2);
 
     /* z-index */
     --z-header: 100;
@@ -17,15 +23,21 @@
     --z-drawer-button: 1000;
 }
 
-@media (width <= 1376px) {
+@media (--three-column) {
     :root {
-        --content-padding: 24px;
+        --content-padding: var(--three-column-content-padding);
     }
 }
 
-@media (width <= 768px) {
+@media (--two-column) {
     :root {
-        --content-padding: 16px;
+        --content-padding: var(--two-column-content-padding);
+    }
+}
+
+@media (--one-column) {
+    :root {
+        --content-padding: var(--one-column-content-padding);
     }
 }
 

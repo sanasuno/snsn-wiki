@@ -3,7 +3,7 @@ title: ウィキページのルーティング
 description: ウィキページのルーティング開発記録です。
 order: 3
 tags: [開発記録]
-date: 2026-08-18
+date: 2026-10-20
 ---
 では、いよいよウィキページの作成に取り掛かっていきます。
 
@@ -201,20 +201,6 @@ export function getCurrentPath(url: URL): string {
 }
 ```
 
-### getDecodedCurrentPath()
-与えられた URL の `pathname` をデコードして返す関数です。
-- `decodeURIComponent()` を使用してデコードし、失敗した場合は元のパスを返します。
-
-```ts
-export function getDecodedCurrentPath(url: URL): string {
-    try {
-        return ensureTrailingSlash(decodeURIComponent(url.pathname));
-    } catch {
-        return ensureTrailingSlash(url.pathname);
-    }
-}
-```
-
 ### getLocalePathUrl()
 与えられたロケールとパスから全体の URL を構築する関数です。
 - ロケールベース URL の後ろに、パスを連結した URL を返します。
@@ -222,6 +208,20 @@ export function getDecodedCurrentPath(url: URL): string {
 ```ts
 export function getLocalePathUrl(locale: Locale, path: string): string {
     return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}${path.replace(/^\/+/, '')}`);
+}
+```
+
+### decodePath()
+与えられたパスをデコードする関数です。
+- `decodeURIComponent()` を使用してデコードし、失敗した場合は元のパスを返します。
+
+```ts
+export function decodePath(path: string): string {
+    try {
+        return ensureTrailingSlash(decodeURIComponent(path));
+    } catch {
+        return ensureTrailingSlash(path);
+    }
 }
 ```
 
@@ -238,7 +238,8 @@ export function getLocalePathUrl(locale: Locale, path: string): string {
 ```ts
 export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
     const base = getBaseUrl();
-    const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length) : currentPath;
+    const decodedCurrentPath = decodePath(currentPath);
+    const relativePath = decodedCurrentPath.startsWith(base) ? decodedCurrentPath.slice(base.length) : decodedCurrentPath;
     const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`

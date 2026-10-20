@@ -16,5 +16,8 @@ export const enCustom = {
     'sidebar.development': 'Development',
     
     'category.development': 'Development',
+    'category.development.layouts': 'Layouts',
+    'category.development.lib': 'Libraries',
+    'category.development.pages': 'Pages',
     // Add English custom translations here
 } satisfies Record<CustomKey, string>;

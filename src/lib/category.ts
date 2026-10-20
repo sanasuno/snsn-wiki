@@ -59,8 +59,6 @@ export function translateCategory(category: string, locale: Locale): string {
  * @returns 翻訳されたカテゴリ名
  */
 export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage: boolean = false ): string {
-    const category = getCategoryArray(pageId, isSubPage);
-    if (category.length === 0 || (category.length === 1 && category[0] === '')) return '';
-    
-    return translateCategory(category.join('/'), locale);
+    const category = getCategory(pageId, isSubPage);
+    return translateCategory(category, locale);
 }

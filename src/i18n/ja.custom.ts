@@ -16,5 +16,8 @@ export const jaCustom = {
     'sidebar.development': '開発',
 
     'category.development': '開発記録',
+    'category.development.layouts': 'レイアウト',
+    'category.development.lib': 'ライブラリ',
+    'category.development.pages': 'ページ',
     // ここに日本語のカスタム翻訳を追加
 } satisfies Record<CustomKey, string>;

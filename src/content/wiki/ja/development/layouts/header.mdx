@@ -3,7 +3,7 @@ title: ヘッダー
 description: ヘッダーの開発記録です。
 order: 8
 tags: [開発記録]
-date: 2026-09-04
+date: 2026-10-20
 ---
 ## ヘッダー構成
 ヘッダーは、`@layouts/Header.astro` に記述します。
@@ -279,11 +279,11 @@ export const headerNavItems: HeaderNavItem[] = [
 ```astro
 ---
 import { headerNavItems } from '@layouts/header.nav';
-const decodedCurrentPath = getDecodedCurrentPath(Astro.url);
+const currentPath = getCurrentPath(Astro.url);
 const navItems = headerNavItems.map((item) => ({
     ...item,
     href: getLocalePathUrl(locale, item.path),
-    active: isPathActive(item.path, decodedCurrentPath, item.exact),
+    active: isPathActive(item.path, currentPath, item.exact),
 }));
 ---
 <header class="site-header">

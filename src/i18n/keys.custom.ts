@@ -14,6 +14,9 @@ export const customKeys = [
     'sidebar.development',
 
     'category.development',
+    'category.development.layouts',
+    'category.development.lib',
+    'category.development.pages'
     // ここにカスタムキーを追加
 ] as const;
 

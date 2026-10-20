@@ -7,8 +7,8 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import { t, type Locale } from '@i18n/i18n.config';
 import { sidebarNavItems, autoAddUnknownCategories, type SortMode } from '@layouts/sidebar.nav';
 import { getUniquePagesByLocale } from '@lib/pages';
-import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getDecodedCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
-import { getCategoryArray, translateCategory } from '@lib/category';
+import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
+import { getCategory, translateCategory } from '@lib/category';
 
 interface Props {
     locale: Locale;
@@ -31,7 +31,7 @@ type SidebarSectionView = {
     links: SidebarLink[];
 };
 
-const decodedCurrentPath = getDecodedCurrentPath(Astro.url);
+const currentPath = getCurrentPath(Astro.url);
 
 // ---- ページ収集 ----
 const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
@@ -42,12 +42,11 @@ const pagesByCategory = new Map<string, WikiPage[]>();
 const slugMap = new Map<string, WikiPage>();
 for (const page of uniquePages) {
     slugMap.set(getNormalizedSlug(page.id), page);
-    const category: string[] = getCategoryArray(page.id, page.data.isSubPage);
-    if (category.length === 0) continue;
-    const key = category.join('/');
-    const list = pagesByCategory.get(key) ?? [];
+    const category = getCategory(page.id, page.data.isSubPage);
+    if (!category) continue;
+    const list = pagesByCategory.get(category) ?? [];
     list.push(page);
-    pagesByCategory.set(key, list);
+    pagesByCategory.set(category, list);
 }
 
 // ---- ソート関数 ----
@@ -68,7 +67,7 @@ const toPageLink = (page: WikiPage): SidebarLink => {
         href,
         label: page.data.title,
         icon: 'far fa-file-lines',
-        current: href === decodedCurrentPath,
+        current: href === currentPath,
         external: false,
         lang: pageLocale !== locale ? pageLocale : undefined,
     };
@@ -109,7 +108,7 @@ for (const section of sidebarNavItems) {
                 href,
                 label,
                 icon: item.icon ?? 'far fa-file-lines',
-                current: !item.external && isPathActive(item.path, decodedCurrentPath, item.exact),
+                current: !item.external && isPathActive(item.path, currentPath, item.exact),
                 external: !!item.external,
             }];
         });

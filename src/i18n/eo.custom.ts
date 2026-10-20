@@ -16,5 +16,8 @@ export const eoCustom = {
     'sidebar.development': 'Programado',
     
     'category.development': 'Programado',
+    'category.development.layouts': 'Aranĝoj',
+    'category.development.lib': 'Bibliotekoj',
+    'category.development.pages': 'Paĝoj',
     // Aldonu Esperantajn kustomajn tradukojn ĉi tie
 } satisfies Record<CustomKey, string>;

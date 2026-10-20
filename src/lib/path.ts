@@ -116,19 +116,6 @@ export function getCurrentPath(url: URL): string {
 }
 
 /**
- * URLのパスをデコードする関数
- * @param url URL
- * @returns デコードされたパス
- */
-export function getDecodedCurrentPath(url: URL): string {
-    try {
-        return ensureTrailingSlash(decodeURIComponent(url.pathname));
-    } catch {
-        return ensureTrailingSlash(url.pathname);
-    }
-}
-
-/**
  * ロケールとパスからURLを取得する関数
  * @param locale ロケール
  * @param path パス
@@ -136,6 +123,19 @@ export function getDecodedCurrentPath(url: URL): string {
  */
 export function getLocalePathUrl(locale: Locale, path: string): string {
     return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}${path.replace(/^\/+/, '')}`);
+}
+
+/**
+ * URLのパスをデコードする関数
+ * @param url URL
+ * @returns デコードされたパス
+ */
+export function decodePath(path: string): string {
+    try {
+        return ensureTrailingSlash(decodeURIComponent(path));
+    } catch {
+        return ensureTrailingSlash(path);
+    }
 }
 
 /**
@@ -147,7 +147,8 @@ export function getLocalePathUrl(locale: Locale, path: string): string {
  */
 export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
     const base = getBaseUrl();
-    const relativePath = currentPath.startsWith(base) ? currentPath.slice(base.length) : currentPath;
+    const decodedCurrentPath = decodePath(currentPath);
+    const relativePath = decodedCurrentPath.startsWith(base) ? decodedCurrentPath.slice(base.length) : decodedCurrentPath;
     const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`

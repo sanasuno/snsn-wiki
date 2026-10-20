@@ -20,6 +20,10 @@
     "satori": "^0.33.4"
   },
   "devDependencies": {
-    "@types/node": "^26.2.0"
+    "@csstools/postcss-global-data": "^4.0.0",
+    "@types/node": "^26.2.0",
+    "postcss": "^8.5.31",
+    "postcss-custom-media": "^12.0.3",
+    "postcss-preset-env": "^11.6.1"
   }
 }
