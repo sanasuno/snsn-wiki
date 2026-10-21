@@ -1,0 +1,11 @@
+{
+    "contentMaxWidth": 1200,
+    "sidebarWidth": 280,
+    "subpanelWidth": 240,
+    "mobileBreakpoint": 768,
+    "contentPadding": {
+        "wide": 48,
+        "medium": 24,
+        "narrow": 16
+    }
+}

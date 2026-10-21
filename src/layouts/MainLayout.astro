@@ -16,7 +16,6 @@ import MiniGraph from '@layouts/MiniGraph.astro';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-import '@styles/media.css';
 import '@styles/theme.css';
 import '@styles/global.css';
 import '@styles/custom.css';
@@ -156,9 +155,6 @@ const pageDescription = description ?? siteDescription;
                 >
                     <slot />
                 </MainContent>
-                <Footer
-                    locale={locale}
-                />
             </div>
             {showSubpanel && (
                 <>
@@ -171,12 +167,15 @@ const pageDescription = description ?? siteDescription;
                             locale={locale}
                         />
                     </aside>
-                    <button type="button" class="subpanel-drawer-button" id="subpanel-drawer-button" aria-label={t('subpanel.open', locale)} aria-controls="subpanel">
+                    <button type="button" class="subpanel-drawer-button" id="subpanel-drawer-button" aria-label={t('subpanel.open', locale)} aria-controls="subpanel" aria-expanded="false">
                         <i class="fas fa-list-ul" aria-hidden="true"></i>
                     </button>
                 </>
             )}
         </div>
+        <Footer
+            locale={locale}
+        />
         <script>
             import '@scripts/main';
         </script>

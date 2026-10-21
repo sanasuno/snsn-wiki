@@ -37,6 +37,16 @@ export function sidebarToggle() {
         sidebar.classList.toggle('open');
         const isOpen = sidebar.classList.contains('open');
         setSidebarToggleBtnState(sidebarToggleBtn, isOpen);
+        if (isOpen) {
+            document.dispatchEvent(new CustomEvent('drawer:open', { detail: 'sidebar' }));
+        }
+    });
+
+    document.addEventListener('drawer:open', (e) => {
+        if ((e as CustomEvent<string>).detail !== 'sidebar') {
+            sidebar.classList.remove('open');
+            setSidebarToggleBtnState(sidebarToggleBtn, false);
+        }
     });
 
     document.addEventListener('click', (e) => {
@@ -51,7 +61,8 @@ export function sidebarToggle() {
         }
     });
 
-    window.matchMedia('(width <= 768px)').addEventListener('change', (e) => {
+    const bp = getComputedStyle(document.documentElement).getPropertyValue('--mobile-breakpoint').trim() || '768px';
+    window.matchMedia(`(width <= ${bp})`).addEventListener('change', (e) => {
         if (!e.matches) {
             sidebar.classList.remove('open');
             setSidebarToggleBtnState(sidebarToggleBtn, false);
