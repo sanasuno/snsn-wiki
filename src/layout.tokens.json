@@ -1,7 +1,9 @@
 {
     "contentMaxWidth": 1200,
+    "contentMinWidth": 800,
     "sidebarWidth": 280,
     "subpanelWidth": 240,
+    "headerLabelBreakpoint": 1024,
     "mobileBreakpoint": 768,
     "contentPadding": {
         "wide": 48,
