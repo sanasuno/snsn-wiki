@@ -35,7 +35,11 @@ export function setupSubpanelDrawer() {
         if (outside || e.target.closest('.subpanel a')) setOpen(false);
     });
 
-    const bp = getComputedStyle(document.documentElement).getPropertyValue('--mobile-breakpoint').trim() || '768px';
+    const bp = getComputedStyle(document.documentElement).getPropertyValue('--subpanel-breakpoint').trim() || '768px';
+    matchMedia(`(width >= ${bp})`).addEventListener('change', (e) => {
+        if (e.matches) setOpen(false);
+    });
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && subpanel.classList.contains('open')) {
             setOpen(false);
