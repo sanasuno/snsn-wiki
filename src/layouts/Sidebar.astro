@@ -132,7 +132,7 @@ if (autoAddUnknownCategories) {
             title,
             icon: 'fas fa-folder',
             collapsed: false,
-            links: sortPages(pages, 'title').map(toPageLink),
+            links: sortPages(pages, 'order').map(toPageLink),
         });
     }
 }

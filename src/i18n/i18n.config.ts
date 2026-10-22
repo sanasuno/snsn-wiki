@@ -19,5 +19,3 @@ export const translations = {
 
 // デフォルトロケール（translations のキーのいずれかであること）
 export const defaultLocale = 'ja' satisfies keyof typeof translations;
-
-// ---- 以下は translations から導出される値（編集不要） ----

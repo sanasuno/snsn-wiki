@@ -5,17 +5,19 @@
  */
 import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
-import { getCategory, translateCategory } from '@lib/category';
-import { getLocaleBaseUrl } from '@lib/path';
+import { getCategoryArray, translateCategory } from '@lib/category';
+import { getLocaleBaseUrl, ensureTrailingSlash } from '@lib/path';
 import MainLayout from '@layouts/MainLayout.astro';
 import { t, locales, type Locale } from '@lib/i18n';
 
 export async function getStaticPaths() {
     const pages = await getCollection('wiki', (p) => !p.data.draft);
-    const categorySet = new Set<string>();
+    const categorySet = new Set<string>(['']);
     for (const page of pages) {
-        const categoryString = getCategory(page.id, page.data.isSubPage);
-        categorySet.add(categoryString);
+        const categoryArray = getCategoryArray(page.id, page.data.isSubPage);
+        for (const category of categoryArray) {
+            categorySet.add(category);
+        }
     }
     const paths: { params: { locale: Locale; category: string | undefined }; props: { locale: Locale; categoryString: string } }[] = [];
     for (const locale of locales) {
@@ -42,9 +44,15 @@ interface Props {
 
 const { locale, categoryString } = Astro.props as Props;
 
-const category = categoryString.split('/');
-
 const localeBaseUrl = getLocaleBaseUrl(locale);
+
+const category = categoryString === '' ? [] : categoryString.split('/');
+const parentCategory = category.slice(0, -1).join('/');
+const parentHref = ensureTrailingSlash(`${localeBaseUrl}category/${parentCategory}`);
+const parentLabel = parentCategory === ''
+    ? t('categorypage.title', locale)
+    : translateCategory(parentCategory, locale);
+
 const alternateLinks = locales.map((loc) => ({
     locale: loc,
     href: getRelativeLocaleUrl(loc, `/category/${categoryString}`),
@@ -56,39 +64,34 @@ const alternateLinks = locales.map((loc) => ({
     locale={locale}
     alternateLinks={alternateLinks}
     showSubpanel={false}
-    isSubPage={category.length > 0}
 >
     <div class="sppage-title">
-        <div class="sppage-back">
-            {category.length > 1
-                ? (
-                    <a href={`${localeBaseUrl}category/${category.slice(0, -1).join('/')}/`}>
-                        <i class="fas fa-arrow-left"></i>
-                        {translateCategory(category[category.length - 2], locale)}
-                    </a>
-                ) : (
-                    <a href={`${localeBaseUrl}category/`}>
-                        <i class="fas fa-arrow-left"></i>
-                        {t('categorypage.title', locale)}
-                    </a>
-                )
-            }
-        </div>
+        {category.length > 0 && (
+            <div class="sppage-back">
+                <a href={parentHref}>
+                    <i class="fas fa-arrow-left"></i>
+                    {parentLabel}
+                </a>
+            </div>
+        )}
         <h1 class="indexpage-title">
             <i class="fas fa-folder"></i>
-            {category.map((cat, index) => {
-                const isLast = index === category.length -1;
-                return (
-                    <>
-                        {index > 0 &&
-                            <span class="category-separator"> / </span>
-                        }
-                        {isLast
-                            ? <span>{translateCategory(cat, locale)}</span>
-                            : <a href={`${localeBaseUrl}category/${category.slice(0, index + 1).join('/')}/`}>{translateCategory(cat, locale)}</a>
-                        }
-                    </>
-                );
+            {category.length === 0
+                ? <span>{t('categorypage.title', locale)}</span>
+                : category.map((_, index) => {
+                    const path = category.slice(0, index + 1).join('/');
+                    const isLast = index === category.length -1;
+                    return (
+                        <>
+                            {index > 0 &&
+                                <span class="category-separator"> / </span>
+                            }
+                            {isLast
+                                ? <span>{translateCategory(path, locale)}</span>
+                                : <a href={ensureTrailingSlash(`${localeBaseUrl}category/${path}`)}>{translateCategory(path, locale)}</a>
+                            }
+                        </>
+                    );
             })}
         </h1>
     </div>

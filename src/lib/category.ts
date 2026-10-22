@@ -28,15 +28,7 @@ export function getCategory(pageId: string, isSubpage: boolean = false): string 
  */
 export function getCategoryArray(pageId: string, isSubPage: boolean = false): string[] {
     const parts = pageId.split('/').slice(1, isSubPage ? -2 : -1);
-    const categories: string[] = [];
-    for (const part of parts) {
-        if (categories.length === 0) {
-            categories.push(part);
-        } else {
-            categories.push(...categories.map(c => `${c}/${part}`));
-        }
-    }
-    return categories;
+    return parts.map((_, i) => parts.slice(0, i + 1).join('/'));
 }
 
 /**
