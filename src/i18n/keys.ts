@@ -2,8 +2,6 @@
  * @i18n/keys.ts
  * 翻訳キー定義ファイル
  */
-import { customKeys } from "./keys.custom";
-
 export const structuralKeys = [
     'lang.name',
     'lang.locale',
@@ -48,5 +46,6 @@ export const structuralKeys = [
     '404.description',
 ] as const;
 
+import { customKeys } from './keys.custom';
 export const translationKeys = [...structuralKeys, ...customKeys] as const;
 export type TranslationKey = typeof translationKeys[number];
