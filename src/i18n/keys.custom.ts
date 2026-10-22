@@ -1,6 +1,6 @@
 /**
  * @i18n/keys.custom.ts
- * カスタム翻訳キースキーマ定義ファイル
+ * カスタム翻訳キー定義ファイル
  */
 
 export const customKeys = [

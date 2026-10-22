@@ -10,9 +10,23 @@
     grid-area: main;
     width: 100%;
     min-width: 0;
-    max-width: calc(var(--content-max-width) + 2 * var(--content-padding));
+    max-width: calc(var(--content-max-width) + var(--content-extra-width, 0px) + 2 * var(--content-padding));
     margin-inline: auto;
     padding: 32px var(--content-padding);
+}
+
+/* サブパネル無しのページ
+   サブパネル列の分だけ本文の上限幅を広げる */
+.layout:where(.no-subpanel) {
+    --content-extra-width: var(--subpanel-width);
+}
+
+/* サブパネルがドロワーになる幅
+   サブパネルが非表示になるので、本文の上限幅を元に戻す */
+@media (--subpanel-collapsed) {
+    .layout:where(.no-subpanel) {
+        --content-extra-width: 0px;
+    }
 }
 
 .main-content > :first-child {
@@ -382,7 +396,7 @@ code {
     border-radius: 999px;
     font-size: 0.8rem;
     background-color: var(--color-bg-secondary);
-    color: var(--color-text-muted);
+    color: var(--color-accent-text);
     border: 1px solid var(--color-border);
     text-decoration: none;
     transition: var(--transition);

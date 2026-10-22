@@ -1,0 +1,16 @@
+---
+title: 翻訳キー
+description: 翻訳キーの開発メモです。
+order: 1
+tags: [国際化, 翻訳]
+date: 2026-10-22
+---
+
+`snsn-wiki` 本体のアップデートによってユーザー独自の翻訳を上書きしないように、システム標準の翻訳キーとユーザー拡張用の翻訳キーを分離しておきます。
+
+システム標準のキーは `structuralKeys` として `keys.ts` に、ユーザー拡張用のキーは `customKeys` として `keys.custom.ts` に記述します。
+
+## 配列と型定義
+`keys.ts` に `customKeys` をインポートし、
+`structuralKeys` と `customKeys` の両者を結合したキー配列を `translationKeys` 、
+その型を `TranslationKey` としてエクスポートします。  

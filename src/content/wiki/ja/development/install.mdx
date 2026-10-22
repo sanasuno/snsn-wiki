@@ -2,7 +2,7 @@
 title: 環境構築
 description: Astroの環境構築の開発記録です。
 order: 1
-tags: [開発記録]
+tags: [環境構築]
 date: 2026-10-20
 ---
 ## 環境構築
@@ -82,18 +82,21 @@ npm create astro@latest
 }
 ```
 
-## Node.js
+## ライセンス
+snsn-wiki は MIT ライセンスなので、`./LICENSE` に MIT ライセンスの全文を記述します。
+
+## パッケージインストール
+
+### Node.js
 Node.js の型定義をインストールします。
 
 ```sh
 npm install @types/node --save-dev
 ```
 
-## ライセンス
-snsn-wiki は MIT ライセンスなので、`./LICENSE` に MIT ライセンスの全文を記述します。
-
-## パッケージインストール
+### PostCSS
+PostCSS の `postcss-custom-media` と `postcss-preset-env` をインストールします。
 
 ```sh
-npm i  postcss-custom-media postcss-preset-env
+npm install postcss-custom-media postcss-preset-env
 ```

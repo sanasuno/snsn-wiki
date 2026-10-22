@@ -3,11 +3,12 @@
  * Astroの設定ファイル
  */
 import { defineConfig } from 'astro/config';
-import mdx from '@astrojs/mdx';
-import sitemap from '@astrojs/sitemap';
 
 import { siteConfig } from './src/site.config';
 import { translations, defaultLocale } from './src/i18n/i18n.config';
+
+import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
 
 // siteConfig.url の検証と正規化
 let site: string;

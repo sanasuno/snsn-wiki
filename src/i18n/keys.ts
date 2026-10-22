@@ -1,6 +1,6 @@
 /**
  * @i18n/keys.ts
- * 翻訳キースキーマ定義ファイル
+ * 翻訳キー定義ファイル
  */
 import { customKeys } from "./keys.custom";
 
