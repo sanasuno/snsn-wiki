@@ -1,0 +1,113 @@
+/* ====================================
+    @styles/sidebar.css
+    サイドバーCSSファイル
+    サイドバーのCSSを記述します
+   ==================================== */
+
+/* サイドバー */
+.sidebar {
+    grid-area: sidebar;
+    background-color: var(--color-bg);
+    scrollbar-width: thin;
+    position: sticky;
+    top: var(--header-height);
+    align-self: start;
+    height: calc(100dvh - var(--header-height));
+    overflow-y: auto;
+    border-right: 1px solid var(--color-border);
+}
+
+@media (--sidebar-collapsed) {
+    .sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: calc(-1 * var(--sidebar-width));
+        width: var(--sidebar-width);
+        height: calc(100dvh - var(--header-height));
+        transition: left 150ms ease, visibility 150ms ease;
+        visibility: hidden;
+    }
+    .sidebar.open {
+        left: 0;
+        z-index: var(--z-drawer);
+        overflow-y: auto;
+        visibility: visible;
+        border-right: 1px solid var(--color-border);
+        box-shadow: 2px 0 8px rgb(0 0 0 / 0.15);
+    }
+}
+
+.sidebar nav {
+    padding: 12px 8px;
+}
+
+.sidebar-section + .sidebar-section {
+    margin-top: 8px;
+}
+
+.sidebar-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text);
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.sidebar-section-title:hover {
+    background-color: var(--color-bg-hover);
+}
+
+.sidebar-chevron {
+    margin-left: auto;
+    font-size: 0.7rem;
+    transition: var(--transition);
+}
+
+.sidebar-section-title[aria-expanded="false"] .sidebar-chevron {
+    transform: rotate(-90deg);
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-left: 8px;
+}
+
+.sidebar-nav.collapsed {
+    display: none;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.sidebar-nav a:hover {
+    background-color: var(--color-bg-hover);
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.sidebar-nav a[aria-current="page"] {
+    background-color: var(--color-bg-accent);
+    color: var(--color-accent-text);
+    font-weight: 700;
+}

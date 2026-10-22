@@ -1,0 +1,32 @@
+/* ====================================
+    @styles/layout.css
+    レイアウトCSSファイル
+    CSS Grid を用いたレイアウトのCSSを記述します
+   ==================================== */
+   
+/* レイアウト */
+.layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--subpanel-width);
+    grid-template-areas: "sidebar main sub";
+    min-height: calc(100dvh - var(--header-height));
+}
+
+.layout:where(.no-subpanel) {
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    grid-template-areas: "sidebar main";
+}
+
+@media (--subpanel-collapsed) {
+    .layout {
+        grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+        grid-template-areas: "sidebar main";
+    }
+}
+
+@media (--sidebar-collapsed) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "main";
+    }
+}

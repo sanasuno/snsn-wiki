@@ -4,7 +4,8 @@
  */
 
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { locales, defaultLocale, type Locale } from '@i18n/i18n.config';
+import { defaultLocale } from '@i18n/i18n.config';
+import { locales, type Locale } from '@lib/i18n';
 import { getLocale, getNormalizedSlug, normalizeSlugLike } from '@lib/path';
 
 /**

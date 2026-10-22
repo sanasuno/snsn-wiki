@@ -10,11 +10,11 @@ date: 2026-10-20
 ユーザーの編集対象は別ファイルに記述し、それを `astro.config.ts` でインポートする、という形式をとります。
 
 ## URL管理
-`Astro` の URL 管理には、`astro.config.ts` の `defineConfig` に
-`site`（サイトのオリジン）と `base`（サブディレクトリ配置の配信パス）の値を設定する必要があります。
+`site`（サイトのオリジン）と `base`（サブディレクトリ配置の配信パス）の値を設定することで
+URL を管理します。
 
-`./src/site.config.ts` に `url` と `basePath` を記述して `astro.config.ts` にインポートし、
-検証と正規化をしてから `defineConfig` に渡します。
+`./src/site.config.ts` に `url` と `basePath` を記述し、
+`astro.config.ts` にインポートして検証と正規化をしてから `defineConfig` に渡します。
 
 ```ts
 export const siteConfig = {
@@ -24,8 +24,10 @@ export const siteConfig = {
 ```
 
 ### site
-`siteConfig.url` が有効な URL であるかを `URL()` でチェックし、失敗したらエラーをスローします。
+`siteConfig.url` が有効な URL であるかを `URL()` でチェックします。
+
 成功したら `string` 型に戻し、末尾の `/` を削除してから `site` に代入します。
+失敗したらエラーをスローします。
 - `try` ブロック内で `site` に代入するため、まず `let` で `site` を宣言しておきます。
 
 ```ts
@@ -41,9 +43,10 @@ try {
 ```
 
 ### base
-`siteConfig.basePath` が `/` で始まるかチェックし、失敗したらエラーをスローします。
-成功したら、末尾の `/` を削除してから `base` に代入します。
-なお、空文字列になった場合は `/` を代入します。
+`siteConfig.basePath` が `/` で始まるかチェックします。
+
+成功したら末尾の `/` を削除してから `base` に代入します。空文字列になった場合は `/` を代入します。
+失敗したらエラーをスローします。
 
 ```ts
 if (!siteConfig.basePath.startsWith('/')) {

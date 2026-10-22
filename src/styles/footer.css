@@ -1,0 +1,36 @@
+/* ====================================
+    @styles/footer.css
+    フッターCSSファイル
+    フッターのCSSを記述します
+   ==================================== */
+
+/* サイトフッター */
+.site-footer {
+    padding: 24px var(--content-padding);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--color-border);
+}
+
+.site-footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}
+
+.site-footer-links a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.site-footer-links a:hover {
+    color: var(--color-accent-text);
+}
+
+.site-footer-credit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

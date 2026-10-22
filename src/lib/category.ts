@@ -2,8 +2,8 @@
  * @lib/category.ts
  * カテゴリ関連のユーティリティ関数
  */
-import { t, type Locale } from '@i18n/i18n.config';
-import { isTranslationKey } from '@lib/i18n';
+import { t } from '@lib/i18n';
+import { isTranslationKey, type Locale } from '@lib/i18n';
 
 /**
  * ページIDからカテゴリ文字列を取得する関数

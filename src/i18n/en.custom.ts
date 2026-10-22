@@ -16,6 +16,7 @@ export const enCustom = {
     'sidebar.development': 'Development',
     
     'category.development': 'Development',
+    'category.development.i18n': 'Internationalization',
     'category.development.layouts': 'Layouts',
     'category.development.lib': 'Libraries',
     'category.development.pages': 'Pages',

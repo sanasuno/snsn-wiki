@@ -3,7 +3,7 @@
  * ./src/pages/[locale]/index.astro
  * トップページ
  */
-import { locales, type Locale } from '@i18n/i18n.config';
+import { locales, type Locale } from '@lib/i18n';
 import { getRelativeLocaleUrl } from 'astro:i18n';
 
 export const getStaticPaths = () => {

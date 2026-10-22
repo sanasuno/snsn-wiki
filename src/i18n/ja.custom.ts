@@ -16,6 +16,7 @@ export const jaCustom = {
     'sidebar.development': '開発',
 
     'category.development': '開発記録',
+    'category.development.i18n': '国際化',
     'category.development.layouts': 'レイアウト',
     'category.development.lib': 'ライブラリ',
     'category.development.pages': 'ページ',

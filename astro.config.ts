@@ -7,7 +7,7 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 import { siteConfig } from './src/site.config';
-import { t, locales, defaultLocale } from './src/i18n/i18n.config';
+import { translations, defaultLocale } from './src/i18n/i18n.config';
 
 // siteConfig.url の検証と正規化
 let site: string;
@@ -27,6 +27,8 @@ if (!siteConfig.basePath.startsWith('/')) {
     );
 }
 const base = siteConfig.basePath.replace(/\/+$/, '') || '/';
+
+const locales = Object.keys(translations);
 
 // https://astro.build/config
 export default defineConfig({
@@ -50,7 +52,7 @@ export default defineConfig({
         sitemap({
             i18n: {
                 defaultLocale,
-                locales: Object.fromEntries(locales.map(locale => [locale, t('lang.locale', locale)]))
+                locales: Object.fromEntries(locales.map(locale => [locale, locale]))
             }
         })
     ]

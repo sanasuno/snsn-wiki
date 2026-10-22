@@ -2,10 +2,11 @@
  * @scripts/languageSwitch.ts
  * 言語切り替え関連スクリプト
  */
-
-import { t, defaultLocale, type Locale } from "@i18n/i18n.config";
-import { isLocale, isTranslationKey } from "@lib/i18n";
-import { getLocalStorage, setLocalStorage } from "@scripts/localStorage";
+import { defaultLocale } from '@i18n/i18n.config';
+import { type Locale } from '@lib/i18n';
+import { t } from '@lib/i18n';
+import { isLocale, isTranslationKey } from '@lib/i18n';
+import { getLocalStorage, setLocalStorage } from '@scripts/localStorage';
 
 /**
  * ロケールを解決する関数

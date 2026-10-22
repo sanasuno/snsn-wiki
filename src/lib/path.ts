@@ -2,8 +2,7 @@
  * @lib/path.ts
  * パス関連のユーティリティ関数
  */
-import type { Locale } from '@i18n/i18n.config';
-import { isLocale } from '@lib/i18n';
+import { isLocale, type Locale } from '@lib/i18n';
 /**
  * 末尾のスラッシュを削除する関数
  * @param path 削除するパス

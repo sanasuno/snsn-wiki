@@ -14,6 +14,7 @@ export const customKeys = [
     'sidebar.development',
 
     'category.development',
+    'category.development.i18n',
     'category.development.layouts',
     'category.development.lib',
     'category.development.pages'

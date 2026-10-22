@@ -2,7 +2,7 @@
  * @layouts/footer.nav.ts
  * フッターナビゲーションのアイテム設定ファイル
  */
-import type { TranslationKey } from "@i18n/i18n.config";
+import type { TranslationKey } from '@i18n/keys';
 
 /**
  * ナビゲーションアイテムの型定義

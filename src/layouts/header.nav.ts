@@ -2,7 +2,7 @@
  * @layouts/header.nav.ts
  * ヘッダーナビゲーションのアイテム設定ファイル
  */
-import type { TranslationKey } from "@i18n/i18n.config";
+import type { TranslationKey } from '@i18n/keys';
 
 /**
  * ナビゲーションアイテムの型定義

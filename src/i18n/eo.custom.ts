@@ -16,6 +16,7 @@ export const eoCustom = {
     'sidebar.development': 'Programado',
     
     'category.development': 'Programado',
+    'category.development.i18n': 'Internacia',
     'category.development.layouts': 'Aranĝoj',
     'category.development.lib': 'Bibliotekoj',
     'category.development.pages': 'Paĝoj',

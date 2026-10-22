@@ -1,0 +1,219 @@
+/* ====================================
+    @styles/header.css
+    ヘッダーCSSファイル
+    ヘッダーのCSSを記述します
+   ==================================== */
+
+/* ヘッダー */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    background-color: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+@media (--sidebar-collapsed) {
+    .site-header {
+        gap: 8px;
+        padding: 0 12px;
+    }
+}
+
+/* ヘッダー内容その縮小防止 */
+.site-header > :not(.header-site-title) {
+    flex-shrink: 0;
+}
+
+
+/* サイドバー切り替えボタン */
+.sidebar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    min-width: 40px;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+}
+
+@media (--sidebar-collapsed) {
+    .sidebar-toggle {
+        display: flex;
+    }
+}
+
+.sidebar-toggle:hover {
+    color: var(--color-text);
+}
+
+/* サイトタイトル */
+.header-site-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-accent-text);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 0 1 auto;
+}
+
+/* ヘッダーナビゲーション */
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.header-nav a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: var(--transition);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (--sidebar-collapsed) {
+    .header-nav {
+        display: none;
+    }
+}
+
+.header-nav a:hover {
+    background-color: var(--color-bg-hover);
+    color: var(--color-text);
+}
+
+.header-nav a.active {
+    background-color: var(--color-bg-accent);
+    color: var(--color-accent-text);
+}
+
+.header-nav-link.has-icon .header-nav-label {
+    margin-left: 4px;
+}
+
+@media (--header-compact) {
+    .header-nav-link.has-icon .header-nav-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+/* テーマ切り替えボタン */
+.theme-toggle {
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    padding: 0 9px;
+    height: 36px;
+    gap: 5px;
+    white-space: nowrap;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: var(--transition);
+}
+
+@media (--sidebar-collapsed) {
+    .theme-toggle {
+        margin-left: auto;
+    }
+}
+
+.theme-toggle:hover {
+    background-color: var(--color-bg-hover);
+    color: var(--color-text);
+    border-color: var(--color-border-hover);
+}
+
+.theme-toggle .theme-icon-light {
+    display: inline;
+}
+
+.theme-toggle .theme-icon-dark {
+    display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .theme-icon-light {
+    display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .theme-icon-dark {
+    display: inline;
+}
+
+/* 言語切り替え */
+.language-switcher {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    gap: 5px;
+    padding: 0 9px;
+    height: 36px;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.language-switcher:hover {
+    color: var(--color-text);
+}
+
+.language-switcher-list {
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0 24px 0 0;
+    font-size: 1rem;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    transition: var(--transition);
+}
+
+.language-switcher-list option {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+.language-switcher-list:hover {
+    color: var(--color-text);
+}
+
+.language-switcher-arrow {
+    position: absolute;
+    right: 9px;
+    font-size: 0.6rem;
+    pointer-events: none;
+}

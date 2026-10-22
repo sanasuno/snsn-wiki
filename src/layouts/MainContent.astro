@@ -3,7 +3,7 @@
  * @layouts/MainContent.astro
  * メインコンテンツレイアウト
  */
-import { t, type Locale } from '@i18n/i18n.config';
+import { t, type Locale } from '@lib/i18n';
 import { ensureTrailingSlash, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath, getLocalePathUrl } from '@lib/path';
 import { getCategory, getCategoryArray, getTranslatedCategory } from '@lib/category';
 import { formatDate } from '@lib/date';

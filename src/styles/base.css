@@ -1,0 +1,81 @@
+/* ====================================
+    @styles/base.css
+    ベースCSSファイル
+    リセット、基本設定、ベーススタイル、フォーカスのCSSを記述します
+   ==================================== */
+   
+/* リセット */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基本設定 */
+html {
+    font-size: 16px;
+    scroll-padding-top: calc(var(--header-height) + 8px);
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+    .sidebar,
+    .subpanel,
+    .subpanel-drawer-button {
+        transition: none;
+    }
+}
+
+/* ベーススタイル */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.6;
+    transition: var(--transition);
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* スキップリンク */
+.skip-link {
+    position: absolute;
+    left: 8px;
+    top: -100px;
+    z-index: calc(var(--z-header) + 1);
+    padding: 8px 12px;
+    background-color: var(--color-bg);
+    color: var(--color-accent-text);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.skip-link:focus {
+    top: 8px;
+}
+
+/* キーボードフォーカス */
+.site-header :is(a, button, select):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.site-header .language-switcher-list:focus-visible {
+    outline: none;
+}
+
+.language-switcher:has(.language-switcher-list:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}

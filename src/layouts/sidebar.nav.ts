@@ -2,7 +2,7 @@
  * @layouts/sidebar.nav.ts
  * サイドバーナビゲーションの設定ファイル
  */
-import type { TranslationKey } from "@i18n/i18n.config";
+import type { TranslationKey } from '@i18n/keys';
 
 export type SidebarNavItem = {
     path: string;

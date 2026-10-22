@@ -1,0 +1,126 @@
+/* ====================================
+    @styles/subpanel.css
+    サブパネルCSSファイル
+    サブパネルのCSSを記述します
+   ==================================== */
+
+.subpanel-drawer-button {
+    display: none;
+}
+
+@media (--subpanel-collapsed) {
+    .subpanel-drawer-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        bottom: 24px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background-color: var(--color-bg-accent);
+        color: var(--color-accent);
+        border: none;
+        cursor: pointer;
+        box-shadow: var(--shadow-lg);
+        z-index: var(--z-drawer-button);
+        transition: background-color 150ms ease, transform 150ms ease;
+    }
+    
+    .subpanel-drawer-button:hover {
+        background-color: var(--color-bg-accent-hover);
+        color: var(--color-accent-hover);
+        transform: scale(1.08);
+    }
+}
+
+/* サブパネル */
+.subpanel {
+    grid-area: sub;
+    position: sticky;
+    align-self: start;
+    top: var(--header-height);
+    height: calc(100dvh - var(--header-height));
+    overflow-y: auto;
+    padding: 10px 16px 0;
+    border-left: 1px solid var(--color-border);
+    scrollbar-width: thin;
+}
+
+@media (--subpanel-collapsed) {
+    .subpanel {
+        position: fixed;
+        inset: var(--header-height) 0 0 auto;
+        width: min(var(--subpanel-width), 90vw);
+        background-color: var(--color-bg);
+        border-left: 1px solid var(--color-border);
+        box-shadow: var(--shadow-lg);
+        z-index: var(--z-drawer);
+        padding: 20px 16px;
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform 150ms ease, visibility 150ms ease;
+        scrollbar-width: thin;
+    }
+
+    .subpanel.open {
+        transform: translateX(0);
+        transition: transform 150ms ease, visibility 150ms ease;
+    }
+
+    .subpanel:not(.open) {
+        visibility: hidden;
+    }
+}
+
+/* 目次 */
+.toc-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 12px 0;
+}
+
+.toc-nav {
+    list-style: none;
+    padding: 0 0 16px 0;
+    margin: 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.toc-nav a {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    border-left: 2px solid transparent;
+    transition: var(--transition);
+    line-height: 1.4;
+}
+
+.toc-nav a:hover {
+    background-color: var(--color-bg-accent);
+    border-left-color: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+.toc-nav a.active {
+    border-left-color: var(--color-accent);
+    color: var(--color-accent-text);
+    font-weight: 500;
+}
+
+.toc-nav li.depth-3 a {
+    padding-left: 20px;
+    font-size: 0.75rem;
+}
+
+.toc-nav li.depth-4 a {
+    padding-left: 32px;
+    font-size: 0.75rem;
+}
