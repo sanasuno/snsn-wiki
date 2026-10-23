@@ -6,12 +6,6 @@
 export const customKeys = [
     'site.title',
     'site.description',
-    'sidebar.quickLinks',
-    'sidebar.home',
-    'sidebar.category',
-    'sidebar.tags',
-    'sidebar.graph',
-    'sidebar.development',
 
     'category.development',
     'category.development.i18n',

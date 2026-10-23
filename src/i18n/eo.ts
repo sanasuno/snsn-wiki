@@ -23,6 +23,11 @@ export const eo = {
     'header.nav.graph': 'Grafiko',
 
     'sidebar.nav.title': 'Flanka Strio',
+    'sidebar.quickLinks': 'Rapidaj Ligiloj',
+    'sidebar.home': 'Hejmo',
+    'sidebar.category': 'Kategorio',
+    'sidebar.tags': 'Etikedoj',
+    'sidebar.graph': 'Grafiko',
     
     'fallback.notice': 'Ĉi tiu paĝo ankoraŭ ne havas esperantan tradukon.',
     

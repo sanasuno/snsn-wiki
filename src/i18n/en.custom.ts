@@ -8,13 +8,6 @@ export const enCustom = {
     'site.title': 'snsn-wiki',
     'site.description': 'Personal knowledge base site built with Astro',
     
-    'sidebar.quickLinks': 'Quick Links',
-    'sidebar.home': 'Home',
-    'sidebar.category': 'Category',
-    'sidebar.tags': 'Tags',
-    'sidebar.graph': 'Graph',
-    'sidebar.development': 'Development',
-    
     'category.development': 'Development',
     'category.development.i18n': 'Internationalization',
     'category.development.layouts': 'Layouts',

@@ -23,6 +23,11 @@ export const ja = {
     'header.nav.graph': 'グラフ',
 
     'sidebar.nav.title': 'サイドバー',
+    'sidebar.quickLinks': 'クイックリンク',
+    'sidebar.home': 'ホーム',
+    'sidebar.category': 'カテゴリ',
+    'sidebar.tags': 'タグ',
+    'sidebar.graph': 'グラフ',
 
     'fallback.notice': 'このページには現在日本語訳がありません。',
 

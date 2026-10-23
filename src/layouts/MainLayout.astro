@@ -37,7 +37,7 @@ interface Props {
     date?: Date;
     updated?: Date;
     id?: string;
-    isSubPage?: boolean;
+    isSubpage?: boolean;
     headings?: { depth: number; slug: string; text: string }[];
     showSubpanel?: boolean;
 }
@@ -52,7 +52,7 @@ const {
     date,
     updated,
     id,
-    isSubPage = false,
+    isSubpage = false,
     headings = [],
     showSubpanel = true,
 } = Astro.props;
@@ -156,7 +156,7 @@ const pageDescription = description ?? siteDescription;
                 date={date}
                 updated={updated}
                 id={id}
-                isSubPage={isSubPage}
+                isSubpage={isSubpage}
                 isFallback={isFallback}
             >
                 <slot />

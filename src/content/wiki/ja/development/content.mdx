@@ -1,0 +1,45 @@
+---
+title: コレクションローダー
+description: コレクションローダーの開発メモです。
+order: 3
+tags: [ウィキページ]
+date: 2026-10-23
+---
+## wiki
+`./src/content/wiki` 配下にある `md` および `mdx` ファイルをすべて収集し、 `wiki` コレクションとして出力します。
+
+また、各ページのフロントマターに記述するスキーマを定義します。
+- `title`: ページのタイトル（必須）
+- `description`: ページの説明（任意）
+- `order`: ページの表示順（数値が小さい方が上に表示される）（任意、デフォルト99999999）
+- `aliases`: ページの別名（任意）
+- `tags`: ページのタグ（任意）
+- `date`: ページの作成日（YYYY-MM-DD形式）（任意）
+- `updated`: ページの更新日（YYYY-MM-DD形式）（任意）
+- `draft`: 下書きフラグ（true/false）（任意、デフォルトfalse）
+- `showSubpanel`: サブパネル表示フラグ（true/false）（任意、デフォルトtrue）
+- `isSubpage`: サブページフラグ（true/false）（任意、デフォルトfalse）
+
+```ts
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
+
+const wiki = defineCollection({
+    loader: glob({ base: './src/content/wiki', pattern: '**/*.{md,mdx}'}),
+    schema: z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        order: z.number().default(99999999),
+        aliases: z.array(z.string()).default([]),
+        tags: z.array(z.string()).default([]),
+        date: z.coerce.date().optional(),
+        updated: z.coerce.date().optional(),
+        draft: z.boolean().default(false),
+        showSubpanel: z.boolean().default(true),
+        isSubpage: z.boolean().default(false),
+    }),
+});
+
+export const collections = { wiki };
+```

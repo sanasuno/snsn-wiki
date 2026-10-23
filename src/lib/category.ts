@@ -26,8 +26,8 @@ export function getCategory(pageId: string, isSubpage: boolean = false): string 
  * @param isSubpage サブページかどうか
  * @returns カテゴリ配列
  */
-export function getCategoryArray(pageId: string, isSubPage: boolean = false): string[] {
-    const parts = pageId.split('/').slice(1, isSubPage ? -2 : -1);
+export function getCategoryArray(pageId: string, isSubpage: boolean = false): string[] {
+    const parts = pageId.split('/').slice(1, isSubpage ? -2 : -1);
     return parts.map((_, i) => parts.slice(0, i + 1).join('/'));
 }
 
@@ -50,7 +50,7 @@ export function translateCategory(category: string, locale: Locale): string {
  * @param isSubPage サブページかどうか
  * @returns 翻訳されたカテゴリ名
  */
-export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage: boolean = false ): string {
-    const category = getCategory(pageId, isSubPage);
+export function getTranslatedCategory(pageId: string, locale: Locale, isSubpage: boolean = false ): string {
+    const category = getCategory(pageId, isSubpage);
     return translateCategory(category, locale);
 }

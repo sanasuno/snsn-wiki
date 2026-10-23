@@ -20,7 +20,9 @@ const year = new Date().getFullYear();
 <footer class="site-footer">
     <div class="site-footer-links">
         {footerNavItems.map((item) => (
-            <a href={getLocalePathUrl(locale, item.path)}>{t(item.i18nKey, locale)}</a>
+            <a href={getLocalePathUrl(locale, item.path)}>
+                {t(item.i18nKey, locale)}
+            </a>
         ))}
     </div>
     <div class="site-footer-credit">

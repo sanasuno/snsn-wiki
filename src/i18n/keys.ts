@@ -20,6 +20,11 @@ export const structuralKeys = [
     'header.nav.graph',
 
     'sidebar.nav.title',
+    'sidebar.quickLinks',
+    'sidebar.home',
+    'sidebar.category',
+    'sidebar.tags',
+    'sidebar.graph',
 
     'fallback.notice',
 

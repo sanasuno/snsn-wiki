@@ -15,7 +15,7 @@ interface Props {
     date?: Date;
     updated?: Date;
     id?: string;
-    isSubPage?: boolean;
+    isSubpage?: boolean;
     isFallback?: boolean;
 }
 
@@ -26,7 +26,7 @@ const {
     date,
     updated,
     id,
-    isSubPage = false,
+    isSubpage = false,
     isFallback = false,
 } = Astro.props;
 
@@ -35,7 +35,7 @@ const wikiBaseUrl = getWikiBaseUrl(locale);
 
 const currentPath = getCurrentPath(Astro.url);
 
-const categoryString = id ? getCategory(id, isSubPage) : '';
+const categoryString = id ? getCategory(id, isSubpage) : '';
 
 type Crumb = {
     kind: 'home' | 'category' | 'page';
@@ -43,8 +43,8 @@ type Crumb = {
     href: string;
 }
 
-const categoryLabel = id ? getTranslatedCategory(id, locale, isSubPage) : '';
-const isWikiRoot = id ? getCategoryArray(id, isSubPage).length === 0 : false;
+const categoryLabel = id ? getTranslatedCategory(id, locale, isSubpage) : '';
+const isWikiRoot = id ? getCategoryArray(id, isSubpage).length === 0 : false;
 
 const crumbs: Crumb[] = [
     {
@@ -105,7 +105,7 @@ const crumbIcons = {
                             {
                                 isWikiRoot
                                     ? t('meta.nocategory', locale)
-                                    : getTranslatedCategory(id, locale, isSubPage)
+                                    : getTranslatedCategory(id, locale, isSubpage)
                             }
                         </a>
                     </div>

@@ -8,13 +8,6 @@ export const eoCustom = {
     'site.title': 'snsn-wiki',
     'site.description': 'Persona sciobazo-retejo konstruita per Astro',
     
-    'sidebar.quickLinks': 'Rapidaj Ligiloj',
-    'sidebar.home': 'Hejmo',
-    'sidebar.category': 'Kategorio',
-    'sidebar.tags': 'Etikedoj',
-    'sidebar.graph': 'Grafiko',
-    'sidebar.development': 'Programado',
-    
     'category.development': 'Programado',
     'category.development.i18n': 'Internacia',
     'category.development.layouts': 'Aranĝoj',

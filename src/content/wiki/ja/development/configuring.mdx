@@ -6,10 +6,11 @@ tags: [設定]
 date: 2026-10-20
 ---
 `astro.config.ts` は、`Astro` のサイト設定を管理するファイルです。
-ユーザーが誤った編集を行うとサイト全体に影響が及びうるため、
-ユーザーの編集対象は別ファイルに記述し、それを `astro.config.ts` でインポートする、という形式をとります。
+ユーザーが誤った編集を行うとサイト全体に影響が及びうるため、ユーザーの編集対象は別ファイルに記述し、それを `astro.config.ts` でインポートする、という形式をとります。
 
-## URL管理
+なお `astro.config.ts` ではエイリアスを利用できないため、インポートされるファイル群でもエイリアスを使用できないことに注意が必要です。
+
+## URL設定
 `site`（サイトのオリジン）と `base`（サブディレクトリ配置の配信パス）の値を設定することで
 URL を管理します。
 
@@ -67,4 +68,62 @@ export default defineConfig({
     base,
     trailingSlash: 'always',
 })
+```
+
+## 国際化設定
+利用可能なロケールとデフォルトロケールを設定します。
+- `astro.config.ts` ではエイリアスが利用できないので、インポート先の `@i18n` 内のファイル群でもエイリアスが利用できません。
+- 利用可能なロケール配列 `locales` も独自に導出します（ `@lib/i18n.ts` で定義されているものと同じ定義です）。
+- URL の取り扱いを全ロケールで統一するため、 `prefixDefaultLocale` は `true` に設定します。
+
+
+```ts
+import { locales, defaultLocale } from './src/i18n/i18n.config';
+const locales = Object.keys(translations);
+
+export default defineConfig({
+    i18n: {
+        locales,
+        defaultLocale,
+        routing: {
+            prefixDefaultLocale: true
+        }
+    }
+});
+```
+
+## インテグレーション設定
+利用するインテグレーションの設定を行います。
+
+### mdx
+`shiki` によるコードブロックのテーマを設定します。
+
+```ts
+import mdx from '@astrojs/mdx';
+export default defineConfig({
+    markdown: {
+        shikiConfig: {
+            themes: { light: 'github-light', dark: 'github-dark' },
+        },
+    },
+    integrations: [
+        mdx()
+    ],
+})
+```
+
+### sitemap
+
+```ts
+import sitemap from '@astrojs/sitemap';
+export default defineConfig({
+    integrations: [
+        sitemap({
+            i18n: {
+                defaultLocale,
+                locales: Object.fromEntries(locales.map(locale => [locale, locale]))
+            }
+        })
+    ]
+});
 ```

@@ -8,9 +8,25 @@ date: 2026-10-22
 
 `snsn-wiki` 本体のアップデートによってユーザー独自の翻訳を上書きしないように、システム標準の翻訳キーとユーザー拡張用の翻訳キーを分離しておきます。
 
-システム標準のキーは `structuralKeys` として `keys.ts` に、ユーザー拡張用のキーは `customKeys` として `keys.custom.ts` に記述します。
+システム標準のキーは `structuralKeys` として `@i18n/keys.ts` に、ユーザー編集対象のキーは `customKeys` として `@i18n/keys.custom.ts` に記述します。
 
 ## 配列と型定義
+辞書ファイルで使う翻訳キーの型を保証するために、型を定義します。
+
+辞書ファイルもシステム標準のものとユーザー編集対象のものを分離しますが、取り扱いの簡便化のために、システム標準キーの中にユーザー編集対象のものも組み込み、そのロケール全体の翻訳辞書として出力します。
+
+このため、ユーザー編集対象のキーの型はそのまま `CustomKey` として出力しますが、システム標準キーの型はカスタムキーも組み込んだものを `TranslationKey` として出力します。
+
 `keys.ts` に `customKeys` をインポートし、
 `structuralKeys` と `customKeys` の両者を結合したキー配列を `translationKeys` 、
-その型を `TranslationKey` としてエクスポートします。  
+その型を `TranslationKey` としてエクスポートします。
+
+```ts
+export type CustomKey = typeof customKeys[number];
+```
+
+```ts
+import { customKeys } from './keys.custom';
+export const translationKeys = [...structuralKeys, ...customKeys] as const;
+export type TranslationKey = typeof translationKeys[number];
+```

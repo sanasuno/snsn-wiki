@@ -8,13 +8,6 @@ export const jaCustom = {
     'site.title': 'snsn-wiki',
     'site.description': 'Astro製個人用ナレッジベースサイト',
 
-    'sidebar.quickLinks': 'クイックリンク',
-    'sidebar.home': 'ホーム',
-    'sidebar.category': 'カテゴリ',
-    'sidebar.tags': 'タグ',
-    'sidebar.graph': 'グラフ',
-    'sidebar.development': '開発',
-
     'category.development': '開発記録',
     'category.development.i18n': '国際化',
     'category.development.layouts': 'レイアウト',

@@ -19,7 +19,7 @@ const wiki = defineCollection({
         updated: z.coerce.date().optional(),
         draft: z.boolean().default(false),
         showSubpanel: z.boolean().default(true),
-        isSubPage: z.boolean().default(false),
+        isSubpage: z.boolean().default(false),
     }),
 });
 

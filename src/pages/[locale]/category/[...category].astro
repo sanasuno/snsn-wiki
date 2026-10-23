@@ -14,7 +14,7 @@ export async function getStaticPaths() {
     const pages = await getCollection('wiki', (p) => !p.data.draft);
     const categorySet = new Set<string>(['']);
     for (const page of pages) {
-        const categoryArray = getCategoryArray(page.id, page.data.isSubPage);
+        const categoryArray = getCategoryArray(page.id, page.data.isSubpage);
         for (const category of categoryArray) {
             categorySet.add(category);
         }
