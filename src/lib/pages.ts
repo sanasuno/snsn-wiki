@@ -14,12 +14,14 @@ import { getLocale, getNormalizedSlug, normalizeSlugLike } from '@lib/path';
  * @param slug ページのスラッグ
  * @param page ページデータ
  * @param isFallback フォールバックページかどうか
+ * @param fallbackLocale フォールバックページのロケール
  */
 export interface ResolvedWikiPage {
     locale: Locale;
     slug: string;
     page: CollectionEntry<'wiki'>;
     isFallback: boolean;
+    fallbackLocale: Locale;
 }
 
 /**
@@ -60,15 +62,27 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
         const availablePages = pagesBySlugLocale[slug];
         for (const locale of locales) {
             const isFallback = !availablePages[locale];
-            const page = availablePages[locale]
-                ?? availablePages[defaultLocale]
-                ?? locales.map((loc) => availablePages[loc]).find(
+            let page: CollectionEntry<'wiki'>;
+            let fallbackLocale: Locale;
+            if (availablePages[locale]) {
+                // ページが存在する場合、そのロケールをフォールバックロケールとする
+                page = availablePages[locale]!;
+                fallbackLocale = locale;
+            } else if (availablePages[defaultLocale]) {
+                // デフォルトロケールのページがある場合、それを使用
+                page = availablePages[defaultLocale]!;
+                fallbackLocale = defaultLocale;
+            } else {
+                // それ以外は最初に見つかったページを使用
+                page = locales.map((loc) => availablePages[loc]).find(
                     (p): p is CollectionEntry<'wiki'> => p !== undefined
-                );
+                )!;
+                fallbackLocale = getLocale(page!.id);
+            }
             if (!page) {
                 throw new Error(`[wiki routing] No page found for slug "${slug}"`);
             }
-            resolved.push({ locale, slug, page, isFallback});
+            resolved.push({ locale, slug, page, isFallback, fallbackLocale });
         }
     }
     return resolved;

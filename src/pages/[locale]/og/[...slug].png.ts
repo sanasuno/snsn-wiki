@@ -14,7 +14,7 @@ export const prerender = true;
 export const getStaticPaths = (async () => {
     const resolvedPages = await resolveWikiPages();
     const wikiPaths = resolvedPages.map(({ locale, slug, page }) => {
-        const category = getTranslatedCategory(page.id, locale, page.data.isSubPage);
+        const category = getTranslatedCategory(page.id, locale, page.data.isSubpage);
         return {
             params: {
                 locale,

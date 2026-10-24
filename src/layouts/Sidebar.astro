@@ -42,7 +42,7 @@ const pagesByCategory = new Map<string, WikiPage[]>();
 const slugMap = new Map<string, WikiPage>();
 for (const page of uniquePages) {
     slugMap.set(getNormalizedSlug(page.id), page);
-    const category = getCategory(page.id, page.data.isSubPage);
+    const category = getCategory(page.id, page.data.isSubpage);
     if (!category) continue;
     const list = pagesByCategory.get(category) ?? [];
     list.push(page);

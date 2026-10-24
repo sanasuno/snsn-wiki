@@ -1,0 +1,177 @@
+---
+title: パスライブラリ
+description: パスライブラリの開発メモです。
+order: 2
+tags: [パス, ルーティング]
+date: 2026-10-23
+---
+`@lib/path.ts` は、パス関連のライブラリです。
+
+## removeTrailingSlash()
+パス末尾のスラッシュを削除する関数です。
+
+```ts
+export function removeTrailingSlash(path: string): string {
+    return path.replace(/\/$/, '');
+}
+```
+
+## ensureTrailingSlash()
+パス末尾にスラッシュを付与する関数です。
+- 既に末尾にスラッシュがある場合は新たに付与せず、そのまま返します。
+
+```ts
+export function ensureTrailingSlash(path: string): string {
+    return path.endsWith('/') ? path : `${path}/`;
+}
+```
+
+## getLocale()
+ページ ID からロケールを取得する関数です。
+- ページ ID を `/` で分割したときの先頭の要素を `isLocale()` 関数で有効かどうか判定します。
+- 有効だった場合はロケールとして返し、有効でなかった場合はエラーをスローします。
+
+```ts
+export function getLocale(pageId: string): Locale {
+    const parts = pageId.split('/');
+    if (isLocale(parts[0])) {
+        return parts[0] as Locale;
+    }
+    throw new Error(`[Invalid id format] ${pageId}`);
+}
+```
+
+## getRawSlug()
+ページ ID から生のスラッグを取得する関数です。
+- ページ ID からロケール部分（`/` で分割した際の先頭部分）を除いた要素を返します。
+
+```ts
+export function getRawSlug(pageId: string): string {
+    const parts = pageId.split('/');
+    return parts.slice(1).join('/');
+}
+```
+
+## normalizeSlugLike()
+スラッグやパスを正規化する関数です。
+- `NFKC` 正規化、小文字化、空白・改行除去を、この順に適用します。
+- 結果が `index` になった場合は空文字を返します。
+- 末尾に `/index` がある場合は削除して返します。
+
+```ts
+export function normalizeSlugLike(rawSlug: string): string {
+    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim();
+    return normalized === 'index'
+        ? ''
+        : normalized.replace(/\/index$/, '');
+}
+```
+
+## getNormalizedSlug()
+ページ ID から正規化されたスラッグを取得する関数です。
+- `getRawSlug()` 関数で生のスラッグを取得し、`normalizeSlugLike()` 関数で正規化します。
+
+```ts
+export function getNormalizedSlug(pageId: string): string {
+    const rawSlug = getRawSlug(pageId);
+    return normalizeSlugLike(rawSlug);
+}
+```
+
+## getBaseUrl()
+ベース URL を取得する関数です。
+- 環境変数から `BASE_URL` を取得し、`ensureTrailingSlash()` 関数で末尾のスラッシュを確保して返します。
+
+```ts
+export function getBaseUrl(): string {
+    return ensureTrailingSlash(import.meta.env.BASE_URL);
+}
+```
+
+## getLocaleBaseUrl()
+ロケールベース URL を取得する関数です。
+- ベース URL の後ろに各ロケールの文字列を追加した URL を返します。
+
+```ts
+export function getLocaleBaseUrl(locale: Locale): string {
+    return ensureTrailingSlash(`${getBaseUrl()}${locale}`);
+}
+```
+
+## getLocalePathUrl()
+ロケールとパスから URL を取得する関数です。
+- ロケールベース URL の後ろに、パスを連結した URL を返します。
+
+```ts
+export function getLocalePathUrl(locale: Locale, path: string): string {
+    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}${path.replace(/^\/+/, '')}`);
+}
+```
+
+## getWikiBaseUrl()
+ウィキベース URL を取得する関数です。
+- ロケールベース URL の後ろに `wiki` を追加した URL を返します。
+
+```ts
+export function getWikiBaseUrl(locale: Locale): string {
+    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}wiki`);
+}
+```
+
+## getWikiUrl()
+ページ ID からウィキページの URL を取得する関数です。
+- ロケールを指定しない場合は、ページ ID からロケールを取得します。
+
+```ts
+export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
+    const slug = getNormalizedSlug(pageId);
+    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${slug}`);
+}
+```
+
+## getCurrentPath()
+Astro.url から現在のパスを取得する関数です。
+- 現在のパスを取得し、末尾のスラッシュを確保して返します。
+
+```ts
+export function getCurrentPath(url: URL): string {
+    return ensureTrailingSlash(url.pathname);
+}
+```
+
+## decodePath()
+URL のパスをデコードする関数です。
+- `decodeURIComponent` でデコードし、末尾のスラッシュを確保して返します。
+- デコードに失敗した場合は、元のパスを返します。
+
+```ts
+export function decodePath(path: string): string {
+    try {
+        return ensureTrailingSlash(decodeURIComponent(path));
+    } catch {
+        return ensureTrailingSlash(path);
+    }
+}
+```
+
+## isPathActive()
+現在のパスが指定されたスラッグでアクティブかどうかを判定する関数です。主にナビゲーションにおいて現在の位置を示すために使用されます。
+- `exact` パラメータに `true` を設定すると、絶対一致で判定します。
+- `exact` が `false` もしくは未指定の場合、現在のパスがスラッグで始まるかどうかを判定します。
+- 現在のパスにはベース URL やロケールが含まれるので、これらを取り除いてから判定を行います。
+
+```ts
+export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
+    const base = getBaseUrl();
+    const decodedCurrentPath = decodePath(currentPath);
+    const relativePath = decodedCurrentPath.startsWith(base) ? decodedCurrentPath.slice(base.length) : decodedCurrentPath;
+    const [maybeLocale, ...rest] = relativePath.split('/');
+    const currentSlug = isLocale(maybeLocale)
+        ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
+        : normalizeSlugLike(removeTrailingSlash(relativePath));
+    if (exact || targetSlug === '/') {
+        return currentSlug === targetSlug;
+    }
+    return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
+}
+```

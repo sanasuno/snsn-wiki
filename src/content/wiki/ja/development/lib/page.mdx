@@ -1,0 +1,155 @@
+---
+title: ページライブラリ
+description: ページライブラリの開発メモです。
+order: 3
+tags: [ルーティング]
+date: 2026-10-23
+---
+`@lib/page.ts` は、ページルーティング関連のライブラリです。
+
+## ResolvedWikiPage
+ウィキページの解決結果の型です。
+- `locale`: ページのロケール
+- `slug`: ページのスラッグ
+- `page`: ページデータ
+- `isFallback`: フォールバックページかどうか
+- `fallbackLocale`: フォールバックページのロケール
+
+```ts
+export interface ResolvedWikiPage {
+    locale: Locale;
+    slug: string;
+    page: CollectionEntry<'wiki'>;
+    isFallback: boolean;
+    fallbackLocale: Locale;
+}
+```
+
+## resolveWikiPages()
+ウィキページを解決する関数です。ウィキページ収集、ロケール・スラッグ抽出、衝突の検知、フォールバック判定を行います。
+
+### ウィキページ収集
+`getCollection()` 関数でウィキページを収集します。
+- 下書きページ（ `draft = true` を設定したページ）は除外します。
+
+```ts
+const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+```
+
+### ページデータ格納
+収集したページを、スラッグとロケールをキーとして配列 `pagesBySlugLocale` に格納します。
+
+また、スラッグ生成時の正規化で起こりうるスラッグ名の衝突を検知するため、並行して正規化前後のページ ID を `normalizedIdOwners` に格納します。
+
+```ts
+const pagesBySlugLocale: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
+const normalizedIdOwners: Record<string, Set<string>> = {};
+```
+
+各ページのキーとなる `locale` と `normalizedSlug` を取得し、ページ内容を `pagesBySlugLocale` に登録します。  
+
+```ts
+for (const page of wikiPages) {
+    const locale = getLocale(page.id);
+    const normalizedSlug = getNormalizedSlug(page.id);
+    if (!pagesBySlugLocale[normalizedSlug]) {
+        pagesBySlugLocale[normalizedSlug] = {};
+    }
+    pagesBySlugLocale[normalizedSlug][locale] = page;
+```
+
+並行して、正規化後のページ ID をキー、正規化前のページ ID を値として `normalizedIdOwners` に登録します。
+- 衝突の検出は同一ロケール内で判定するため、スラッグではなくロケール情報を含むページ ID を使用します。
+
+```ts
+for (const page of wikiPages) {
+    const normalizedId = normalizeSlugLike(page.id);
+    if (!normalizedIdOwners[normalizedId]) {
+        normalizedIdOwners[normalizedId] = new Set();
+    }
+    normalizedIdOwners[normalizedId].add(page.id);
+}
+```
+
+### 衝突検知
+`normalizedIdOwners` の各エントリについて要素数を検証します。
+複数の要素が同一の正規化後 ID に存在する場合、正規化による衝突と判定してエラーをスローします。
+
+```ts
+for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
+    if (owners.size > 1) {
+        throw new Error(`[wiki routing] Multiple owners for normalized ID "${normalizedId}": ${Array.from(owners).join(', ')}`);
+    }
+}
+```
+
+### ウィキページ解決・フォールバック判定
+`pagesBySlugLocale` に登録されているすべてのスラッグとロケールを組み合わせ、フォールバック判定を行ってからウィキページを解決します。
+
+各スラッグについて、全てのロケールでページの存在をチェックします。存在しない場合、同スラッグ・別ロケールのページ内容をフォールバックとして使用します。
+
+フォールバックの優先順は以下の通りです。
+1. 本来のロケール
+2. デフォルトロケール (`defaultLocale`)
+3. 対象のスラッグでページが存在するロケール（ `locales` の配列順に検証）
+
+- ページが存在しない場合、 `isFallback` フラグが `true` になり、 `fallbackLocale` にフォールバック先のロケールが設定されます。
+- ページが存在する場合、 `fallbackLocale` には本来のロケールが設定されますが、これは実際には使用されません。
+- いずれのロケールでもページが存在しない場合、エラーをスローします。
+
+```ts
+const resolved: ResolvedWikiPage[] = [];
+for (const slug of Object.keys(pagesBySlugLocale)) {
+    const availablePages = pagesBySlugLocale[slug];
+    for (const locale of locales) {
+        const isFallback = !availablePages[locale];
+        let page: CollectionEntry<'wiki'>;
+        let fallbackLocale: Locale;
+        if (availablePages[locale]) {
+            page = availablePages[locale]!;
+            fallbackLocale = locale;
+        } else if (availablePages[defaultLocale]) {
+            page = availablePages[defaultLocale]!;
+            fallbackLocale = defaultLocale;
+        } else {
+            page = locales.map((loc) => availablePages[loc]).find(
+                (p): p is CollectionEntry<'wiki'> => p !== undefined
+            )!;
+            fallbackLocale = getLocale(page!.id);
+        }
+        if (!page) {
+            throw new Error(`[wiki routing] No page found for slug "${slug}"`);
+        }
+        resolved.push({ locale, slug, page, isFallback, fallbackLocale });
+    }
+}
+```
+
+### 戻り値
+解決されたウィキページ情報の配列を返します。
+
+```ts
+return resolved;
+```
+
+## getUniquePagesByLocale()
+ロケールごとにページを一意にフィルタリングする関数です。
+
+指定されたロケール、デフォルトロケール、その他のロケール（ `locales` の配列順）の順序で、ページのスラッグをキーとして一意にフィルタリングします。
+
+```ts
+export function getUniquePagesByLocale( pages: CollectionEntry<'wiki'>[], locale: Locale ): CollectionEntry<'wiki'>[] {
+    const priority = (l: Locale) =>
+        l === locale ? 0: l === defaultLocale ? 1 : 2 + locales.indexOf(l);
+    const best: Record<string, CollectionEntry<'wiki'>> = {};
+
+    for (const page of pages) {
+        const key = getNormalizedSlug(page.id);
+        const current = best[key];
+        if (!current || priority(getLocale(page.id)) < priority(getLocale(current.id))) {
+            best[key] = page;
+        }
+    }
+    return Object.values(best);
+}
+```

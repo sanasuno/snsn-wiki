@@ -11,23 +11,27 @@ import { formatDate } from '@lib/date';
 interface Props {
     title: string;
     locale: Locale;
+    type: 'wiki' | 'sppage' | 'other';
     tags?: string[];
     date?: Date;
     updated?: Date;
     id?: string;
     isSubpage?: boolean;
     isFallback?: boolean;
+    fallbackLocale?: Locale;
 }
 
 const {
     title,
     locale,
+    type,
     tags = [],
     date,
     updated,
     id,
     isSubpage = false,
     isFallback = false,
+    fallbackLocale,
 } = Astro.props;
 
 const localeBaseUrl = getLocaleBaseUrl(locale);

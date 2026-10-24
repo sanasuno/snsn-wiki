@@ -47,7 +47,7 @@ export function getRawSlug(pageId: string): string {
 
 /**
  * スラッグを正規化する関数
- * NFKC 正規化、小文字化、空白除去を行う。
+ * NFKC 正規化、小文字化、空白・改行除去を行う。
  * 末尾の "/index" を削除する。
  * @param rawSlug 正規化するスラッグ
  * @returns 正規化されたスラッグ
@@ -87,6 +87,16 @@ export function getLocaleBaseUrl(locale: Locale): string {
 }
 
 /**
+ * ロケールとパスからURLを取得する関数
+ * @param locale ロケール
+ * @param path パス
+ * @returns URL
+ */
+export function getLocalePathUrl(locale: Locale, path: string): string {
+    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}${path.replace(/^\/+/, '')}`);
+}
+
+/**
  * ウィキベースURLを取得する関数
  * @param locale ロケール
  * @returns WikiベースURL
@@ -112,16 +122,6 @@ export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): 
  */
 export function getCurrentPath(url: URL): string {
     return ensureTrailingSlash(url.pathname);
-}
-
-/**
- * ロケールとパスからURLを取得する関数
- * @param locale ロケール
- * @param path パス
- * @returns URL
- */
-export function getLocalePathUrl(locale: Locale, path: string): string {
-    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}${path.replace(/^\/+/, '')}`);
 }
 
 /**

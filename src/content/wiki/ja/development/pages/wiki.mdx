@@ -5,317 +5,34 @@ order: 3
 tags: [ウィキページ]
 date: 2026-10-20
 ---
-## 構成
-`./src/content/wiki/[locale]` 配下に配置した `md` および `mdx` ファイルをウィキページとみなします。
+`./src/pages/[locale]/wiki/[...slug].astro` は、ウィキページの動的ルーティング用のページです。
 
-コレクションローダー `./src/content.config.ts` でウィキページを収集し、
-`./src/pages/[locale]/wiki/[...slug].astro` でページに変換します。  
+`getStaticPaths()` 関数の `params` で `locale` と `slug` を出力することで、対応するパスのページを生成します。
 
-
-## ユーティリティ関数
-`@lib/path.ts` にパス関連のユーティリティ関数を記述します。
-
-### removeTrailingSlash()
-末尾のスラッシュを削除する関数です。
-
-```ts
-export function removeTrailingSlash(path: string): string {
-    return path.replace(/\/$/, '');
-}
-```
-
-### ensureTrailingSlash()
-末尾にスラッシュを付与する関数です。
-- 既に末尾にスラッシュがある場合は新たに付与せず、そのまま返します。
-
-```ts
-export function ensureTrailingSlash(path: string): string {
-    return path.endsWith('/') ? path : `${path}/`;
-}
-```
-
-### getLocale()
-ページIDからロケールを取得する関数です。ページIDを `/` で分割したときの先頭の要素をロケールとして扱います。
-- まず、切り出した部分が有効なロケールかどうかを `isLocale()` 関数で判定します。
-- 有効だった場合はそのロケールを返し、有効でなかった場合はエラーをスローします。
-
-```ts
-export function getLocale(pageId: string): Locale {
-    const parts = pageId.split('/');
-    if (isLocale(parts[0])) {
-        return parts[0] as Locale;
-    }
-    throw new Error(`[Invalid id format] ${pageId}`);
-}
-```
-
-### getRawSlug()
-ページIDから正規化されていない生のスラッグを取得する関数です。
-- ページIDを `/` で分割したときの、先頭（ロケール部分）を除いた要素を `/` で再結合して返します。
-
-```ts
-export function getRawSlug(pageId: string): string {
-    const parts = pageId.split('/');
-    return parts.slice(1).join('/');
-}
-```
-
-### normalizeSlugLike()
-スラッグを正規化する関数です。
-- 与えられたスラッグに `NFKC` 正規化、小文字化、前後の空白除去を順に適用します。
-- その結果が `index` だった場合は空文字にし、末尾に `/index` がある場合は削除してから返します。
-
-```ts
-export function normalizeSlugLike(rawSlug: string): string {
-    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim();
-    return normalized === 'index'
-        ? ''
-        : normalized.replace(/\/index$/, '');
-}
-```
-
-### getNormalizedSlug()
-ページIDから正規化されたスラッグを取得する関数です。
--  `getRawSlug()` 関数で生スラッグを取得し、 `normalizedSlugLike()` 関数で正規化して返します。
-
-```ts
-export function getNormalizedSlug(pageId: string): string {
-    const rawSlug = getRawSlug(pageId);
-    return normalizeSlugLike(rawSlug);
-}
-```
-
-### getBaseUrl()
-サイトのベース URL を取得する関数です。
-- 環境変数から `BASE_URL` を取得し、 `ensureTrailingSlash()` 関数で末尾のスラッシュを確保して返します。
-
-```ts
-export function getBaseUrl(): string {
-    return ensureTrailingSlash(import.meta.env.BASE_URL);
-}
-```
-
-### getLocaleBaseUrl()
-与えられたロケールのロケールベース URL を取得する関数です。
-- ベース URL の後ろに各ロケールをつけた URL を返します。
-
-```ts
-export function getLocaleBaseUrl(locale: Locale): string {
-    return ensureTrailingSlash(`${getBaseUrl()}${locale}`);
-}
-```
-
-### getWikiBaseUrl()
-与えられたロケールのウィキページのベース URL を取得する関数です。
-- ロケールベース URL の後ろに、さらに `wiki` をつけた URL を返します。
-
-```ts
-export function getWikiBaseUrl(locale: Locale): string {
-    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}wiki`);
-}
-```
-
-### getWikiUrl()
-与えられたロケールとウィキページのページ ID から、そのページの URL を取得する関数です。
-- ロケールが指定されていない場合、ページ ID からロケールを取得します。
-- ウィキページのベース URL の後ろに、正規化したスラッグをつけた URL を返します。
-
-```ts
-export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
-    const slug = getNormalizedSlug(pageId);
-    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${slug}`);
-}
-```
-
-### getCurrentPath()
-与えられた `Astro.url` から現在のパスを取得する関数です。
-- 与えられた URL の `pathname` の末尾にスラッシュを確保して返します。
-
-```ts
-export function getCurrentPath(url: URL): string {
-    return ensureTrailingSlash(url.pathname);
-}
-```
-
-### getLocalePathUrl()
-与えられたロケールとパスから全体の URL を構築する関数です。
-- ロケールベース URL の後ろに、パスを連結した URL を返します。
-
-```ts
-export function getLocalePathUrl(locale: Locale, path: string): string {
-    return ensureTrailingSlash(`${getLocaleBaseUrl(locale)}${path.replace(/^\/+/, '')}`);
-}
-```
-
-### decodePath()
-与えられたパスをデコードする関数です。
-- `decodeURIComponent()` を使用してデコードし、失敗した場合は元のパスを返します。
-
-```ts
-export function decodePath(path: string): string {
-    try {
-        return ensureTrailingSlash(decodeURIComponent(path));
-    } catch {
-        return ensureTrailingSlash(path);
-    }
-}
-```
-
-### isPathActive()
-対象のスラッグが現在のパスでアクティブかどうかを判定する関数です。
-- 主にナビゲーションにおいて現在の位置を示すために使用されます。
-- `exact: true` が指定された場合、完全一致の場合のみアクティブと判定されます。
-- それ以外の場合には、現在のパスが対象のスラッグ配下に含まれる場合にアクティブと判定されます。
-
-引数として渡される現在のパス `currentPath` にはサイトのベース URL やロケールが含まれるため、順に検証して取り除いてからアクティブ判定を行います。
-- `exact: true` もしくは `targetSlug` が `/` だった場合は、 `targetSlug` が `currentSlug` と一致するかどうかを判定します。
-- それ以外の場合には `targetSlug` が `currentSlug` と一致する、もしくは `${currentSlug}/` で始まるかどうかを判定して返します。
-
-```ts
-export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
-    const base = getBaseUrl();
-    const decodedCurrentPath = decodePath(currentPath);
-    const relativePath = decodedCurrentPath.startsWith(base) ? decodedCurrentPath.slice(base.length) : decodedCurrentPath;
-    const [maybeLocale, ...rest] = relativePath.split('/');
-    const currentSlug = isLocale(maybeLocale)
-        ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
-        : normalizeSlugLike(removeTrailingSlash(relativePath));
-    if (exact || targetSlug === '/') {
-        return currentSlug === targetSlug;
-    }
-    return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
-}
-```
-
-## 動的ルーティング
-`./src/pages/[locale]/wiki/[...slug].astro` は動的ルーティング用のページです。
-`getStaticPaths()` 関数で `locale` と `slug` を出力することで、対応するページのパスを生成します。
-- スラッグ部分は `[...slug]` のレストパラメータ形式を採用することで、任意の深さのスラッグにマッチします。
-- 実際の処理は `@lib/pages` の `resolveWikiPages()` 関数で行います。
-
-### resolveWikiPages()
-ウィキページを解決する関数です。
-
-ウィキページ収集・格納、衝突の検知、フォールバック判定など、様々なロジックを処理します。
-
-#### ウィキページ収集
-`getCollection()` 関数を用いてウィキページを収集します。
-- 下書きページ（ `page.data.draft === true` のページ）は除外します。
-
-```ts
-const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
-```
-
-#### ページデータ格納
-収集したページを、スラッグとロケールをキーとする配列 `pagesBySlugLocale` に格納していきます。
-
-また、スラッグ生成時の正規化で起こりうるスラッグ名の衝突を検知するため、
-並行して正規化前後のページIDを `normalizedIdOwners` に格納します。
-
-```ts
-const pagesBySlugLocale: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
-const normalizedIdOwners: Record<string, Set<string>> = {};
-```
-
-`getLocale()` 関数と `getNormalizedSlug()` 関数で各ページの `locale` と `normalizedSlug` を取得してキーとし、
-ページ内容を `pagesBySlugLocale` に登録します。  
-
-```ts
-for (const page of wikiPages) {
-    const locale = getLocale(page.id);
-    const normalizedSlug = getNormalizedSlug(page.id);
-    if (!pagesBySlugLocale[normalizedSlug]) {
-        pagesBySlugLocale[normalizedSlug] = {};
-    }
-    pagesBySlugLocale[normalizedSlug][locale] = page;
-}
-```
-
-#### 衝突検証
-もし複数の異なるファイルが同じ `normalizedSlug` に正規化される場合、
-後から処理された方が先に処理された方を上書きしてしまいます。この衝突を避けるため、検出する必要があります。
-
-正規化後のページID（ `normalizedId` ）をキー、正規化前のページID（ `page.id` ）を値として
-`normalizedIdOwners` に格納します。
-
-衝突が起こった場合、同じ `normalizedId` に対して複数の `page.id` が登録されるので、
-`normalizedIdOwners` のサイズを検証することで衝突を検知できます。
-
-- 衝突判定は同一ロケール内で行うため、ロケール情報を含むページ ID を用いて比較しています。
-
-```ts
-const normalizedIdOwners: Record<string, Set<string>> = {};
-for (const page of wikiPages) {
-    const normalizedId = normalizeSlugLike(page.id);    
-    if (!normalizedIdOwners[normalizedId]) {
-        normalizedIdOwners[normalizedId] = new Set();
-    }
-    normalizedIdOwners[normalizedId].add(page.id);
-}
-for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
-    if (owners.size > 1) {
-        throw new Error(`[wiki routing] Multiple owners for normalized ID "${normalizedId}": ${Array.from(owners).join(', ')}`);
-    }
-}
-```
-
-#### フォールバック判定
-`pagesBySlugLocale` に格納した `locale` と `slug` を組み合わせて、各ページの URL を生成します。  
-あるロケールで元となるファイルがなくとも、別のロケールに同じスラッグのファイルがある場合、
-それをフォールバックとして代替使用します。
-- このとき、ページには「別のロケールによるフォールバックである」という情報を渡します。
-
-フォールバック解決の優先順位は、
-本来のロケール、デフォルトロケール、その他の翻訳があるロケール（ `locales` で定義された順番に検証）の順です。
-いずれのロケールでも翻訳が見つからない場合はエラーをスローします。
-
-最後に返すのは、 `locale` 、 `slug` 、 `page` 、 `isFallback` の4種類のデータの配列です。
-
-```ts
-const resolved: ResolvedWikiPage[] = [];
-for (const slug of Object.keys(pagesBySlugLocale)) {
-    const availablePages = pagesBySlugLocale[slug];
-    for (const locale of locales) {
-        const isFallback = !availablePages[locale];
-        const page = availablePages[locale]
-            ?? availablePages[defaultLocale]
-            ?? locales.map((loc) => availablePages[loc]).find(
-                (p): p is CollectionEntry<'wiki'> => p !== undefined
-            );
-        if (!page) {
-            throw new Error(`[wiki routing] No page found for slug "${slug}"`);
-        }
-        resolved.push({ locale, slug, page, isFallback});
-    }
-}
-return resolved;
-```
-
-### getStaticPaths()
-URL の組み立てに必要な `params` （ `locale` ・ `slug` ） と、ページレンダリングに必要な各種 `props` を出力します。
+## getStaticPaths()
+URL の組み立てに必要な `params` とページレンダリングに必要な `props` を出力します。
 - 実際の処理はほぼ `resolveWikiPages()` で行っているので、各項目を当てはめていきます。
 
 ```ts
 export async function getStaticPaths() {
     const resolvedPages = await resolveWikiPages();
-    return resolvedPages.map(({ locale, slug, page, isFallback }) => ({
+    return resolvedPages.map(({ locale, slug, page, isFallback, fallbackLocale }) => ({
         params: {
             locale,
             slug: slug === '' ? undefined : slug,
         },
-        props: { page, locale, slug, isFallback },
+        props: { page, locale, slug, isFallback, fallbackLocale },
     }));
 }
-const { page, locale, slug, isFallback } = Astro.props;
 ```
 
-#### 代替リンク生成
-対応する翻訳ページへの代替リンク一覧を生成します。
+## alternateLinks
+別ロケールのページへの代替リンク一覧です。全てのロケールについて、ロケールと URL を設定します。
 
 ```ts
-const alternateLinks = locales.map(altLocale => ({
-    locale: altLocale,
-    href: ensureTrailingSlash(`${getWikiBaseUrl(altLocale)}${slug}`)
+const alternateLinks = locales.map(loc => ({
+    locale: loc,
+    href: ensureTrailingSlash(`${getWikiBaseUrl(loc)}${slug}`)
 }));
 ```
 
@@ -331,12 +48,14 @@ const { Content, headings } = await render(page);
     description={page.data.description}
     locale={locale}
     alternateLinks={alternateLinks}
+    type='wiki'
     isFallback={isFallback}
+    fallbackLocale={fallbackLocale}
     tags={page.data.tags}
     date={page.data.date}
     updated={page.data.updated}
     id={page.id}
-    isSubPage={page.data.isSubPage}
+    isSubpage={page.data.isSubpage}
     showSubpanel={page.data.showSubpanel}
     headings={headings}
 >
