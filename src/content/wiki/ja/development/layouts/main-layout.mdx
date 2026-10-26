@@ -52,10 +52,10 @@ import '@styles/custom.css';
 ```
 
 ### 表示領域
-表示領域を設定します。表示領域を画面幅に合わせ、初期ズーム倍率を 1.0 倍に設定します。
+表示領域を設定します。表示領域を画面幅に合わせ、初期ズーム倍率を 1.0 倍に設定し、セーフエリアに対応します。
 
 ```astro
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 ```
 
 ### タイトルと説明

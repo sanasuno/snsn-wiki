@@ -9,12 +9,19 @@ const subpanelAt =
     tokens.contentMinWidth +
     tokens.contentPadding.wide * 2;
 
+// サブパネルなしのページで wide padding が収まる最小幅
+const noSubpanlAt =
+    tokens.sidebarWidth +
+    tokens.contentMinWidth +
+    tokens.contentPadding.wide * 2;
+
 const layoutTokens = () => ({
     postcssPlugin: 'layout-tokens',
     Once(root, { AtRule, Rule, Declaration }) {
         // 全CSSファイルに @custom-media を注入（postcss-custom-media より前に実行すること）
         root.prepend(
             new AtRule({ name: 'custom-media', params: `--subpanel-collapsed (width < ${px(subpanelAt)})` }),
+            new AtRule({ name: 'custom-media', params: `--no-subpanel-collapsed (width < ${px(noSubpanlAt)})`}),
             new AtRule({ name: 'custom-media', params: `--sidebar-collapsed (width <= ${px(tokens.mobileBreakpoint)})` }),
             new AtRule({ name: 'custom-media', params: `--header-compact (width <= ${px(tokens.headerLabelBreakpoint)})` })
         );

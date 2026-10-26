@@ -9,14 +9,18 @@
     display: grid;
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--subpanel-width);
     grid-template-areas: "sidebar main sub";
-    min-height: calc(100dvh - var(--header-height));
-    flex: 1;
 }
 
 .layout:where(.no-subpanel) {
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
     grid-template-areas: "sidebar main";
     --content-padding: var(--content-padding-wide);
+}
+
+@media (--no-subpanel-collapsed) {
+    .layout:where(.no-subpanel) {
+        --content-padding: var(--content-padding-medium);
+    }
 }
 
 @media (--subpanel-collapsed) {
@@ -30,5 +34,8 @@
     .layout {
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas: "main";
+    }
+    .layout:where(.no-subpanel) {
+        --content-padding: var(--content-padding-narrow);
     }
 }
