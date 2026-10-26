@@ -1,0 +1,23 @@
+---
+title: メインスクリプト
+description: メインスクリプトの開発メモです。
+order: 1
+tags: [レイアウト]
+date: 2026-10-26
+---
+`@scripts/main.ts` は、メインレイアウトで読み込むスクリプトをまとめたファイルです。
+
+```ts
+import { themeToggle } from '@scripts/theme';
+import { sidebarToggle, sidebarSections } from '@scripts/sidebar';
+import { languageSwitch } from '@scripts/languageSwitch';
+import { setUpToc } from '@scripts/toc';
+import { setupSubpanelDrawer } from '@scripts/subpanel';
+
+themeToggle();
+sidebarToggle();
+sidebarSections();
+languageSwitch();
+setUpToc();
+setupSubpanelDrawer();
+```

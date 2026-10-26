@@ -186,3 +186,55 @@ Google Fonts用のURLを記述します。
     initI18n();
 </script>
 ```
+
+## \<body\>
+レイアウトコンポーネントを配置します。
+
+```astro
+    <body>
+        <Header
+            locale={locale}
+        />
+        <div class={`layout${showSubpanel ? '' : ' no-subpanel'}`}>
+            <Sidebar
+                locale={locale}
+            />
+            <MainContent
+                title={title}
+                locale={locale}
+                type={type}
+                tags={tags}
+                date={date}
+                updated={updated}
+                id={id}
+                isSubpage={isSubpage}
+                isFallback={isFallback}
+                fallbackLocale={fallbackLocale}
+            >
+                <slot />
+            </MainContent>
+            {showSubpanel && (
+                <>
+                    <aside class="subpanel" id="subpanel">
+                        <Toc
+                            locale={locale}
+                            headings={headings}
+                        />
+                        <MiniGraph
+                            locale={locale}
+                        />
+                    </aside>
+                    <button type="button" class="subpanel-drawer-button" id="subpanel-drawer-button" aria-label={t('subpanel.open', locale)} aria-controls="subpanel" aria-expanded="false">
+                        <i class="fas fa-list-ul" aria-hidden="true"></i>
+                    </button>
+                </>
+            )}
+        </div>
+        <Footer
+            locale={locale}
+        />
+        <script>
+            import '@scripts/main';
+        </script>
+    </body>
+```

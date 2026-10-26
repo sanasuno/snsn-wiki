@@ -15,7 +15,7 @@
 
 /* 基本設定 */
 html {
-    font-size: 16px;
+    font-size: 100%;
     scroll-padding-top: calc(var(--header-height) + 8px);
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
@@ -26,10 +26,11 @@ html {
     html {
         scroll-behavior: auto;
     }
-    .sidebar,
-    .subpanel,
-    .subpanel-drawer-button {
-        transition: none;
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
     }
 }
 
@@ -41,7 +42,9 @@ body {
     background-color: var(--color-bg);
     color: var(--color-text);
     line-height: 1.6;
-    transition: var(--transition);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
 }
 
 [hidden] {

@@ -11,7 +11,8 @@ export const customKeys = [
     'category.development.i18n',
     'category.development.layouts',
     'category.development.lib',
-    'category.development.pages'
+    'category.development.pages',
+    'category.development.scripts',
     // ここにカスタムキーを追加
 ] as const;
 

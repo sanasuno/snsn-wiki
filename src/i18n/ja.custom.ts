@@ -13,5 +13,6 @@ export const jaCustom = {
     'category.development.layouts': 'レイアウト',
     'category.development.lib': 'ライブラリ',
     'category.development.pages': 'ページ',
+    'category.development.scripts': 'スクリプト',
     // ここに日本語のカスタム翻訳を追加
 } satisfies Record<CustomKey, string>;

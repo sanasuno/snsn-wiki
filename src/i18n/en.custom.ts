@@ -13,5 +13,6 @@ export const enCustom = {
     'category.development.layouts': 'Layouts',
     'category.development.lib': 'Libraries',
     'category.development.pages': 'Pages',
+    'category.development.scripts': 'Scripts',
     // Add English custom translations here
 } satisfies Record<CustomKey, string>;

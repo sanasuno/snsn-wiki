@@ -191,6 +191,7 @@
 
 .language-switcher-list {
     appearance: none;
+    font-family: inherit;
     background-color: transparent;
     border: none;
     cursor: pointer;
@@ -198,7 +199,7 @@
     font-size: 1rem;
     line-height: 1;
     font-weight: 700;
-    color: var(--color-text-muted);
+    color: inherit;
     transition: var(--transition);
 }
 

@@ -13,5 +13,6 @@ export const eoCustom = {
     'category.development.layouts': 'Aranĝoj',
     'category.development.lib': 'Bibliotekoj',
     'category.development.pages': 'Paĝoj',
+    'category.development.scripts': 'Skritoj',
     // Aldonu Esperantajn kustomajn tradukojn ĉi tie
 } satisfies Record<CustomKey, string>;

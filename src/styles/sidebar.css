@@ -15,6 +15,7 @@
     height: calc(100dvh - var(--header-height));
     overflow-y: auto;
     border-right: 1px solid var(--color-border);
+    overscroll-behavior: contain;
 }
 
 @media (--sidebar-collapsed) {
@@ -26,6 +27,7 @@
         height: calc(100dvh - var(--header-height));
         transition: left 150ms ease, visibility 150ms ease;
         visibility: hidden;
+        z-index: var(--z-drawer);
     }
     .sidebar.open {
         left: 0;
@@ -55,7 +57,7 @@
     border: none;
     border-radius: var(--radius-sm);
     font: inherit;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 700;
     color: var(--color-text);
     text-align: left;
@@ -103,11 +105,14 @@
 .sidebar-nav a:hover {
     background-color: var(--color-bg-hover);
     color: var(--color-text);
-    font-weight: 600;
 }
 
 .sidebar-nav a[aria-current="page"] {
     background-color: var(--color-bg-accent);
     color: var(--color-accent-text);
     font-weight: 700;
+}
+
+.sidebar-nav a > i {
+    flex-shrink: 0;
 }
