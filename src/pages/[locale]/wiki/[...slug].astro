@@ -6,8 +6,8 @@
 import { render, type CollectionEntry } from 'astro:content';
 import { locales, type Locale } from '@lib/i18n';
 import { resolveWikiPages } from '@lib/pages';
-import MainLayout from '@layouts/MainLayout.astro';
 import { getWikiBaseUrl, ensureTrailingSlash } from '@lib/path';
+import MainLayout from '@layouts/MainLayout.astro';
 
 interface Props {
     page: CollectionEntry<'wiki'>;
