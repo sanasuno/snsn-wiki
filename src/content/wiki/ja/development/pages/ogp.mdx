@@ -1,0 +1,67 @@
+---
+title: OGP画像
+description: OGP エンドポイントの開発メモです。
+order: 2
+tags: [OGP]
+date: 2026-10-20
+---
+`./src/pages/[locale]/og/[...slug].png.ts` は、OGP 画像配信エンドポイントです。
+- `@lib/og-image.ts` を用いて各ページの OGP 画像を生成します。サイト名、タイトル、説明、カテゴリを記述します。
+
+
+### getStaticPaths()
+OGP 画像を配置する URL を組み立て、レンダーに必要な各種情報を `props` として出力します。
+
+ウィキページでは `resolveWikiPages()` 関数を用いて全ページにそれぞれ固有の OGP 画像を生成します。
+
+それ以外のページでは、サイト全体の情報を記した画像をロケールごとに使用し、 `slug: 'index'` として出力します。
+
+```ts
+export const getStaticPaths = (async () => {
+    const resolvedPages = await resolveWikiPages();
+    const wikiPaths = resolvedPages.map(({ locale, slug, page }) => {
+        const category = getTranslatedCategory(page.id, locale, page.data.isSubPage);
+        return {
+            params: {
+                locale,
+                slug: slug === '' ? 'wiki' : `wiki/${slug}`,
+            },
+            props: {
+                title: page.data.title,
+                description: page.data.description,
+                category,
+                siteName: t('site.title', locale),
+            },
+        };
+    });
+    const fallbackPaths = locales.map((locale) => ({
+        params: {
+            locale,
+            slug: 'index',
+        },
+        props: {
+            title: t('site.title', locale),
+            description: t('site.description', locale),
+            category: undefined,
+            siteName: t('site.title', locale),
+        },
+    }));
+    return [...wikiPaths, ...fallbackPaths];
+}) satisfies GetStaticPaths;
+```
+
+### GET
+OGP 画像をレンダリングして返します。
+
+```ts
+export const GET: APIRoute = async ({ props }) => {
+    const { title, description, category, siteName } = props as { title: string; description?: string; category?: string; siteName: string; };
+    const png = await renderOgImage({ title, description, category, siteName });
+    return new Response(new Uint8Array(png), {
+        headers: {
+            'Content-Type': 'image/png',
+            'Cache-Control': 'public, max-age=31536000, immutable',
+        },
+    });
+};
+```

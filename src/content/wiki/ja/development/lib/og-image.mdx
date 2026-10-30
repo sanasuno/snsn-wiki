@@ -10,7 +10,7 @@ date: 2026-10-26
 
 ## loadFonts()
 フォントを読み込む関数です。
-- フォント名、フォントデータ、フォントウェイト、フォントスタイルを記録します。
+- フォント名、フォントデータ、フォントウェイト、フォントスタイルを読み込みんで `fontsCache` にキャッシュします。
 
 ```ts
 const FONT_DIR = path.resolve(process.cwd(), 'src/assets/fonts');
@@ -29,6 +29,7 @@ function loadFonts() {
 
 ## renderOgImage()
 OGP 画像をレンダリングする関数です。
+- 仮想 DOM を構築して画像内容を記述し、 `satori()` で `svg` 形式の画像に変換してから、 `resvg` で `png` 形式に変換します。
 
 ```ts
 export async function renderOgImage({ title, description, category, siteName }: OgImageParams): Promise<Buffer> {

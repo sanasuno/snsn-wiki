@@ -1,0 +1,81 @@
+---
+title: PostCSS
+description: PostCSS を用いた部分の開発メモです。
+order: 1
+tags: [CSS, レイアウト]
+date: 2026-10-30
+---
+`PostCSS` を導入することで、自由にカスタムメディアを設定し、レイアウトの各部位の幅を自由にカスタマイズできます。
+- `layout.tokens.json` : 各部位の画面幅トークンを定義するファイルです。
+- `postcss.config.cjs` : ブラウザの画面幅に応じたカラム表示のカスタムメディアを計算するファイルです。
+
+## layout.tokens.json
+各部位の画面幅トークンを定義するファイルです。
+
+```json
+{
+    "contentMaxWidth": 1200,
+    "contentMinWidth": 800,
+    "sidebarWidth": 280,
+    "subpanelWidth": 240,
+    "headerLabelBreakpoint": 1024,
+    "mobileBreakpoint": 768,
+    "contentPadding": {
+        "wide": 48,
+        "medium": 24,
+        "narrow": 16
+    }
+}
+```
+
+- `contentMaxWidth` : メインコンテンツの最大幅です。
+- `contentMinWidth` : メインコンテンツの最小幅です。
+- `sidebarWidth` : サイドバーの幅です。
+- `subpanelWidth` : サブパネルの幅です。
+- `headerLabelBreakpoint` : ヘッダーナビゲーションのラベルのブレークポイントです。
+- `mobileBreakpoint` : モバイル環境のブレークポイントです。
+- `contentPadding` : メインコンテンツのパディングです。3段階設定します。
+
+## postcss.config.cjs
+`postcss.config.cjs` は、 `PostCSS` の設定ファイルです。ブラウザの画面幅に応じたカラム表示のカスタムメディアを計算します。
+
+### tokens
+トークンをインポートします。
+
+```cjs
+const tokens = require('./src/layout.tokens.json');
+```
+
+### px
+数値を px 単位に変換するヘルパーです。
+
+```cjs
+const px = (n) => `${n}px`;
+```
+
+### subpanelAt
+3カラム（sidebar + 本文 + subpanel）が収まる最小幅です。
+
+```cjs
+const subpanelAt =
+    tokens.sidebarWidth +
+    tokens.subpanelWidth +
+    tokens.contentMinWidth +
+    tokens.contentPadding.wide * 2;
+```
+
+### noSubpanelAt
+サブパネルなしのページで wide padding が収まる最小幅です。
+
+```cjs
+const noSubpanlAt =
+    tokens.sidebarWidth +
+    tokens.contentMinWidth +
+    tokens.contentPadding.wide * 2;
+```
+
+### layoutTokens
+全 CSS ファイルに `@custom-media` を、 `theme.css` に `:root` の寸法変数を注入する独自プラグインです。
+
+#### `@custom-media` 注入
+`root.prepend` で全 CSS ファイルにカスタムメディア定義を注入します。

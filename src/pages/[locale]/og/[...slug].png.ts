@@ -6,8 +6,7 @@ import type { APIRoute, GetStaticPaths } from 'astro';
 import { resolveWikiPages } from '@lib/pages';
 import { getTranslatedCategory } from '@lib/category';
 import { renderOgImage } from '@lib/og-image';
-import { locales } from '@lib/i18n';
-import { t } from '@lib/i18n';
+import { t, locales } from '@lib/i18n';
 
 export const prerender = true;
 
