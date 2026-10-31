@@ -6,8 +6,6 @@ tags: [CSS, レイアウト]
 date: 2026-10-30
 ---
 `PostCSS` を導入することで、自由にカスタムメディアを設定し、レイアウトの各部位の幅を自由にカスタマイズできます。
-- `layout.tokens.json` : 各部位の画面幅トークンを定義するファイルです。
-- `postcss.config.cjs` : ブラウザの画面幅に応じたカラム表示のカスタムメディアを計算するファイルです。
 
 ## layout.tokens.json
 各部位の画面幅トークンを定義するファイルです。
@@ -68,7 +66,7 @@ const subpanelAt =
 サブパネルなしのページで wide padding が収まる最小幅です。
 
 ```cjs
-const noSubpanlAt =
+const noSubpanelAt =
     tokens.sidebarWidth +
     tokens.contentMinWidth +
     tokens.contentPadding.wide * 2;
@@ -79,3 +77,41 @@ const noSubpanlAt =
 
 #### `@custom-media` 注入
 `root.prepend` で全 CSS ファイルにカスタムメディア定義を注入します。
+
+```cjs
+root.prepend(
+    new AtRule({ name: 'custom-media', params: `--subpanel-collapsed (width < ${px(subpanelAt)})` }),
+    new AtRule({ name: 'custom-media', params: `--no-subpanel-collapsed (width < ${px(noSubpanelAt)})`}),
+    new AtRule({ name: 'custom-media', params: `--sidebar-collapsed (width <= ${px(tokens.mobileBreakpoint)})` }),
+    new AtRule({ name: 'custom-media', params: `--header-compact (width <= ${px(tokens.headerLabelBreakpoint)})` })
+);
+```
+
+- `--subpanel-collapsed` : サブパネルが折りたたまれていることを示すカスタムメディアです。
+- `--no-subpanel-collapsed` : サブパネルが折りたたまれていないことを示すカスタムメディアです。
+- `--sidebar-collapsed` : サイドバーが折りたたまれていることを示すカスタムメディアです。
+- `--header-compact` : ヘッダーナビゲーションのラベルが折りたたまれていることを示すカスタムメディアです。
+
+#### `:root` の寸法変数注入
+`theme.css` に `:root` の寸法変数を注入します。
+
+```cjs
+if (/theme\.css$/.test(root.source?.input.file ?? '')) {
+    const decls = {
+        '--content-max-width': px(tokens.contentMaxWidth),
+        '--sidebar-width': px(tokens.sidebarWidth),
+        '--subpanel-width': px(tokens.subpanelWidth),
+        '--subpanel-breakpoint': px(subpanelAt),
+        '--mobile-breakpoint': px(tokens.mobileBreakpoint),
+        '--content-padding-wide': px(tokens.contentPadding.wide),
+        '--content-padding-medium': px(tokens.contentPadding.medium),
+        '--content-padding-narrow': px(tokens.contentPadding.narrow),
+    };
+    const rule = new Rule({ selector: ':root', source: root.source });
+    for (const [prop, value] of Object.entries(decls)) {
+        rule.append(new Declaration({ prop, value, source: root.source }));
+    }
+    root.prepend(rule);
+}
+```
+
