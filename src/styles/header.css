@@ -25,6 +25,16 @@
     }
 }
 
+/* キーボードフォーカス */
+.site-header :is(a, button, select):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.site-header .language-switcher-list:focus-visible {
+    outline: none;
+}
+
 /* ヘッダー内容その縮小防止 */
 .site-header > :not(.header-site-title) {
     flex-shrink: 0;

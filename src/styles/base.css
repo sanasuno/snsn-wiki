@@ -64,13 +64,3 @@ body {
 .skip-link:focus {
     top: 8px;
 }
-
-/* キーボードフォーカス */
-.site-header :is(a, button, select):focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-}
-
-.site-header .language-switcher-list:focus-visible {
-    outline: none;
-}

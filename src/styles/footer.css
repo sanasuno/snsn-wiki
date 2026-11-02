@@ -6,8 +6,7 @@
 
 /* サイトフッター */
 .site-footer {
-    padding: 24px var(--content-padding);
-    padding-inline: var(--content-padding-wide);
+    padding: 24px var(--content-padding-wide);
     font-size: 0.8rem;
     color: var(--color-text-muted);
     border-top: 1px solid var(--color-border);

@@ -194,10 +194,6 @@ code {
     letter-spacing: 0;
 }
 
-.article-content pre {
-    font-family: var(--font-mono);
-}
-
 .article-content > :first-child {
     margin-top: 0;
 }
@@ -276,6 +272,7 @@ code {
 }
 
 .article-content :is(ul, ol) {
+    margin: 1em 0;
     padding-left: 1.5em;
 }
 
@@ -330,6 +327,7 @@ code {
     border-radius: var(--radius-sm);
     font-size: 0.875rem;
     line-height: 1.6;
+    font-family: var(--font-mono);
 }
 
 .article-content pre code {
