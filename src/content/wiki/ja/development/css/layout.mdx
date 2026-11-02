@@ -1,0 +1,42 @@
+---
+title: レイアウト CSS
+description: CSS Grid を用いたレイアウトの CSS を開発メモです。
+order: 4
+tags: [CSS, レイアウト]
+date: 2026-11-02
+---
+`layout.css` は、CSS Grid を用いたレイアウトの CSS を記述するファイルです。
+- `PostCSS` を用いて、画面幅に応じたカラム表示の切り替えを行います。
+
+## レイアウトの基本構造
+`CSS Grid` を用いて、レイアウトの基本構造を定義します。
+- `grid-template-columns` で、サイドバー、メインコンテンツ、サブパネルの幅を定義します。
+
+```css
+.layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--subpanel-width);
+    grid-template-areas: "sidebar main sub";
+    min-height: calc(100dvh - var(--header-height));
+}
+```
+
+- サブパネルがない場合は、サイドバーとメインコンテンツの2カラムに切り替えます。
+
+```css
+.layout:where(.no-subpanel) {
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    grid-template-areas: "sidebar main";
+    --content-padding: var(--content-padding-wide);
+}
+```
+
+- サブパネルが折り畳まれていない場合は、メインコンテンツのパディングを広くします。
+
+```css
+@media (--no-subpanel-collapsed) {
+    .layout:where(.no-subpanel) {
+        --content-padding: var(--content-padding-medium);
+    }
+}
+```
