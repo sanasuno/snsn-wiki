@@ -17,13 +17,13 @@
     --z-drawer-button: 1000;
 }
 
-@media(--subpanel-collapsed) {
+@media (--subpanel-collapsed) {
     :root {
         --content-padding: var(--content-padding-medium);
     }
 }
 
-@media(--sidebar-collapsed) {
+@media (--sidebar-collapsed) {
     :root {
         --content-padding: var(--content-padding-narrow);
     }
@@ -116,20 +116,22 @@
     --color-wikilink-missing: #ef5350;
 }
 
-:root[data-theme="dark"] .astro-code,
-:root[data-theme="dark"] .astro-code span {
-    color: var(--shiki-dark) !important;
+:root[data-theme="dark"] .astro-code {
     background-color: var(--shiki-dark-bg) !important;
 }
 
+:root[data-theme="dark"] .astro-code,
+:root[data-theme="dark"] .astro-code span {
+    color: var(--shiki-dark) !important;
+}
+
 :root {
-    --font-sans: 'Noto Sans', sans-serif;
-    --font-serif: 'Noto Serif', serif;
+    --font-sans: 'Noto Sans', 'Noto Sans JP' sans-serif;
+    --font-serif: 'Noto Serif', 'Noto Serif JP' serif;
     --font-mono: 'Noto Sans Mono', monospace;
 }
 
 :root[data-lang="ja"] {
     --font-sans: 'Noto Sans JP', sans-serif;
     --font-serif: 'Noto Serif JP', serif;
-    --font-mono: 'Noto Sans Mono', monospace;
 }
