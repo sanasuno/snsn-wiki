@@ -9,6 +9,7 @@ export const enCustom = {
     'site.description': 'Personal knowledge base site built with Astro',
     
     'category.development': 'Development',
+    'category.development.css': 'CSS',
     'category.development.i18n': 'Internationalization',
     'category.development.layouts': 'Layouts',
     'category.development.lib': 'Libraries',

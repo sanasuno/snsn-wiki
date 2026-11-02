@@ -8,6 +8,7 @@ export const customKeys = [
     'site.description',
 
     'category.development',
+    'category.development.css',
     'category.development.i18n',
     'category.development.layouts',
     'category.development.lib',

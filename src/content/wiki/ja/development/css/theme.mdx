@@ -1,0 +1,35 @@
+---
+title: テーマ CSS 変数
+description: テーマ CSS 変数の開発メモです。
+order: 2
+tags: [CSS, レイアウト]
+date: 2026-11-02
+---
+`theme.css` は、テーマカラーなどの CSS 変数を定義するファイルです。
+
+## レイアウト寸法
+`:root` に、レイアウトの各部位の寸法を CSS 変数として定義します。
+- `postcss.config.cjs` で定義した `layout.tokens.json` の値を用いて、各部位の幅やパディングを設定します。
+
+```css
+:root {
+    --header-height: 56px;
+    --content-padding: var(--content-padding-wide);
+
+    --z-header: 100;
+    --z-drawer: 999;
+    --z-drawer-button: 1000;
+}
+
+@media(--subpanel-collapsed) {
+    :root {
+        --content-padding: var(--content-padding-medium);
+    }
+}
+
+@media(--sidebar-collapsed) {
+    :root {
+        --content-padding: var(--content-padding-narrow);
+    }
+}
+```

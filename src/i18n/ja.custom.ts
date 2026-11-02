@@ -9,6 +9,7 @@ export const jaCustom = {
     'site.description': 'Astro製個人用ナレッジベースサイト',
 
     'category.development': '開発',
+    'category.development.css': 'CSS',
     'category.development.i18n': '国際化',
     'category.development.layouts': 'レイアウト',
     'category.development.lib': 'ライブラリ',

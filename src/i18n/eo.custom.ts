@@ -9,6 +9,7 @@ export const eoCustom = {
     'site.description': 'Persona sciobazo-retejo konstruita per Astro',
     
     'category.development': 'Programado',
+    'category.development.css': 'CSS',
     'category.development.i18n': 'Internacia',
     'category.development.layouts': 'Aranĝoj',
     'category.development.lib': 'Bibliotekoj',

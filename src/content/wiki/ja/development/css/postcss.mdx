@@ -115,3 +115,16 @@ if (/theme\.css$/.test(root.source?.input.file ?? '')) {
 }
 ```
 
+#### プラグイン指定
+`PostCSS` のプラグインとして指定します。
+
+```cjs
+layoutTokens.postcss = true;
+module.exports = {
+    plugins: [
+        layoutTokens(),
+        require('postcss-custom-media'),
+        require('postcss-preset-env'),
+    ],
+};
+```
