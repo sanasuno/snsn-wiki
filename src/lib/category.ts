@@ -6,21 +6,6 @@ import { t } from '@lib/i18n';
 import { isTranslationKey, type Locale } from '@lib/i18n';
 
 /**
- * ページIDからカテゴリ文字列を取得する関数
- * @param pageId ページID
- * @param isSubpage サブページかどうか
- * @returns カテゴリ文字列
- */
-export function getCategory(pageId: string, isSubpage: boolean = false): string {
-    const parts = pageId.split('/');
-    if (isSubpage) {
-        return parts.slice(1, -2).join('/');
-    } else {
-        return parts.slice(1, -1).join('/');
-    }
-}
-
-/**
  * ページIDからカテゴリ配列を取得する関数
  * @param pageID ページID
  * @param isSubpage サブページかどうか
@@ -32,6 +17,16 @@ export function getCategoryArray(pageId: string, isSubpage: boolean = false): st
 }
 
 /**
+ * ページIDからカテゴリ文字列を取得する関数
+ * @param pageId ページID
+ * @param isSubpage サブページかどうか
+ * @returns カテゴリ文字列
+ */
+export function getCategory(pageId: string, isSubpage: boolean = false): string {
+    return getCategoryArray(pageId, isSubpage).at(-1) ?? '';
+}
+
+/**
  * カテゴリの翻訳を取得する関数
  * @param category カテゴリ
  * @param locale ロケール
@@ -40,7 +35,7 @@ export function getCategoryArray(pageId: string, isSubpage: boolean = false): st
 export function translateCategory(category: string, locale: Locale): string {
     const parts = category.split('/');
     const key = `category.${parts.join('.')}`;
-    return isTranslationKey(key) ? t(key, locale) : parts.join(' / ');
+    return isTranslationKey(key) ? t(key, locale) : parts[parts.length - 1];
 }
 
 /**
@@ -56,16 +51,41 @@ export function getTranslatedCategory(pageId: string, locale: Locale, isSubpage:
 }
 
 /**
- * カテゴリ配列がフィルタカテゴリ配列を内に含まれるかを判定する関数
+ * カテゴリパスを翻訳する関数
+ * @param category カテゴリパス
+ * @param locale ロケール
+ * @returns 翻訳されたカテゴリパス
+ */
+export function translateCategoryPath(category: string, locale: Locale): string {
+    return category.split('/').map((_, i, arr) => translateCategory(arr.slice(0, i + 1).join('/'), locale)).join('/');
+}
+
+/**
+ * カテゴリ配列がフィルタカテゴリ配列自身もしくはその配下にあるかを判定する関数
  * @param categoryArray カテゴリ配列
  * @param filterCategoryArray フィルタカテゴリ配列
- * @returns 一致するかどうか
+ * @returns カテゴリ配列がフィルタカテゴリ配列自身もしくはその配下にある場合はtrue、そうでなければfalse
  */
-export function matchCategory(categoryArray: string[], filterCategoryArray: string[]): boolean {
-    if (filterCategoryArray.length === 0) {
-        return true;
+export function matchCategory(pageCategory: string, filterCategory: string): boolean {
+    return filterCategory === ''
+        || pageCategory === filterCategory
+        || pageCategory.startsWith(`${filterCategory}/`);
+}
+
+/**
+ * 子カテゴリを取得する関数
+ * @param pageCategory ページカテゴリ
+ * @param parentCategory 親カテゴリ
+ * @returns 子カテゴリ
+ */
+export function getChildCategory(pageCategory: string, parentCategory: string): string | null {
+    if (pageCategory === parentCategory) {
+        return null;
     }
-    return filterCategoryArray.every((cat, index) => {
-        return categoryArray[index] === cat;
-    });
+    if (!matchCategory(pageCategory, parentCategory)) {
+        return null;
+    }
+    const rest = parentCategory === '' ? pageCategory : pageCategory.slice(parentCategory.length + 1);
+    const head = rest.split('/')[0];
+    return parentCategory === '' ? head : `${parentCategory}/${head}`;
 }

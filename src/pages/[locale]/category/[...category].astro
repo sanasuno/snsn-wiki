@@ -5,7 +5,7 @@
  */
 import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
-import { getCategoryArray, translateCategory, matchCategory } from '@lib/category';
+import { getCategoryArray, getCategory, translateCategory, matchCategory, getChildCategory } from '@lib/category';
 import { getLocaleBaseUrl, getWikiUrl, ensureTrailingSlash } from '@lib/path';
 import { getUniquePagesByLocale } from '@lib/pages';
 import MainLayout from '@layouts/MainLayout.astro';
@@ -60,41 +60,30 @@ const alternateLinks = locales.map((loc) => ({
 }))
 
 const wikiPages = await getCollection('wiki', (p) => !p.data.draft);
-const categoryPages = wikiPages.filter(page =>
-    matchCategory(getCategoryArray(page.id, page.data.isSubpage), categoryArray)
-);
-const sortedPages = getUniquePagesByLocale(categoryPages, locale).sort((a, b) => {
-    return a.data.title.localeCompare(b.data.title, locale);
+const inCategory = getUniquePagesByLocale(wikiPages, locale).filter((page) => {
+    const pageCategoryArray = getCategory(page.id, page.data.isSubpage);
+    return matchCategory(pageCategoryArray, category);
 })
+const sortedPages = [...inCategory].sort((a, b) =>
+    (a.data.order - b.data.order) || a.data.title.localeCompare(b.data.title, locale)
+);
+const directPages = sortedPages.filter((page) => getCategory(page.id, page.data.isSubpage) === category);
 
-const childCategories = new Set<string>();
-for (const page of categoryPages) {
-    const pageCategoryArray = getCategoryArray(page.id, page.data.isSubpage);
-    if (matchCategory(pageCategoryArray, categoryArray) && pageCategoryArray.length > categoryArray.length) {
-        const childCategory = pageCategoryArray[categoryArray.length];
-        childCategories.add(childCategory);
+const childCounts = new Map<string, number>();
+for (const page of sortedPages) {
+    const child = getChildCategory(getCategory(page.id, page.data.isSubpage), category);
+    if (child) {
+        childCounts.set(child, (childCounts.get(child) ?? 0) + 1);
     }
 }
-
-const childCategoryPages = Array.from(childCategories).sort().map((childCategory) => {
-    const childCategoryPath = childCategory;
-    const count = categoryPages.filter(page => {
-        const pageCategoryArray = getCategoryArray(page.id, page.data.isSubpage);
-        return matchCategory(pageCategoryArray, [...categoryArray, childCategory]);
-    }).length;
-    return {
-        category: childCategory,
-        path: childCategoryPath,
-        count: count,
-        href: ensureTrailingSlash(`${localeBaseUrl}category/${childCategoryPath}`),
-        label: translateCategory(childCategoryPath, locale),
-    };
-});
-
-const directPages = sortedPages.filter(page => {
-    const pageCategoryArray = getCategoryArray(page.id, page.data.isSubpage);
-    return matchCategory(pageCategoryArray, categoryArray) && pageCategoryArray.length === categoryArray.length;
-});
+const childCategoryPages = [...childCounts]
+    .sort(([a], [b]) => a.localeCompare(b, locale))
+    .map(([path, count]) => ({
+        path,
+        count,
+        href: ensureTrailingSlash(`${localeBaseUrl}category/${path}`),
+        label: translateCategory(path, locale)
+    }))
 ---
 <MainLayout
     title={category === '' ? t('categorypage.title', locale) : translateCategory(category, locale)}
@@ -140,7 +129,7 @@ const directPages = sortedPages.filter(page => {
     </div>
 
     <div class="listpage-content">
-        {childCategories.size > 0 && (
+        {childCategoryPages.length > 0 && (
             <div class="listpage-child-categories">
                 <h2 class="listpage-child-categories-title">{t('categorypage.title', locale)}</h2>
                 <ul class="listpage-child-categories-list">

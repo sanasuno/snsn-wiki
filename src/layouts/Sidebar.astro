@@ -7,7 +7,7 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import { sidebarNavItems, autoAddUnknownCategories, type SortMode } from '@layouts/sidebar.nav';
 import { getUniquePagesByLocale } from '@lib/pages';
 import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
-import { getCategory, translateCategory } from '@lib/category';
+import { getCategory, translateCategoryPath } from '@lib/category';
 import { t, type Locale } from '@lib/i18n';
 
 interface Props {
@@ -127,7 +127,7 @@ if (autoAddUnknownCategories) {
     const unknownCategories = [...pagesByCategory].sort(([a], [b]) => a.localeCompare(b, locale));
     for (const [category, pages] of unknownCategories) {
         if (configuredCategories.has(category)) continue;
-        const title = translateCategory(category, locale);
+        const title = translateCategoryPath(category, locale);
         sections.push({
             title,
             icon: 'fas fa-folder',
