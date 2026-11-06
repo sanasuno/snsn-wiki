@@ -403,16 +403,16 @@ code {
     color: var(--color-accent-text);
 }
 
-.sppage-back {
+.listpage-back {
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
 }
 
-.sppage-back a {
+.listpage-back a {
     text-decoration: none;
 }
 
-.article-content .indexpage-title {
+.article-content .listpage-title {
     display: flex;
     flex-wrap: wrap;
     align-items: center;

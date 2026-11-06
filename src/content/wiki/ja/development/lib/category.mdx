@@ -69,3 +69,17 @@ export function getTranslatedCategory(pageId: string, locale: Locale, isSubPage:
     return getCategoryLabel(category.join('/'), locale);
 }
 ```
+
+### matchCategory()
+対象のカテゴリ配列が、フィルタカテゴリ配列を内に含まれるかを判定する関数です。
+- フィルタカテゴリ配列が空の場合は、常に true を返します。
+```ts
+export function matchCategory(categoryArray: string[], filterCategoryArray: string[]): boolean {
+    if (filterCategoryArray.length === 0) {
+        return true;
+    }
+    return filterCategoryArray.every((cat, index) => {
+        return categoryArray[index] === cat;
+    });
+}
+```

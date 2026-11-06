@@ -54,3 +54,18 @@ export function getTranslatedCategory(pageId: string, locale: Locale, isSubpage:
     const category = getCategory(pageId, isSubpage);
     return translateCategory(category, locale);
 }
+
+/**
+ * カテゴリ配列がフィルタカテゴリ配列を内に含まれるかを判定する関数
+ * @param categoryArray カテゴリ配列
+ * @param filterCategoryArray フィルタカテゴリ配列
+ * @returns 一致するかどうか
+ */
+export function matchCategory(categoryArray: string[], filterCategoryArray: string[]): boolean {
+    if (filterCategoryArray.length === 0) {
+        return true;
+    }
+    return filterCategoryArray.every((cat, index) => {
+        return categoryArray[index] === cat;
+    });
+}

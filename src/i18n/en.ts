@@ -45,6 +45,7 @@ export const en = {
     
     'categorypage.title': 'Category',
     'categorypage.description': 'Category page description',
+    'categorypage.count': 'page(s)',
     
     'graph.title': 'Graph',
     'graph.description': 'Graph page description',

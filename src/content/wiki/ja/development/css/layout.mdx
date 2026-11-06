@@ -40,3 +40,28 @@ date: 2026-11-02
     }
 }
 ```
+
+- サブパネルが折り畳まれている場合は、サイドバーとメインコンテンツの2カラムに切り替えます。
+
+```css
+@media (--subpanel-collapsed) {
+    .layout {
+        grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+        grid-template-areas: "sidebar main";
+    }
+}
+```
+
+- サイドバーが折り畳まれている場合は、メインコンテンツのみの1カラムに切り替えます。
+
+```css
+@media (--sidebar-collapsed) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "main";
+    }
+    .layout:where(.no-subpanel) {
+        --content-padding: var(--content-padding-narrow);
+    }
+}
+```

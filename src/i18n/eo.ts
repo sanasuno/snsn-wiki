@@ -46,6 +46,7 @@ export const eo = {
     
     'categorypage.title': 'Kategorio',
     'categorypage.description': 'Kategoria paĝa priskribo',
+    'categorypage.count': 'paĝo(j)',
     
     'graph.title': 'Grafiko',
     'graph.description': 'Grafika paĝa priskribo',
