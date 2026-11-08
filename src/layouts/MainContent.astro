@@ -80,7 +80,7 @@ const crumbIcons = {
         </div>
     )}
     <header class="page-header">
-        {id && (
+        {type === 'wiki' && (
             <nav class="breadcrumb">
                 <ol class="breadcrumbs">
                     {crumbs.map((crumb, index) => {
