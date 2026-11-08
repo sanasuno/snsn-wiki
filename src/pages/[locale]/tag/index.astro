@@ -1,0 +1,31 @@
+---
+/**
+ * ./src/pages/[locale]/tag/index.astro
+ * タグ一覧ページ
+ */
+import { getCollection } from 'astro:content';
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { t, locales, type Locale } from '@lib/i18n';
+import MainLayout from '@layouts/MainLayout.astro';
+
+export const getStaticPaths = () => {
+    return locales.map((locale) => ({
+        params: { locale },
+    }));
+};
+
+const locale = Astro.params.locale as Locale;
+
+const alternateLinks = locales.map((locale) => ({
+    locale: locale,
+    href: getRelativeLocaleUrl(locale, '/tag'),
+}));
+---
+<MainLayout
+    title={t('tagpage.title', locale)}
+    description={t('tagpage.description', locale)}
+    locale={locale}
+    type="sppage"
+    alternateLinks={alternateLinks}
+>
+</MainLayout>
