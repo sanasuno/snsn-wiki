@@ -1,0 +1,103 @@
+---
+/**
+ * ./src/pages/[locale]/tag/[tag].astro
+ * タグページ
+ */
+import { getCollection } from 'astro:content';
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { t, locales, type Locale } from '@lib/i18n';
+import { getLocaleBaseUrl, getWikiUrl, ensureTrailingSlash } from '@lib/path';
+import { getUniquePagesByLocale } from '@lib/pages';
+import MainLayout from '@layouts/MainLayout.astro';
+
+export async function getStaticPaths() {
+    const pages = await getCollection('wiki', (p) => !p.data.draft);
+    const tagMap: Record<string, typeof pages> = {};
+    for (const page of pages) {
+        for (const tag of page.data.tags) {
+            if (!tagMap[tag]) {
+                tagMap[tag] = [];
+            }
+            tagMap[tag].push(page);
+        }
+    }
+    const paths: { params: { locale: Locale; tag: string }; props: { locale: Locale; tag: string; pages: typeof pages } }[] = [];
+    for (const locale of locales) {
+        for (const [tag, pages] of Object.entries(tagMap)) {
+            paths.push({
+                params: {
+                    locale,
+                    tag,
+                },
+                props: {
+                    locale,
+                    tag,
+                    pages,
+                },
+            });
+        }
+    }
+    return paths;
+}
+
+interface Props {
+    locale: Locale;
+    tag: string;
+    pages: typeof getCollection<'wiki'>;
+}
+
+const { locale, tag, pages } = Astro.props as Props;
+
+const localeBaseUrl = getLocaleBaseUrl(locale);
+const wikiBaseUrl = getWikiUrl(locale);
+
+const wikiPages = await getCollection('wiki', (p) => !p.data.draft);
+const tagPages = getUniquePagesByLocale(wikiPages, locale).filter((page) => page.data.tags.includes(tag));
+const sortedPages = [...tagPages].sort((a, b) =>
+    (a.data.title.localeCompare(b.data.title, locale))
+);
+
+const count = sortedPages.length;
+
+const alternateLinks = locales.map((loc) => ({
+    locale: loc,
+    href: getRelativeLocaleUrl(loc, `/tag/${tag}`),
+}))
+---
+<MainLayout
+    title={tag}
+    description={t('tagpage.description', locale)}
+    locale={locale}
+    alternateLinks={alternateLinks}
+    type="sppage"
+    showSubpanel={false}
+>
+    <div class="listpage-header">
+        {tag && (
+            <div class="listpage-back">
+                <a href={ensureTrailingSlash(`${localeBaseUrl}/tag`)}>
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    {t('tagpage.title', locale)}
+                </a>
+            </div>
+        )}
+        <div class="listpage-title">
+            <i class="fas fa-tag" aria-hidden="true"></i>
+            {tag}
+        </div>
+    </div>
+    <div class="listpage-content">
+        <div class="listpage-count">
+            {count} {t('tagpage.count', locale)}
+        </div>
+        <ul class="listpage-list">
+            {sortedPages.map((page) => (
+                <li>
+                    <a href={ensureTrailingSlash(`${wikiBaseUrl}/${page.id}`)}>
+                        {page.data.title}
+                    </a>
+                </li>
+            ))}
+        </ul>
+    </div>
+</MainLayout>

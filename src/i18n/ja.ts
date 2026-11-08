@@ -51,6 +51,10 @@ export const ja = {
     'categorypage.description': 'カテゴリの説明',
     'categorypage.count': '件',
 
+    'tagpage.title': 'タグ',
+    'tagpage.description': 'タグの説明',
+    'tagpage.count': '件',
+
     'graph.title': 'グラフ',
     'graph.description': 'グラフの説明',
     

@@ -1,9 +1,203 @@
 ---
 title: サイドバー
 description: サイドバーの開発記録です。
-order: 9
+order: 3
 tags: [開発記録]
 date: 2026-10-20
 ---
-## サイドバー構成
-`@layouts/Sidebar.astro` ファイルにサイドバーの構成を記述します。
+`@layouts/Sidebar.astro` は、サイドバーのレイアウトコンポーネントです。
+
+## サイドバーナビゲーション設定
+`@layouts/sidebar.nav.ts` 内に記述したアイテムをナビゲーションとして配置します。
+
+### ナビゲーション型定義
+ナビゲーションアイテムの型を定義します。
+ナビゲーション先のパス、外部リンクかどうか、表示用の翻訳キー、およびアイコン（Font Awesomeクラス）、一致判定の仕様（true で完全一致）を指定します。
+
+```ts
+export type SidebarNavItem = {
+    path: string;
+    external?: boolean;
+    i18nKey?: TranslationKey;
+    icon?: string;
+    exact?: boolean;
+}
+```
+
+### SortMode
+ナビゲーションに使用するソートモードの型定義です。
+
+```ts
+export type SortMode = 'title' | 'order' | 'date' | 'updated';
+```
+
+### サイドバーナビゲーションセクション定義
+サイドバーナビゲーションのセクションを定義します。
+セクション名、カテゴリ、ナビゲーションアイテム、ソートモード、アイコン、折りたたみ状態を指定します。
+
+```ts
+export type SidebarNavSection = {
+    titleKey: TranslationKey;
+    category?: string;
+    items?: SidebarNavItem[];
+    sort?: SortMode;
+    icon?: string;
+    collapsed?: boolean;
+}
+```
+
+### autoAddUnknownCategories
+未知のカテゴリを自動で追加するかどうかを指定します。
+
+```ts
+export const autoAddUnknownCategories = true;
+```
+
+### ナビゲーションアイテム設定
+ナビゲーションアイテムを記述します。
+
+```ts
+export const sidebarNavItems: SidebarNavSection[] = [
+    {
+        titleKey: 'sidebar.quickLinks',
+        items: [
+            { path: '/wiki', i18nKey: 'sidebar.home', icon: 'fas fa-house', exact: true },
+            { path: '/category', i18nKey: 'sidebar.category', icon: 'fas fa-folder' },
+        ]
+    },
+    {
+        titleKey: 'category.development',
+        category: 'development',
+        sort: 'order',
+        icon: 'fas fa-code',
+        collapsed: false
+    }
+];
+```
+
+## サイドバーナビゲーション表示
+### ページ収集
+`getCollection`関数を使用して `wiki`コレクションから下書き以外のページを収集し、`getUniquePagesByLocale()` で一意に絞り込みます。
+
+```ts
+const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+const uniquePages = getUniquePagesByLocale(wikiPages, locale);
+```
+
+各ページを `getCategory()` 関数で取得したカテゴリごとに分類し、`pagesByCategory` に格納します。
+
+```ts
+const slugMap = new Map<string, WikiPage>();
+const pagesByCategory = new Map<string, WikiPage[]>();
+for (const page of uniquePages) {
+    slugMap.set(getNormalizedSlug(page.id), page);
+    const category = getCategory(page.id, page.data.isSubpage);
+    if (!category) continue;
+    const list = pagesByCategory.get(category) ?? [];
+    list.push(page);
+    pagesByCategory.set(category, list);
+}
+```
+
+### ソート関数
+指定されたソート方法でソートします。
+- `title` : タイトルでソート
+- `order` : `order` フィールドでソート
+- `date` : `date` フィールドでソート
+- `updated` : `updated` フィールドでソート
+
+```ts
+const sorters: Record<SortMode, (a: WikiPage, b: WikiPage) => number> = {
+    title: (a, b) => a.data.title.localeCompare(b.data.title, locale),
+    order: (a, b) => a.data.order - b.data.order,
+    date: (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0),
+    updated: (a, b) => (b.data.updated?.getTime() ?? 0) - (a.data.updated?.getTime() ?? 0),
+};
+const sortPages = (pages: WikiPage[], mode: SortMode) => 
+    [...pages].sort((a, b) => sorters[mode](a, b) || sorters['title'](a, b));
+```
+
+### リンク生成
+ページへのリンクを取得して `SidebarLink` に変換します。
+
+```ts
+const toPageLink = (page: WikiPage): SidebarLink => {
+    const href = getWikiUrl(page.id, locale);
+    const pageLocale = getLocale(page.id);
+    return {
+        href,
+        label: page.data.title,
+        icon: 'far fa-file-lines',
+        current: href === currentPath,
+        external: false,
+        lang: pageLocale !== locale ? pageLocale : undefined,
+    };
+}
+```
+
+### セクション構築
+
+```ts
+const configuredCategories = new Set(
+    sidebarNavItems.flatMap((s) => s.category ? [s.category] : [])
+);
+const sections: SidebarSectionView[] = [];
+
+for (const section of sidebarNavItems) {
+    const title = t(section.titleKey, locale);
+    const collapsed = section.collapsed ?? false;
+
+    if (section.category) {
+        const pages = pagesByCategory.get(section.category);
+        if (!pages?.length) continue;
+        const links = sortPages(pages, section.sort ?? 'title').map(toPageLink);
+        sections.push({
+            title,
+            icon: section.icon,
+            collapsed: collapsed && !links.some((link) => link.current),
+            links,
+        });
+    } else if (section.items) {
+        const links = section.items.flatMap((item): SidebarLink[] => {
+            const wikiSlug = item.external ? undefined: item.path.match(/^\/wiki\/(.+?)\/?$/)?.[1];
+            const page = wikiSlug ? slugMap.get(normalizeSlugLike(wikiSlug)) : undefined;
+            const href = item.external
+                ? item.path
+                : page
+                    ? getWikiUrl(page.id, locale)
+                    : getLocalePathUrl(locale, item.path);
+            const label = item.i18nKey ? t(item.i18nKey, locale) : page?.data.title;
+            if (!href || !label) return [];
+            return [{
+                href,
+                label,
+                icon: item.icon ?? 'far fa-file-lines',
+                current: !item.external && isPathActive(item.path, currentPath, item.exact),
+                external: !!item.external,
+            }];
+        });
+        if (links.length > 0) {
+            sections.push({
+                title,
+                icon: section.icon,
+                collapsed: collapsed && !links.some((link) => link.current),
+                links,
+            });
+        }
+    }
+}
+
+if (autoAddUnknownCategories) {
+    const unknownCategories = [...pagesByCategory].sort(([a], [b]) => a.localeCompare(b, locale));
+    for (const [category, pages] of unknownCategories) {
+        if (configuredCategories.has(category)) continue;
+        const title = translateCategoryPath(category, locale);
+        sections.push({
+            title,
+            icon: 'fas fa-folder',
+            collapsed: false,
+            links: sortPages(pages, 'order').map(toPageLink),
+        });
+    }
+}
+```

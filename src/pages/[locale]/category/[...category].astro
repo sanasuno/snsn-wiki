@@ -8,8 +8,8 @@ import { getRelativeLocaleUrl } from 'astro:i18n';
 import { getCategoryArray, getCategory, translateCategory, matchCategory, getChildCategory } from '@lib/category';
 import { getLocaleBaseUrl, getWikiUrl, ensureTrailingSlash } from '@lib/path';
 import { getUniquePagesByLocale } from '@lib/pages';
-import MainLayout from '@layouts/MainLayout.astro';
 import { t, locales, type Locale } from '@lib/i18n';
+import MainLayout from '@layouts/MainLayout.astro';
 
 export async function getStaticPaths() {
     const pages = await getCollection('wiki', (p) => !p.data.draft);
@@ -54,11 +54,6 @@ const parentLabel = parentCategory === ''
     ? t('categorypage.title', locale)
     : translateCategory(parentCategory, locale);
 
-const alternateLinks = locales.map((loc) => ({
-    locale: loc,
-    href: getRelativeLocaleUrl(loc, `/category/${category}`),
-}))
-
 const wikiPages = await getCollection('wiki', (p) => !p.data.draft);
 const inCategory = getUniquePagesByLocale(wikiPages, locale).filter((page) => {
     const pageCategoryArray = getCategory(page.id, page.data.isSubpage);
@@ -84,6 +79,11 @@ const childCategoryPages = [...childCounts]
         href: ensureTrailingSlash(`${localeBaseUrl}category/${path}`),
         label: translateCategory(path, locale)
     }))
+
+const alternateLinks = locales.map((loc) => ({
+    locale: loc,
+    href: getRelativeLocaleUrl(loc, `/category/${category}`),
+}))
 ---
 <MainLayout
     title={category === '' ? t('categorypage.title', locale) : translateCategory(category, locale)}
@@ -97,13 +97,13 @@ const childCategoryPages = [...childCounts]
         {categoryArray.length > 0 && (
             <div class="listpage-back">
                 <a href={parentHref}>
-                    <i class="fas fa-arrow-left"></i>
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
                     {parentLabel}
                 </a>
             </div>
         )}
         <div class="listpage-title">
-            <i class="fas fa-folder"></i>
+            <i class="fas fa-folder" aria-hidden="true"></i>
             {categoryArray.length === 0
                 ? <span>{t('categorypage.title', locale)}</span>
                 : categoryArray.map((_, index) => {
@@ -136,7 +136,7 @@ const childCategoryPages = [...childCounts]
                     {childCategoryPages.map((child) => (
                         <li class="listpage-child-categories-item">
                             <a href={child.href}>
-                                <i class="fas fa-folder"></i>
+                                <i class="fas fa-folder" aria-hidden="true"></i>
                                 {child.label}
                                 <span class="listpage-child-categories-count">
                                     {child.count} {t('categorypage.count', locale)}
@@ -152,7 +152,7 @@ const childCategoryPages = [...childCounts]
                 {directPages.map((page) => (
                     <div class="listpage-directpage-item">
                         <a href={getWikiUrl(page.id, locale)} class="listpage-directpage-link">
-                            <i class="fas fa-file"></i>
+                            <i class="fas fa-file" aria-hidden="true"></i>
                             {page.data.title}
                         </a>
                     </div>

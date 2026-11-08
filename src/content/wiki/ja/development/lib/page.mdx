@@ -133,16 +133,18 @@ return resolved;
 ```
 
 ## getUniquePagesByLocale()
-ロケールごとにページを一意にフィルタリングする関数です。
-
-指定されたロケール、デフォルトロケール、その他のロケール（ `locales` の配列順）の順序で、ページのスラッグをキーとして一意にフィルタリングします。
+対象のページ群に対し、指定ロケール向けに正規化スラッグをキーとした一意のページリストを返す関数です。
+- 指定されたロケール、デフォルトロケール、その他のロケール（ `locales` の配列順）の順序で、同じスラッグを持つページ同士で比較し、最も優先度の高いものを格納して返します。
 
 ```ts
 export function getUniquePagesByLocale( pages: CollectionEntry<'wiki'>[], locale: Locale ): CollectionEntry<'wiki'>[] {
     const priority = (l: Locale) =>
-        l === locale ? 0: l === defaultLocale ? 1 : 2 + locales.indexOf(l);
+        l === locale
+            ? 0
+            : l === defaultLocale
+                ? 1
+                : 2 + locales.indexOf(l);
     const best: Record<string, CollectionEntry<'wiki'>> = {};
-
     for (const page of pages) {
         const key = getNormalizedSlug(page.id);
         const current = best[key];

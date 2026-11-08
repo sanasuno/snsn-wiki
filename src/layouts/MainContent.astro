@@ -5,7 +5,7 @@
  */
 import { t, type Locale } from '@lib/i18n';
 import { ensureTrailingSlash, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath, getLocalePathUrl } from '@lib/path';
-import { getCategory, getCategoryArray, getTranslatedCategory } from '@lib/category';
+import { getCategory, getCategoryArray, getTranslatedCategory, translateCategory } from '@lib/category';
 import { formatDate } from '@lib/date';
 
 interface Props {
@@ -47,8 +47,15 @@ type Crumb = {
     href: string;
 }
 
-const categoryLabel = id ? getTranslatedCategory(id, locale, isSubpage) : '';
 const isWikiRoot = id ? getCategoryArray(id, isSubpage).length === 0 : false;
+
+const categoryCrumbs: Crumb[] = id
+    ? getCategoryArray(id, isSubpage).map((path) => ({
+        kind: 'category',
+        label: translateCategory(path, locale),
+        href: ensureTrailingSlash(`${localeBaseUrl}category/${path}`),
+    }))
+    : [];
 
 const crumbs: Crumb[] = [
     {
@@ -56,8 +63,8 @@ const crumbs: Crumb[] = [
         label: t('homepage.title', locale),
         href: ensureTrailingSlash(wikiBaseUrl)
     },
-    ...(categoryLabel ? [{ kind: 'category', label: categoryLabel } as Crumb] : []),
-    ...(isWikiRoot ? [] : [{ kind: 'page', label: title } as Crumb]),
+    ...categoryCrumbs,
+    ...(isWikiRoot ? [] : [{ kind: 'page', label: title, href: '' } as Crumb]),
 ];
 const crumbIcons = {
     home: 'fas fa-house',

@@ -89,16 +89,19 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
 }
 
 /**
- * ロケールごとにページを一意にフィルタリングする関数
+ * 対象のページ群に対し、指定ロケール向けに正規化スラッグをキーとした一意のページリストを返す関数
  * @param pages ページリスト
  * @param locale ロケール
- * @returns 一意にフィルタリングされたページリスト
+ * @returns ページリスト
  */
 export function getUniquePagesByLocale( pages: CollectionEntry<'wiki'>[], locale: Locale ): CollectionEntry<'wiki'>[] {
     const priority = (l: Locale) =>
-        l === locale ? 0: l === defaultLocale ? 1 : 2 + locales.indexOf(l);
+        l === locale
+            ? 0
+            : l === defaultLocale
+                ? 1
+                : 2 + locales.indexOf(l);
     const best: Record<string, CollectionEntry<'wiki'>> = {};
-
     for (const page of pages) {
         const key = getNormalizedSlug(page.id);
         const current = best[key];

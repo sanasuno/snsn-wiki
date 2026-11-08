@@ -2,12 +2,11 @@
  * @lib/category.ts
  * カテゴリ関連のユーティリティ関数
  */
-import { t } from '@lib/i18n';
-import { isTranslationKey, type Locale } from '@lib/i18n';
+import { t, isTranslationKey, type Locale } from '@lib/i18n';
 
 /**
  * ページIDからカテゴリ配列を取得する関数
- * @param pageID ページID
+ * @param pageId ページID
  * @param isSubpage サブページかどうか
  * @returns カテゴリ配列
  */
@@ -42,7 +41,7 @@ export function translateCategory(category: string, locale: Locale): string {
  * ページIDから翻訳されたカテゴリ名を取得する関数
  * @param pageId ページID
  * @param locale ロケール
- * @param isSubPage サブページかどうか
+ * @param isSubpage サブページかどうか
  * @returns 翻訳されたカテゴリ名
  */
 export function getTranslatedCategory(pageId: string, locale: Locale, isSubpage: boolean = false ): string {
@@ -57,7 +56,7 @@ export function getTranslatedCategory(pageId: string, locale: Locale, isSubpage:
  * @returns 翻訳されたカテゴリパス
  */
 export function translateCategoryPath(category: string, locale: Locale): string {
-    return category.split('/').map((_, i, arr) => translateCategory(arr.slice(0, i + 1).join('/'), locale)).join('/');
+    return category.split('/').map((_, i, arr) => translateCategory(arr.slice(0, i + 1).join('/'), locale)).join(' / ');
 }
 
 /**
