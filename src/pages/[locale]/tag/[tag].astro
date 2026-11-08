@@ -59,7 +59,7 @@ const sortedPages = [...tagPages].sort((a, b) =>
 
 const alternateLinks = locales.map((loc) => ({
     locale: loc,
-    href: getRelativeLocaleUrl(loc, `/tag/${tag}`),
+    href: getRelativeLocaleUrl(loc, `tag/${tag}`),
 }))
 ---
 <MainLayout

@@ -6,6 +6,7 @@
 import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import { t, locales, type Locale } from '@lib/i18n';
+import { getUniquePagesByLocale } from '@lib/pages';
 import MainLayout from '@layouts/MainLayout.astro';
 
 export const getStaticPaths = () => {
@@ -16,9 +17,25 @@ export const getStaticPaths = () => {
 
 const locale = Astro.params.locale as Locale;
 
+const wikiPages = await getCollection('wiki', (p) => !p.data.draft);
+const pages = getUniquePagesByLocale(wikiPages, locale);
+const tagMap: Record<string, typeof pages> = {};
+for (const page of pages) {
+    const tags = page.data.tags || [];
+    for (const tag of tags) {
+        if (!tagMap[tag]) {
+            tagMap[tag] = [];
+        }
+        tagMap[tag].push(page);
+    }
+}
+const sortedTags = Object.entries(tagMap).sort(([a], [b]) =>
+    a[0].localeCompare(b[0], locale)
+);
+
 const alternateLinks = locales.map((locale) => ({
     locale: locale,
-    href: getRelativeLocaleUrl(locale, '/tag'),
+    href: getRelativeLocaleUrl(locale, 'tag'),
 }));
 ---
 <MainLayout
@@ -28,4 +45,13 @@ const alternateLinks = locales.map((locale) => ({
     type="sppage"
     alternateLinks={alternateLinks}
 >
+    <div class="listpage-header">
+        <div class="listpage-title">
+            <i class="fas fa-tags" aria-hidden="true"></i>
+            {t('tagpage.title', locale)}
+        </div>
+        <div class="listpage-description">
+            {t('tagpage.description', locale)}
+        </div>
+    </div>
 </MainLayout>
