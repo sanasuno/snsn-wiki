@@ -3,15 +3,16 @@
  * @layouts/MainContent.astro
  * メインコンテンツレイアウト
  */
+import { getEntry } from 'astro:content';
 import { t, type Locale } from '@lib/i18n';
-import { ensureTrailingSlash, getLocaleBaseUrl, getWikiBaseUrl, getCurrentPath, getLocalePathUrl } from '@lib/path';
+import { ensureTrailingSlash, removeTrailingSlash, getLocaleBaseUrl, getWikiBaseUrl, getWikiUrl, getCurrentPath, getLocalePathUrl } from '@lib/path';
 import { getCategory, getCategoryArray, getTranslatedCategory, translateCategory } from '@lib/category';
 import { formatDate } from '@lib/date';
 
 interface Props {
     title: string;
     locale: Locale;
-    type: 'wiki' | 'sppage' | 'other';
+    type: 'wiki' | 'category' | 'tag' | 'other';
     tags?: string[];
     date?: Date;
     updated?: Date;
@@ -37,17 +38,13 @@ const {
 const localeBaseUrl = getLocaleBaseUrl(locale);
 const wikiBaseUrl = getWikiBaseUrl(locale);
 
-const currentPath = getCurrentPath(Astro.url);
-
-const categoryString = id ? getCategory(id, isSubpage) : '';
-
 type Crumb = {
     kind: 'home' | 'category' | 'page';
     label: string;
     href: string;
 }
 
-const isWikiRoot = id ? getCategoryArray(id, isSubpage).length === 0 : false;
+const isWikiRoot = (type === 'wiki' && id) ? getCategoryArray(id, isSubpage).length === 0 : false;
 
 const categoryCrumbs: Crumb[] = id
     ? getCategoryArray(id, isSubpage).map((path) => ({
@@ -71,6 +68,19 @@ const crumbIcons = {
     category: 'fas fa-folder',
     page: 'far fa-file',
 }
+
+const currentPath = getCurrentPath(Astro.url);
+
+const categoryString = id ? getCategory(id, isSubpage) : '';
+const parts = removeTrailingSlash(currentPath).split('/');
+const parentHref = ensureTrailingSlash(parts.slice(0, -1).join('/'));
+const parentLabel = type === 'wiki'
+    ? (await getEntry('wiki', categoryString))?.data.title
+    : type === 'category'
+        ? translateCategory(id?.split('/').slice(0, -1).join('/') ?? '', locale) || t('categorypage.title', locale)
+        : type === 'tag'
+            ? t('tagpage.title', locale)
+            : '';
 ---
 <main class="main-content" id="main-content">
     {isFallback && (
@@ -108,9 +118,17 @@ const crumbIcons = {
         <h1 class="page-title" lang={isFallback ? fallbackLocale : locale}>
             {title}
         </h1>
+        {isSubpage && (
+            <div class="subpage-back">
+                <a href={parentHref}>
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    {parentLabel}
+                </a>
+            </div>
+        )}
         {(id || date || updated) && (
             <div class="page-meta">
-                {id && (
+                {(type === 'wiki' && id) && (
                     <div class="page-meta-category">
                         <a href={ensureTrailingSlash(`${localeBaseUrl}category/${categoryString}`)}>
                             {

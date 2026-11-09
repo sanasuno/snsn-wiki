@@ -19,14 +19,14 @@ export const ja = {
     'header.nav.title': 'ナビゲーション',
     'header.nav.home': 'ホーム',
     'header.nav.category': 'カテゴリ',
-    'header.nav.tags': 'タグ',
+    'header.nav.tag': 'タグ',
     'header.nav.graph': 'グラフ',
 
     'sidebar.nav.title': 'サイドバー',
     'sidebar.quickLinks': 'クイックリンク',
     'sidebar.home': 'ホーム',
     'sidebar.category': 'カテゴリ',
-    'sidebar.tags': 'タグ',
+    'sidebar.tag': 'タグ',
     'sidebar.graph': 'グラフ',
 
     'fallback.notice': 'このページには現在日本語訳がありません。',

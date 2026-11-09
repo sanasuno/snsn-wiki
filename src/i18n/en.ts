@@ -18,14 +18,14 @@ export const en = {
     'header.nav.title': 'Navigation',
     'header.nav.home': 'Home',
     'header.nav.category': 'Category',
-    'header.nav.tags': 'Tags',
+    'header.nav.tag': 'Tags',
     'header.nav.graph': 'Graph',
     
     'sidebar.nav.title': 'Sidebar',
     'sidebar.quickLinks': 'Quick Links',
     'sidebar.home': 'Home',
     'sidebar.category': 'Category',
-    'sidebar.tags': 'Tags',
+    'sidebar.tag': 'Tags',
     'sidebar.graph': 'Graph',
     
     'fallback.notice': 'This page does not have an English translation yet.',

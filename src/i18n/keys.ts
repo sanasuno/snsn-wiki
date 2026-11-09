@@ -16,14 +16,14 @@ export const structuralKeys = [
     'header.nav.title',
     'header.nav.home',
     'header.nav.category',
-    'header.nav.tags',
+    'header.nav.tag',
     'header.nav.graph',
 
     'sidebar.nav.title',
     'sidebar.quickLinks',
     'sidebar.home',
     'sidebar.category',
-    'sidebar.tags',
+    'sidebar.tag',
     'sidebar.graph',
 
     'fallback.notice',

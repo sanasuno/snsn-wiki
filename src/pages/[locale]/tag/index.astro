@@ -6,6 +6,7 @@
 import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import { t, locales, type Locale } from '@lib/i18n';
+import { getLocaleBaseUrl, getWikiUrl, ensureTrailingSlash } from '@lib/path';
 import { getUniquePagesByLocale } from '@lib/pages';
 import MainLayout from '@layouts/MainLayout.astro';
 
@@ -16,6 +17,7 @@ export const getStaticPaths = () => {
 };
 
 const locale = Astro.params.locale as Locale;
+const localeBaseUrl = getLocaleBaseUrl(locale);
 
 const wikiPages = await getCollection('wiki', (p) => !p.data.draft);
 const pages = getUniquePagesByLocale(wikiPages, locale);
@@ -42,16 +44,28 @@ const alternateLinks = locales.map((locale) => ({
     title={t('tagpage.title', locale)}
     description={t('tagpage.description', locale)}
     locale={locale}
-    type="sppage"
+    type="tag"
     alternateLinks={alternateLinks}
 >
     <div class="listpage-header">
-        <div class="listpage-title">
-            <i class="fas fa-tags" aria-hidden="true"></i>
-            {t('tagpage.title', locale)}
+        <div class="listpage-counter">
+            {Object.keys(tagMap).length} {t('tagpage.count', locale)}
         </div>
-        <div class="listpage-description">
-            {t('tagpage.description', locale)}
-        </div>
+    </div>
+    <div class="listpage-content">
+        <ul class="listpage-list">
+            {sortedTags.map(([tag, pages]) => {
+                const updated = pages[0].data.updated ?? pages[0].data.date ?? new Date(0);
+                const isUpdated = !!pages[0].data.updated;
+                return (
+                    <li class="listpage-item">
+                        <a href={ensureTrailingSlash(`${localeBaseUrl}tag/${tag}`)}>
+                            <span class="tag-name">{tag}</span>
+                            <span class="tag-count">({pages.length})</span>
+                        </a>
+                    </li>
+                )
+            })}
+        </ul>
     </div>
 </MainLayout>

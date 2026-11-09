@@ -19,14 +19,14 @@ export const eo = {
     'header.nav.title': 'Navigado',
     'header.nav.home': 'Hejmo',
     'header.nav.category': 'Kategorio',
-    'header.nav.tags': 'Etikedoj',
+    'header.nav.tag': 'Etikedoj',
     'header.nav.graph': 'Grafiko',
 
     'sidebar.nav.title': 'Flanka Strio',
     'sidebar.quickLinks': 'Rapidaj Ligiloj',
     'sidebar.home': 'Hejmo',
     'sidebar.category': 'Kategorio',
-    'sidebar.tags': 'Etikedoj',
+    'sidebar.tag': 'Etikedoj',
     'sidebar.graph': 'Grafiko',
     
     'fallback.notice': 'Ĉi tiu paĝo ankoraŭ ne havas esperantan tradukon.',
