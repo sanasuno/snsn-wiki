@@ -443,7 +443,7 @@ code {
     gap: 16px;
 }
 
-.listpage-list {
+ul.listpage-list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -452,6 +452,64 @@ code {
     gap: 4px;
 }
 
-.listpage-item {
-    margin: 0;
+li.listpage-item {
+    margin: 4px 0;
+    padding: 0;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+}
+
+.listpage-item-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.listpage-item-content {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.listpage-item-title {
+    color: var(--color-link) !important;
+    text-decoration: none !important;
+}
+
+.listpage-item-title:hover {
+    text-decoration: underline !important;
+}
+
+.listpage-item-title i {
+    color: var(--color-text);
+}
+
+.listpage-item-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.listpage-item-tag {
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    background-color: var(--color-bg-accent);
+    border-radius: var(--radius-lg);
+    color: var(--color-accent) !important;
+    text-decoration: none !important;
+}
+
+.listpage-item-description {
+    margin: 4px !important;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.listpage-item-updated {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
 }
