@@ -112,7 +112,7 @@ export function getWikiBaseUrl(locale: Locale): string {
  */
 export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
-    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${encodeURIComponent(slug)}`);
+    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${slug}`);
 }
 
 /**

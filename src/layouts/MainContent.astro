@@ -5,7 +5,7 @@
  */
 import { getEntry } from 'astro:content';
 import { t, type Locale } from '@lib/i18n';
-import { ensureTrailingSlash, removeTrailingSlash, getWikiBaseUrl, getCategoryUrl, getTagUrl, getCurrentPath, getWikiUrl } from '@lib/path';
+import { ensureTrailingSlash, removeTrailingSlash, getWikiBaseUrl, getCategoryUrl, getTagUrl, getCurrentPath, getLocalePathUrl } from '@lib/path';
 import { getCategory, getCategoryArray, getTranslatedCategory, translateCategory } from '@lib/category';
 import { formatDate } from '@lib/date';
 
@@ -72,12 +72,9 @@ const currentPath = getCurrentPath(Astro.url);
 
 const categoryString = id ? getCategory(id, isSubpage) : '';
 const parts = removeTrailingSlash(currentPath).split('/');
-const parentId = type === 'wiki'
-    ? id?.split('/').slice(0, -1).join('/')
-    : undefined;
 const parentHref = ensureTrailingSlash(parts.slice(0, -1).join('/'));
 const parentLabel = type === 'wiki'
-    ? (await getEntry('wiki', parentId ?? ''))?.data.title
+    ? (await getEntry('wiki', `${locale}/${categoryString}`))?.data.title
     : type === 'category'
         ? translateCategory(id?.split('/').slice(0, -1).join('/') ?? '', locale) || t('categorypage.title', locale)
         : type === 'tag'
