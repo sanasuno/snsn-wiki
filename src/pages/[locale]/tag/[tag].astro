@@ -71,11 +71,11 @@ const alternateLinks = locales.map((loc) => ({
 >
     <div class="listpage-header">
         <div class="listpage-counter">
-            {sortedPages.length} {t('tagpage.count', locale)}
+            {sortedPages.length} {t('count.pages', locale)}
         </div>
     </div>
     <div class="listpage-content">
-        <ul class="listpage-list">
+        <ul class="listpage-item-list">
             {sortedPages.map((page) => {
                 const updated = page.data.updated ?? page.data.date ?? new Date(0);
                 const isUpdated = !!page.data.updated;

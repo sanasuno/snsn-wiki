@@ -43,14 +43,17 @@ export const eo = {
     
     'homepage.title': 'Hejmo',
     'homepage.description': 'Hejma paĝa priskribo',
+
+    'count.pages': 'paĝo(j)',
+    'count.categories': 'kategorio(j)',
+    'count.tags': 'etikedo(j)',
     
     'categorypage.title': 'Kategorio',
     'categorypage.description': 'Kategoria paĝa priskribo',
-    'categorypage.count': 'paĝo(j)',
+    'categorypage.directpages': 'Rektaj paĝoj',
 
     'tagpage.title': 'Etikedo',
     'tagpage.description': 'Etikeda paĝa priskribo',
-    'tagpage.count': 'paĝo(j)',
     
     'graph.title': 'Grafiko',
     'graph.description': 'Grafika paĝa priskribo',

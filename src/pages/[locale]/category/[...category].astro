@@ -1,6 +1,6 @@
 ---
 /**
- * ./src/pages/[locale]/categpru/[...category].astro
+ * ./src/pages/[locale]/category/[...category].astro
  * カテゴリページ
  */
 import { getCollection } from 'astro:content';
@@ -8,6 +8,7 @@ import { getRelativeLocaleUrl } from 'astro:i18n';
 import { getCategoryArray, getCategory, translateCategory, matchCategory, getChildCategory } from '@lib/category';
 import { getLocaleBaseUrl, getWikiUrl, ensureTrailingSlash } from '@lib/path';
 import { getUniquePagesByLocale } from '@lib/pages';
+import { formatDate } from '@lib/date';
 import MainLayout from '@layouts/MainLayout.astro';
 import { t, locales, type Locale } from '@lib/i18n';
 
@@ -97,41 +98,124 @@ const childCategoryPages = [...childCounts]
 >
     <div class="listpage-header">
         <div class="listpage-counter">
-            {sortedPages.length}
-            {t('categorypage.count', locale)}
+            {childCategoryPages.length} {t('count.categories', locale)} / {sortedPages.length} {t('count.pages', locale)}
         </div>
     </div>
 
     <div class="listpage-content">
         {childCategoryPages.length > 0 && (
-            <div class="listpage-child-categories">
-                <h2 class="listpage-child-categories-title">{t('categorypage.title', locale)}</h2>
-                <ul class="listpage-child-categories-list">
-                    {childCategoryPages.map((child) => (
-                        <li class="listpage-child-categories-item">
-                            <a href={child.href}>
-                                <i class="fas fa-folder"></i>
-                                {child.label}
-                                <span class="listpage-child-categories-count">
-                                    {child.count} {t('categorypage.count', locale)}
-                                </span>
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        )}
-        {directPages.length > 0 && (
-            <div class="listpage-directpage-list">
-                {directPages.map((page) => (
-                    <div class="listpage-directpage-item">
-                        <a href={getWikiUrl(page.id, locale)} class="listpage-directpage-link">
-                            <i class="fas fa-file"></i>
-                            {page.data.title}
-                        </a>
-                    </div>
-                ))}
-            </div>
+            <ul class="listpage-list">
+                {childCategoryPages.map((childCategory) => {
+                    return (
+                        <section class="listpage-section">
+                            <div class="listpage-section-header">
+                                <a href={childCategory.href} class="listpage-section-title">
+                                    <h3>
+                                        <i class="fas fa-folder"></i>
+                                        {childCategory.label}
+                                    </h3>
+                                </a>
+                                <div class="listpage-section-count">
+                                    {childCategory.count} {t('count.pages', locale)}
+                                </div>
+                            </div>
+                            <ul class="listpage-item-list">
+                                {sortedPages.filter((page) => getChildCategory(getCategory(page.id, page.data.isSubpage), category) === childCategory.path).map((page) => {
+                                    const updated = page.data.updated ?? page.data.date ?? new Date(0);
+                                    const isUpdated = !!page.data.updated;
+                                    return (
+                                        <li class="listpage-item">
+                                            <div class="listpage-item-left">
+                                                <div class="listpage-item-content">
+                                                    <a href={getWikiUrl(page.id, locale)} class="listpage-item-title">
+                                                        <i class="far fa-file-lines"></i>
+                                                        {page.data.title}
+                                                    </a>
+                                                    {page.data.tags && (
+                                                        <div class="listpage-item-tags">
+                                                            {page.data.tags.map((tag) => (
+                                                                <a href={ensureTrailingSlash(`${localeBaseUrl}tag/${tag}`)} class="listpage-item-tag">
+                                                                    #{tag}
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {page.data.description && (
+                                                    <p class="listpage-item-description">
+                                                        {page.data.description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        <div class="listpage-item-right">
+                                            <p class="listpage-item-updated">
+                                                <i class={`${isUpdated ? 'fas fa-clock-rotate-left' : 'far fa-calendar-plus'}`} aria-hidden="true"></i>
+                                                {formatDate(updated, locale)}
+                                            </p>
+                                        </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </section>
+                    );
+                })}
+                {directPages.length > 0 && (
+                    <ul class="listpage-item-list">
+                        <section class="listpage-section">
+                            <div class="listpage-section-header">
+                                <div class="listpage-section-title">
+                                    <h3>
+                                        <i class="fas fa-folder-open"></i>
+                                        {t('categorypage.directpages', locale)}
+                                    </h3>
+                                </div>
+                                <div class="listpage-section-count">
+                                    {directPages.length} {t('count.pages', locale)}
+                                </div>
+                            </div>
+                            <ul class="listpage-item-list">
+                                {directPages.map((page) => {
+                                    const updated = page.data.updated ?? page.data.date ?? new Date(0);
+                                    const isUpdated = !!page.data.updated;
+                                    return (
+                                        <li class="listpage-item">
+                                            <div class="listpage-item-left">
+                                                <div class="listpage-item-content">
+                                                    <a href={getWikiUrl(page.id, locale)} class="listpage-item-title">
+                                                        <i class="far fa-file-lines"></i>
+                                                        {page.data.title}
+                                                    </a>
+                                                    {page.data.tags && (
+                                                        <div class="listpage-item-tags">
+                                                            {page.data.tags.map((tag) => (
+                                                                <a href={ensureTrailingSlash(`${localeBaseUrl}tag/${tag}`)} class="listpage-item-tag">
+                                                                    #{tag}
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {page.data.description && (
+                                                    <p class="listpage-item-description">
+                                                        {page.data.description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div class="listpage-item-right">
+                                                <p class="listpage-item-updated">
+                                                    <i class={`${isUpdated ? 'fas fa-clock-rotate-left' : 'far fa-calendar-plus'}`} aria-hidden="true"></i>
+                                                    {formatDate(updated, locale)}
+                                                </p>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </section>
+                    </ul>
+                )}
+            </ul>
         )}
     </div>
 </MainLayout>

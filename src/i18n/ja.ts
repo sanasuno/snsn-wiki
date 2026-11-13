@@ -47,14 +47,16 @@ export const ja = {
     'homepage.title': 'ホーム',
     'homepage.description': 'ホームページの説明',
 
+    'count.pages': 'ページ',
+    'count.categories': 'カテゴリ',
+    'count.tags': 'タグ',
+
     'categorypage.title': 'カテゴリ',
     'categorypage.description': 'カテゴリの説明',
-    'categorypage.count': '件',
+    'categorypage.directpages': '直下ページ',
 
     'tagpage.title': 'タグ',
     'tagpage.description': 'タグの説明',
-    'tagpage.count': '件',
-
     'graph.title': 'グラフ',
     'graph.description': 'グラフの説明',
     

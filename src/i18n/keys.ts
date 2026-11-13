@@ -41,13 +41,16 @@ export const structuralKeys = [
     'homepage.title',
     'homepage.description',
 
+    'count.pages',
+    'count.categories',
+    'count.tags',
+
     'categorypage.title',
     'categorypage.description',
-    'categorypage.count',
+    'categorypage.directpages',
 
     'tagpage.title',
     'tagpage.description',
-    'tagpage.count',
 
     'graph.title',
     'graph.description',

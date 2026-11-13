@@ -42,14 +42,17 @@ export const en = {
     
     'homepage.title': 'Home',
     'homepage.description': 'Home page description',
+
+    'count.pages': 'page(s)',
+    'count.categories': 'category(ies)',
+    'count.tags': 'tag(s)',
     
     'categorypage.title': 'Category',
     'categorypage.description': 'Category page description',
-    'categorypage.count': 'page(s)',
+    'categorypage.directpages': 'Direct pages',
 
     'tagpage.title': 'Tag',
     'tagpage.description': 'Tag page description',
-    'tagpage.count': 'page(s)',
     
     'graph.title': 'Graph',
     'graph.description': 'Graph page description',

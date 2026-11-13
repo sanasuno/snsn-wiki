@@ -46,11 +46,12 @@ const alternateLinks = locales.map((locale) => ({
     description={t('tagpage.description', locale)}
     locale={locale}
     type="tag"
+    showSubpanel={false}
     alternateLinks={alternateLinks}
 >
     <div class="listpage-header">
         <div class="listpage-counter">
-            {Object.keys(tagMap).length} {t('tagpage.count', locale)}
+            {Object.keys(tagMap).length} {t('count.tags', locale)}
         </div>
     </div>
     <div class="listpage-content">
@@ -58,11 +59,13 @@ const alternateLinks = locales.map((locale) => ({
             {sortedTags.map(([tag, pages]) => {
                 return (
                     <section class="listpage-section">
-                        <a href={ensureTrailingSlash(`${localeBaseUrl}tag/${tag}`)} class="listpage-section-title">
-                            <h3>#{tag}</h3>
-                        </a>
-                        <div class="listpage-section-count">
-                            {pages.length} {t('tagpage.count', locale)}
+                        <div class="listpage-section-header">
+                            <a href={ensureTrailingSlash(`${localeBaseUrl}tag/${tag}`)} class="listpage-section-title">
+                                <h3>#{tag}</h3>
+                            </a>
+                            <div class="listpage-section-count">
+                                {pages.length} {t('count.pages', locale)}
+                            </div>
                         </div>
                         <ul class="listpage-item-list">
                             {pages.map((page) => {
@@ -72,7 +75,7 @@ const alternateLinks = locales.map((locale) => ({
                                     <li class="listpage-item">
                                         <div class="listpage-item-left">
                                             <div class="listpage-item-content">
-                                                <a href={getWikiUrl(page.id, locale)}>
+                                                <a href={getWikiUrl(page.id, locale)} class="listpage-item-title">
                                                     <i class="fa-regular fa-file-lines"></i>
                                                     {page.data.title}
                                                 </a>
@@ -84,11 +87,6 @@ const alternateLinks = locales.map((locale) => ({
                                                             </a>
                                                         ))}
                                                     </div>
-                                                )}
-                                                {page.data.description && (
-                                                    <p class="listpage-item-description">
-                                                        {page.data.description}
-                                                    </p>
                                                 )}
                                             </div>
                                             {page.data.description && (

@@ -75,7 +75,7 @@ const categoryString = id ? getCategory(id, isSubpage) : '';
 const parts = removeTrailingSlash(currentPath).split('/');
 const parentHref = ensureTrailingSlash(parts.slice(0, -1).join('/'));
 const parentLabel = type === 'wiki'
-    ? (await getEntry('wiki', categoryString))?.data.title
+    ? (await getEntry('wiki', `${locale}/${categoryString}`))?.data.title
     : type === 'category'
         ? translateCategory(id?.split('/').slice(0, -1).join('/') ?? '', locale) || t('categorypage.title', locale)
         : type === 'tag'

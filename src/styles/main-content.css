@@ -445,7 +445,47 @@ code {
 
 ul.listpage-list {
     list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.listpage-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.listpage-section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+}
+
+a.listpage-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-link) !important;
+    text-decoration: none !important;
+}
+
+a.listpage-section-title:hover {
+    text-decoration: underline !important;
+}
+
+a.listpage-section-title h3 {
     margin: 0;
+}
+
+.listpage-section-count {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+ul.listpage-item-list {
+    list-style: none;
+    margin: 0 !important;
     padding: 0;
     display: flex;
     flex-direction: column;
