@@ -6,7 +6,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { sidebarNavItems, autoAddUnknownCategories, type SortMode } from '@layouts/sidebar.nav';
 import { getUniquePagesByLocale } from '@lib/pages';
-import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
+import { ensureTrailingSlash, getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
 import { getCategory, translateCategoryPath } from '@lib/category';
 import { t, type Locale } from '@lib/i18n';
 
@@ -43,6 +43,7 @@ for (const page of uniquePages) {
     slugMap.set(getNormalizedSlug(page.id), page);
     const category = getCategory(page.id, page.data.isSubpage);
     if (!category) continue;
+    if (page.data.isSubpage) continue;
     const list = pagesByCategory.get(category) ?? [];
     list.push(page);
     pagesByCategory.set(category, list);
@@ -62,11 +63,12 @@ const sortPages = (pages: WikiPage[], mode: SortMode) =>
 const toPageLink = (page: WikiPage): SidebarLink => {
     const href = getWikiUrl(page.id, locale);
     const pageLocale = getLocale(page.id);
+    const parentPath = page.data.isSubpage ? ensureTrailingSlash(currentPath.split('/').slice(0, -1).join('/')) : currentPath;
     return {
         href,
         label: page.data.title,
         icon: 'far fa-file-lines',
-        current: href === currentPath,
+        current: href === parentPath,
         external: false,
         lang: pageLocale !== locale ? pageLocale : undefined,
     };
@@ -102,12 +104,15 @@ for (const section of sidebarNavItems) {
                     ? getWikiUrl(page.id, locale)
                     : getLocalePathUrl(locale, item.path);
             const label = item.i18nKey ? t(item.i18nKey, locale) : page?.data.title;
+            const isSubpage = item.external
+                ? false
+                : page?.data.isSubpage ?? false;
             if (!href || !label) return [];
             return [{
                 href,
                 label,
                 icon: item.icon ?? 'far fa-file-lines',
-                current: !item.external && isPathActive(item.path, currentPath, item.exact),
+                current: !item.external && isPathActive(item.path, currentPath, isSubpage, item.exact),
                 external: !!item.external,
             }];
         });

@@ -71,7 +71,7 @@ const childCategoryPages = [...pagesByChild].map(([path, pages]) => ({
     pages,
     href: getCategoryUrl(locale, path),
     label: translateCategory(path, locale),
-}))
+})).sort((a, b) => a.label.localeCompare(b.label, locale))
 
 const alternateLinks = locales.map((loc) => ({
     locale: loc,

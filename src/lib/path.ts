@@ -162,19 +162,25 @@ export function decodePath(path: string): string {
  * 対象のスラッグが現在のパスでアクティブかどうかを判定する関数
  * @param targetSlug - 比較するスラッグ
  * @param currentPath - 現在のパス
+ * @param isSubpage - サブページかどうか
  * @param exact - 絶対一致かどうか
  * @returns パスが一致する場合はtrue、そうでない場合はfalse
  */
-export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
+export function isPathActive(targetSlug: string, currentPath: string, isSubpage = false, exact = false): boolean {
     const base = getBaseUrl();
     const decodedCurrentPath = decodePath(currentPath);
-    const relativePath = decodedCurrentPath.startsWith(base) ? decodedCurrentPath.slice(base.length) : decodedCurrentPath;
+    const relativePath = decodedCurrentPath.startsWith(base)
+        ? decodedCurrentPath.slice(base.length)
+        : decodedCurrentPath;
     const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
         : normalizeSlugLike(removeTrailingSlash(relativePath));
     if (exact || targetSlug === '/') {
         return currentSlug === targetSlug;
+    }
+    if (!exact && isSubpage) {
+        return currentSlug.startsWith(`${targetSlug}/`);
     }
     return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
 }

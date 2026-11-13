@@ -62,8 +62,8 @@ export function translateCategoryPath(category: string, locale: Locale): string 
 /**
  * ページのカテゴリがフィルタカテゴリ自身もしくはその配下にあるかを判定する関数
  * @param pageCategory カテゴリ
- * @param filterCategoryArray フィルタカテゴリ配列
- * @returns カテゴリ配列がフィルタカテゴリ配列自身もしくはその配下にある場合はtrue、そうでなければfalse
+ * @param filterCategory フィルタカテゴリ
+ * @returns カテゴリがフィルタカテゴリ自身もしくはその配下にある場合はtrue、そうでなければfalse
  */
 export function matchCategory(pageCategory: string, filterCategory: string): boolean {
     return filterCategory === ''

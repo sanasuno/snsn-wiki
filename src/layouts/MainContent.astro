@@ -5,7 +5,7 @@
  */
 import { getEntry } from 'astro:content';
 import { t, type Locale } from '@lib/i18n';
-import { ensureTrailingSlash, removeTrailingSlash, getLocaleBaseUrl, getWikiBaseUrl, getWikiUrl, getCurrentPath, getLocalePathUrl } from '@lib/path';
+import { ensureTrailingSlash, removeTrailingSlash, getWikiBaseUrl, getCategoryUrl, getTagUrl, getCurrentPath, getWikiUrl } from '@lib/path';
 import { getCategory, getCategoryArray, getTranslatedCategory, translateCategory } from '@lib/category';
 import { formatDate } from '@lib/date';
 
@@ -35,7 +35,6 @@ const {
     fallbackLocale,
 } = Astro.props;
 
-const localeBaseUrl = getLocaleBaseUrl(locale);
 const wikiBaseUrl = getWikiBaseUrl(locale);
 
 type Crumb = {
@@ -50,7 +49,7 @@ const categoryCrumbs: Crumb[] = id
     ? getCategoryArray(id, isSubpage).map((path) => ({
         kind: 'category',
         label: translateCategory(path, locale),
-        href: ensureTrailingSlash(`${localeBaseUrl}category/${path}`),
+        href: getCategoryUrl(locale, path),
     }))
     : [];
 
@@ -73,9 +72,12 @@ const currentPath = getCurrentPath(Astro.url);
 
 const categoryString = id ? getCategory(id, isSubpage) : '';
 const parts = removeTrailingSlash(currentPath).split('/');
+const parentId = type === 'wiki'
+    ? id?.split('/').slice(0, -1).join('/')
+    : undefined;
 const parentHref = ensureTrailingSlash(parts.slice(0, -1).join('/'));
 const parentLabel = type === 'wiki'
-    ? (await getEntry('wiki', `${locale}/${categoryString}`))?.data.title
+    ? (await getEntry('wiki', parentId ?? ''))?.data.title
     : type === 'category'
         ? translateCategory(id?.split('/').slice(0, -1).join('/') ?? '', locale) || t('categorypage.title', locale)
         : type === 'tag'
@@ -130,7 +132,7 @@ const parentLabel = type === 'wiki'
             <div class="page-meta">
                 {(type === 'wiki' && id) && (
                     <div class="page-meta-category">
-                        <a href={ensureTrailingSlash(`${localeBaseUrl}category/${categoryString}`)}>
+                        <a href={getCategoryUrl(locale, categoryString)}>
                             {
                                 isWikiRoot
                                     ? t('meta.nocategory', locale)
@@ -163,7 +165,7 @@ const parentLabel = type === 'wiki'
         {tags.length > 0 && (
             <div class="page-tags">
                 {tags.map(tag => (
-                    <a href={getLocalePathUrl(locale, `tag/${tag}/`)} class="page-tag">
+                    <a href={getTagUrl(locale, tag)} class="page-tag">
                         #{tag}
                     </a>
                 ))}
