@@ -19,7 +19,7 @@ const currentPath = getCurrentPath(Astro.url);
 const navItems = headerNavItems.map((item) => ({
     ...item,
     href: getLocalePathUrl(locale, item.path),
-    active: isPathActive(item.path, currentPath, false, item.exact),
+    active: isPathActive(item.path, currentPath, item.exact),
 }));
 ---
 <a href="#main-content" class="skip-link">

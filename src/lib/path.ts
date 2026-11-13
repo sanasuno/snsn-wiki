@@ -112,7 +112,7 @@ export function getWikiBaseUrl(locale: Locale): string {
  */
 export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
-    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${slug}`);
+    return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${encodeURIComponent(slug)}`);
 }
 
 /**
@@ -166,7 +166,7 @@ export function decodePath(path: string): string {
  * @param exact - 絶対一致かどうか
  * @returns パスが一致する場合はtrue、そうでない場合はfalse
  */
-export function isPathActive(targetSlug: string, currentPath: string, isSubpage = false, exact = false): boolean {
+export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
     const base = getBaseUrl();
     const decodedCurrentPath = decodePath(currentPath);
     const relativePath = decodedCurrentPath.startsWith(base)
@@ -178,9 +178,6 @@ export function isPathActive(targetSlug: string, currentPath: string, isSubpage 
         : normalizeSlugLike(removeTrailingSlash(relativePath));
     if (exact || targetSlug === '/') {
         return currentSlug === targetSlug;
-    }
-    if (!exact && isSubpage) {
-        return currentSlug.startsWith(`${targetSlug}/`);
     }
     return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
 }

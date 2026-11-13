@@ -42,6 +42,14 @@ export function sidebarToggle() {
         }
     });
 
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            setSidebarToggleBtnState(sidebarToggleBtn, false);
+            sidebarToggleBtn.focus();
+        }
+    })
+
     document.addEventListener('drawer:open', (e) => {
         if ((e as CustomEvent<string>).detail !== 'sidebar') {
             sidebar.classList.remove('open');
@@ -89,4 +97,18 @@ export function sidebarSections() {
             sync();
         });
     });
+}
+
+/**
+ * 現在のページリンクを表示領域内にスクロールする関数
+ */
+export function revealCurrentLink() {
+    const sidebar = document.getElementById('sidebar');
+    const current = sidebar?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!sidebar || !current) return;
+    const s = sidebar.getBoundingClientRect();
+    const c = current.getBoundingClientRect();
+    if (c.top < s.top || c.bottom > s.bottom) {
+        sidebar.scrollTop += c.top - s.top - (s.height - c.height) / 2;
+    }
 }

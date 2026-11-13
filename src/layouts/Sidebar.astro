@@ -6,7 +6,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { sidebarNavItems, autoAddUnknownCategories, type SortMode } from '@layouts/sidebar.nav';
 import { getUniquePagesByLocale } from '@lib/pages';
-import { ensureTrailingSlash, getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive } from '@lib/path';
+import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive, decodePath } from '@lib/path';
 import { getCategory, translateCategoryPath } from '@lib/category';
 import { t, type Locale } from '@lib/i18n';
 
@@ -59,16 +59,24 @@ const sorters: Record<SortMode, (a: WikiPage, b: WikiPage) => number> = {
 const sortPages = (pages: WikiPage[], mode: SortMode) => 
     [...pages].sort((a, b) => sorters[mode](a, b) || sorters['title'](a, b));
 
+// ---- 現在ページの特定 ----
+const decodedCurrent = decodePath(currentPath);
+const currentPage = uniquePages.find((p) => decodePath(getWikiUrl(p.id, locale)) === decodedCurrent);
+const activeHrefs = new Set<string>([decodedCurrent]);
+if (currentPage?.data.isSubpage) {
+    const parentId = currentPage.id.split('/').slice(0, -1).join('/');
+    activeHrefs.add(decodePath(getWikiUrl(parentId, locale)));
+}
+
 // ---- リンク生成 ----
 const toPageLink = (page: WikiPage): SidebarLink => {
     const href = getWikiUrl(page.id, locale);
     const pageLocale = getLocale(page.id);
-    const parentPath = page.data.isSubpage ? ensureTrailingSlash(currentPath.split('/').slice(0, -1).join('/')) : currentPath;
     return {
         href,
         label: page.data.title,
         icon: 'far fa-file-lines',
-        current: href === parentPath,
+        current: activeHrefs.has(decodePath(href)),
         external: false,
         lang: pageLocale !== locale ? pageLocale : undefined,
     };
@@ -104,15 +112,12 @@ for (const section of sidebarNavItems) {
                     ? getWikiUrl(page.id, locale)
                     : getLocalePathUrl(locale, item.path);
             const label = item.i18nKey ? t(item.i18nKey, locale) : page?.data.title;
-            const isSubpage = item.external
-                ? false
-                : page?.data.isSubpage ?? false;
             if (!href || !label) return [];
             return [{
                 href,
                 label,
                 icon: item.icon ?? 'far fa-file-lines',
-                current: !item.external && isPathActive(item.path, currentPath, isSubpage, item.exact),
+                current: !item.external && isPathActive(item.path, currentPath, item.exact),
                 external: !!item.external,
             }];
         });

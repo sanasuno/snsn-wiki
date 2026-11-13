@@ -22,21 +22,24 @@
     .sidebar {
         position: fixed;
         top: var(--header-height);
-        left: calc(-1 * var(--sidebar-width));
+        left: 0;
         width: var(--sidebar-width);
         height: calc(100dvh - var(--header-height));
-        transition: left 150ms ease, visibility 150ms ease;
+        transform: translateX(-100%);
+        transition: transform 150ms ease, visibility 150ms ease;
         visibility: hidden;
         z-index: var(--z-drawer);
     }
     .sidebar.open {
-        left: 0;
-        z-index: var(--z-drawer);
-        overflow-y: auto;
+        transform: translateX(0);
         visibility: visible;
-        border-right: 1px solid var(--color-border);
         box-shadow: 2px 0 8px rgb(0 0 0 / 0.15);
     }
+}
+
+.sidebar :is(a, button):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
 }
 
 .sidebar nav {
@@ -100,6 +103,7 @@
     color: var(--color-text);
     text-decoration: none;
     transition: var(--transition);
+    overflow-wrap: anywhere;
 }
 
 .sidebar-nav a:hover {
