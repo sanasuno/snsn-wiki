@@ -126,7 +126,7 @@ const parentLabel = type === 'wiki'
                 </a>
             </div>
         )}
-        {(id || date || updated) && (
+        {((type === 'wiki' && id) || date || updated) && (
             <div class="page-meta">
                 {(type === 'wiki' && id) && (
                     <div class="page-meta-category">

@@ -116,6 +116,27 @@ export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): 
 }
 
 /**
+ * タグページのURLを取得する関数
+ * @param locale ロケール
+ * @param tag タグ
+ * @returns タグページのURL
+ */
+export function getTagUrl(locale: Locale, tag: string): string {
+    return getLocalePathUrl(locale, `tag/${encodeURIComponent(tag)}`);
+}
+
+/**
+ * カテゴリページのURLを取得する関数
+ * @param locale ロケール
+ * @param category カテゴリパス（空文字でカテゴリ一覧）
+ * @returns カテゴリページのURL
+ */
+export function getCategoryUrl(locale: Locale, category: string): string {
+    const encoded = category.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+    return getLocalePathUrl(locale, `category/${encoded}`);
+}
+
+/**
  * Astro.url から現在のパスを取得する関数
  * @param url Astro.url
  * @returns 現在のパス
