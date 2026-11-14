@@ -28,6 +28,8 @@ export const structuralKeys = [
 
     'fallback.notice',
 
+    'breadcrumb.label',
+
     'meta.nocategory',
 
     'meta.created',

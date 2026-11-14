@@ -89,9 +89,11 @@ export async function renderOgImage({ title, description, category, siteName }: 
                                     style: {
                                         fontSize: 56,
                                         fontWeight: 700,
-                                        lineHeight: 1.3
+                                        lineHeight: 1.3,
+                                        lineClamp: 2,
+                                        textOverflow: 'ellipsis'
                                     },
-                                    children: title,
+                                    children: title
                                 },
                             },
                             description
@@ -101,7 +103,8 @@ export async function renderOgImage({ title, description, category, siteName }: 
                                         style: {
                                             fontSize: 30,
                                             opacity: 0.8,
-                                            marginTop: 16
+                                            marginTop: 16,
+                                            lineClamp: 3
                                         },
                                         children: description
                                     }

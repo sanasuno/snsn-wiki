@@ -95,7 +95,7 @@ const parentLabel = type === 'wiki'
     )}
     <header class="page-header">
         {type === 'wiki' && (
-            <nav class="breadcrumb" aria-label="breadcrumb">
+            <nav class="breadcrumb" aria-label={t('breadcrumb.label', locale)}>
                 <ol class="breadcrumbs">
                     {crumbs.map((crumb, index) => {
                         const isLast = index === crumbs.length -1;

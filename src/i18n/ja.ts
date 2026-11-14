@@ -31,6 +31,8 @@ export const ja = {
 
     'fallback.notice': 'このページには現在日本語訳がありません。',
 
+    'breadcrumb.label': 'パンくずリスト',
+
     'meta.nocategory': 'カテゴリなし',
 
     'meta.created': '作成日',

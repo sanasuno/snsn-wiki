@@ -30,6 +30,8 @@ export const en = {
     
     'fallback.notice': 'This page does not have an English translation yet.',
     
+    'breadcrumb.label': 'Breadcrumb',
+    
     'meta.nocategory': 'No category',
     
     'meta.created': 'Created',

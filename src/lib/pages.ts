@@ -70,7 +70,7 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
     }
 
     const resolved: ResolvedWikiPage[] = [];
-    for (const slug of Object.keys(pagesBySlugLocale)) {
+    for (const [slug, availablePages] of pagesBySlugLocale) {
         const availablePages = pagesBySlugLocale.get(slug)!;
         for (const locale of locales) {
             const isFallback = !availablePages[locale];
