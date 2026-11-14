@@ -5,5 +5,5 @@
  */
 export const siteConfig = {
     url: 'https://example.com', // 本番サイトのオリジン
-    basePath: '/snsn-wiki' // 配信パス（サブディレクトリ配信する場合記述、不要なら'/'）
+    basePath: '/snsn-wiki' // 配信パス（サブディレクトリ配信する場合に記述、不要なら'/'）
 } as const;
