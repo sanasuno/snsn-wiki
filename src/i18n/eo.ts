@@ -31,7 +31,7 @@ export const eo = {
     
     'fallback.notice': 'Ĉi tiu paĝo ankoraŭ ne havas esperantan tradukon.',
     
-    'breadcrumb.label': 'Kruĉo-listo',
+    'breadcrumb.label': 'Navigada vojo',
     
     'meta.nocategory': 'Neniu kategorio',
     
