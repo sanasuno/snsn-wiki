@@ -3,15 +3,15 @@
  * ./src/pages/[locale]/tag/[tag].astro
  * タグページ
  */
-import { getCollection } from 'astro:content';
 import { t, locales, type Locale } from '@lib/i18n';
-import { getLocaleBaseUrl, getTagUrl } from '@lib/path';
+import { getTagUrl } from '@lib/path';
+import { getPublishedWikiPages } from '@lib/pages';
 import MainLayout from '@layouts/MainLayout.astro';
 import ListPageItem from '@layouts/ListPageItem.astro';
 import { getTagMap } from '@lib/tags';
 
 export async function getStaticPaths() {
-    const wikiPages = await getCollection('wiki', (p) => !p.data.draft);
+    const wikiPages = await getPublishedWikiPages();
     return locales.flatMap((locale) =>
         [...getTagMap(wikiPages, locale).keys()].map((tag) => ({
             params: { locale, tag },
@@ -27,9 +27,7 @@ interface Props {
 
 const { locale, tag } = Astro.props as Props;
 
-const localeBaseUrl = getLocaleBaseUrl(locale);
-
-const wikiPages = await getCollection('wiki', (p) => !p.data.draft);
+const wikiPages = await getPublishedWikiPages();
 const sortedPages = [...(getTagMap(wikiPages, locale).get(tag) ?? [])]
     .sort((a, b) => a.data.title.localeCompare(b.data.title, locale));
 

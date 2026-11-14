@@ -6,7 +6,7 @@
 import { render, type CollectionEntry } from 'astro:content';
 import { locales, type Locale } from '@lib/i18n';
 import { resolveWikiPages } from '@lib/pages';
-import { getWikiBaseUrl, ensureTrailingSlash } from '@lib/path';
+import { getWikiBaseUrl, getWikiUrl, ensureTrailingSlash } from '@lib/path';
 import MainLayout from '@layouts/MainLayout.astro';
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
     slug: string;
     isFallback: boolean;
     fallbackLocale: Locale;
+    availableLocales: Locale[];
 }
 
 /**
@@ -23,22 +24,25 @@ interface Props {
  */
 export async function getStaticPaths() {
     const resolvedPages = await resolveWikiPages();
-    return resolvedPages.map(({ locale, slug, page, isFallback, fallbackLocale }) => ({
+    return resolvedPages.map(({ locale, slug, page, isFallback, fallbackLocale, availableLocales }) => ({
         params: {
             locale,
             slug: slug === '' ? undefined : slug,
         },
-        props: { page, locale, slug, isFallback, fallbackLocale },
+        props: { page, locale, slug, isFallback, fallbackLocale, availableLocales },
     }));
 }
 
-const { page, locale, slug, isFallback, fallbackLocale } = Astro.props;
+const { page, locale, slug, isFallback, fallbackLocale, availableLocales } = Astro.props;
 
 // 代替リンク生成
-const alternateLinks = locales.map(loc => ({
+const toLink = (loc: Locale) => ({
     locale: loc,
     href: ensureTrailingSlash(`${getWikiBaseUrl(loc)}${slug}`)
-}));
+});
+const alternateLinks = availableLocales.map(toLink);
+const switchLinks = locales.map(toLink);
+const canonicalHref = isFallback ? getWikiUrl(page.id, fallbackLocale) : undefined;
 
 const { Content, headings } = await render(page);
 ---
@@ -50,6 +54,8 @@ const { Content, headings } = await render(page);
     type='wiki'
     isFallback={isFallback}
     fallbackLocale={fallbackLocale}
+    switchLinks={switchLinks}
+    canonicalHref={canonicalHref}
     tags={page.data.tags}
     date={page.data.date}
     updated={page.data.updated}

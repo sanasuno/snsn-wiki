@@ -10,8 +10,9 @@ import { getCurrentPath, getWikiBaseUrl, getLocalePathUrl, isPathActive } from '
 
 interface Props {
     locale: Locale;
+    links?: {locale: Locale, href: string }[];
 }
-const { locale }: Props = Astro.props;
+const { locale, links = [] }: Props = Astro.props;
 const wikiBaseUrl = getWikiBaseUrl(locale);
 const showLanguageSwitcher: boolean = locales.length > 1;
 
@@ -55,7 +56,7 @@ const navItems = headerNavItems.map((item) => ({
             <i class="fas fa-language" aria-hidden="true"></i>
             <select id="language-list" class="language-switcher-list" aria-label={t('header.language.select', locale)}>
                 {locales.map((loc) => (
-                    <option value={loc} selected={loc === locale}>
+                    <option value={loc} lang={loc} data-href={links.find((l) => l.locale === loc)?.href} selected={loc === locale}>
                         {t('lang.name', loc)}
                     </option>
                 ))}

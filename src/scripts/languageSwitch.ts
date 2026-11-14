@@ -120,13 +120,14 @@ export function languageSwitch(): void {
         setLocalStorage('locale', selectedLocale);
 
         // hreflang リンクで言語ページへナビゲート
-        const altLink = document.querySelector<HTMLLinkElement>(
-            `link[rel="alternate"][hreflang="${selectedLocale}"]`
-        );
-        if (altLink?.href) {
-            window.location.href = altLink.href;
+        const href = languageList.selectedOptions[0]?.dataset.href;
+        if (href) {
+            window.location.href = href;
             return;
         }
+        languageList.value = document.documentElement.lang;
+
+        window.addEventListener('pageshow', updateLanguageSwitcher);
 
         // x-default へのフォールバック
         const defaultLocaleLink = document.querySelector<HTMLLinkElement>(

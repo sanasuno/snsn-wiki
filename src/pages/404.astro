@@ -1,10 +1,19 @@
 ---
-/**
- * ./src/pages/404.astro
- * デフォルトロケールのホームページへのリダイレクト
- */
-import { getRelativeLocaleUrl } from 'astro:i18n';
+// src/pages/404.astro
 import { defaultLocale } from '@i18n/i18n.config';
-
-return Astro.redirect(getRelativeLocaleUrl(defaultLocale, '/404'));
+import { t } from '@lib/i18n';
+import { getWikiBaseUrl } from '@lib/path';
+import MainLayout from '@layouts/MainLayout.astro';
+const locale = defaultLocale;
 ---
+<MainLayout
+    title={t('404.title', locale)}
+    description={t('404.description', locale)}
+    locale={locale}
+    type="other"
+    showSubpanel={false}
+    noindex
+>
+    <p>{t('404.description', locale)}</p>
+    <p><a href={getWikiBaseUrl(locale)}>{t('homepage.title', locale)}</a></p>
+</MainLayout>

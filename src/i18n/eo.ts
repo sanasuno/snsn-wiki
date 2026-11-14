@@ -9,7 +9,7 @@ import type { TranslationKey } from "./keys";
 export const eo = {
     'lang.name': 'Esperanto',
     'lang.locale': 'eo',
-    'og.locale': 'eo',
+    'og.locale': 'eo_EO',
     'og.font': 'Noto Sans',
 
     'header.skip': 'Salti al ĉefa enhavo',

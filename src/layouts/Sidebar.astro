@@ -5,7 +5,7 @@
  */
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { sidebarNavItems, autoAddUnknownCategories, type SortMode } from '@layouts/sidebar.nav';
-import { getUniquePagesByLocale } from '@lib/pages';
+import { getPublishedWikiPages, getUniquePagesByLocale } from '@lib/pages';
 import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive, decodePath } from '@lib/path';
 import { getCategory, translateCategoryPath } from '@lib/category';
 import { t, type Locale } from '@lib/i18n';
@@ -34,7 +34,7 @@ type SidebarSectionView = {
 const currentPath = getCurrentPath(Astro.url);
 
 // ---- ページ収集 ----
-const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+const wikiPages = await getPublishedWikiPages();
 const uniquePages = getUniquePagesByLocale(wikiPages, locale);
 
 const slugMap = new Map<string, WikiPage>();

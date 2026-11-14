@@ -5,7 +5,8 @@
  */
 import { getEntry } from 'astro:content';
 import { t, type Locale } from '@lib/i18n';
-import { ensureTrailingSlash, removeTrailingSlash, getWikiBaseUrl, getCategoryUrl, getTagUrl, getCurrentPath, getLocalePathUrl } from '@lib/path';
+import { ensureTrailingSlash, removeTrailingSlash, getWikiBaseUrl, getWikiUrl, getNormalizedSlug, getCategoryUrl, getTagUrl, getCurrentPath } from '@lib/path';
+import { findPageBySlug } from '@lib/pages';
 import { getCategory, getCategoryArray, getTranslatedCategory, translateCategory } from '@lib/category';
 import { formatDate } from '@lib/date';
 
@@ -43,7 +44,7 @@ type Crumb = {
     href: string;
 }
 
-const isWikiRoot = (type === 'wiki' && id) ? getCategoryArray(id, isSubpage).length === 0 : false;
+const isWikiRoot = type === 'wiki' && !!id && getNormalizedSlug(id) === '';
 
 const categoryCrumbs: Crumb[] = id
     ? getCategoryArray(id, isSubpage).map((path) => ({
@@ -71,10 +72,15 @@ const crumbIcons = {
 const currentPath = getCurrentPath(Astro.url);
 
 const categoryString = id ? getCategory(id, isSubpage) : '';
+const parentPage = (type === 'wiki' && isSubpage && id)
+    ? await findPageBySlug(getNormalizedSlug(id.split('/').slice(0, -1).join('/')), locale)
+    : undefined;
 const parts = removeTrailingSlash(currentPath).split('/');
-const parentHref = ensureTrailingSlash(parts.slice(0, -1).join('/'));
+const parentHref = type === 'wiki'
+    ? (parentPage ? getWikiUrl(parentPage.id, locale) : '')
+    : ensureTrailingSlash(parts.slice(0, -1).join('/'));
 const parentLabel = type === 'wiki'
-    ? (await getEntry('wiki', `${locale}/${categoryString}`))?.data.title
+    ? parentPage?.data.title
     : type === 'category'
         ? translateCategory(id?.split('/').slice(0, -1).join('/') ?? '', locale) || t('categorypage.title', locale)
         : type === 'tag'
@@ -90,7 +96,7 @@ const parentLabel = type === 'wiki'
     )}
     <header class="page-header">
         {type === 'wiki' && (
-            <nav class="breadcrumb">
+            <nav class="breadcrumb" aria-label="breadcrumb">
                 <ol class="breadcrumbs">
                     {crumbs.map((crumb, index) => {
                         const isLast = index === crumbs.length -1;
@@ -117,7 +123,7 @@ const parentLabel = type === 'wiki'
         <h1 class="page-title" lang={isFallback ? fallbackLocale : locale}>
             {title}
         </h1>
-        {isSubpage && (
+        {isSubpage && parentHref && (
             <div class="subpage-back">
                 <a href={parentHref}>
                     <i class="fas fa-arrow-left" aria-hidden="true"></i>
@@ -130,10 +136,9 @@ const parentLabel = type === 'wiki'
                 {(type === 'wiki' && id) && (
                     <div class="page-meta-category">
                         <a href={getCategoryUrl(locale, categoryString)}>
-                            {
-                                isWikiRoot
-                                    ? t('meta.nocategory', locale)
-                                    : getTranslatedCategory(id, locale, isSubpage)
+                            {categoryString === ''
+                                ? t('meta.nocategory', locale)
+                                : getTranslatedCategory(id, locale, isSubpage)
                             }
                         </a>
                     </div>

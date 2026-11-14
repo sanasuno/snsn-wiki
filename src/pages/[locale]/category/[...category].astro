@@ -7,13 +7,13 @@ import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import { getCategoryArray, getCategory, translateCategory, matchCategory, getChildCategory } from '@lib/category';
 import { getCategoryUrl } from '@lib/path';
-import { getUniquePagesByLocale } from '@lib/pages';
+import { getPublishedWikiPages, getUniquePagesByLocale } from '@lib/pages';
 import MainLayout from '@layouts/MainLayout.astro';
 import ListPageItem from '@layouts/ListPageItem.astro';
 import { t, locales, type Locale } from '@lib/i18n';
 
 export async function getStaticPaths() {
-    const pages = await getCollection('wiki', (p) => !p.data.draft);
+    const pages = await getPublishedWikiPages();
     const categorySet = new Set<string>(['']);
     for (const page of pages) {
         const categoryArray = getCategoryArray(page.id, page.data.isSubpage);
@@ -48,7 +48,7 @@ const { locale, category } = Astro.props as Props;
 
 const categoryArray = category === '' ? [] : category.split('/');
 
-const wikiPages = await getCollection('wiki', (p) => !p.data.draft);
+const wikiPages = await getPublishedWikiPages();
 const inCategory = getUniquePagesByLocale(wikiPages, locale).filter((page) => {
     const pageCategory = getCategory(page.id, page.data.isSubpage);
     return matchCategory(pageCategory, category);

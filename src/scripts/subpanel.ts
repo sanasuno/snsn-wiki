@@ -1,5 +1,5 @@
 /**
- * @srcipts/subpanel.ts
+ * @scripts/subpanel.ts
  * サブパネル操作スクリプト
  */
 

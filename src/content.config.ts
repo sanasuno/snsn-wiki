@@ -9,10 +9,17 @@ import { z } from 'astro/zod';
 
 const tag = z.string()
     .transform((s) => s.normalize('NFKC').toLowerCase().trim())
-    .refine((s) => s.length > 0 && !/[\/\\]/.test(s), 'Tag must be non-empty and must not contain "/" or "\\" characters');
+    .refine(
+        (s) => s.length > 0 && s !== '.' && s !== '..' && !/[\/\\?#%:*"<>|\u0000-\u001f]/.test(s),
+        'Tag must be non-empty and must not contain / \\ ? # % : * " < > | control chars, or be "." / ".."'
+    );
 
 const wiki = defineCollection({
-    loader: glob({ base: './src/content/wiki', pattern: '**/*.{md,mdx}'}),
+    loader: glob({
+        base: './src/content/wiki',
+        pattern: '**/*.{md,mdx}',
+        generateId: ({ entry }) => entry.replace(/\.(md|mdx)$/, '')
+    }),
     schema: z.object({
         title: z.string(),
         description: z.string().optional(),

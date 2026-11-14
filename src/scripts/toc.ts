@@ -15,7 +15,7 @@ export function setUpToc() {
                 const link = document.querySelector(`.toc-nav a[href="#${id}"]`);
                 if (entry.isIntersecting) {
                     tocLinks.forEach(l => l.classList.remove('active'));
-                    link?. classList.add('active');
+                    link?.classList.add('active');
                 }
             });
         },

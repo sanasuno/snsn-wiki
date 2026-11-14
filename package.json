@@ -3,13 +3,14 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.22.0"
   },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check": "astro check"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.0",
@@ -19,10 +20,12 @@
     "astro": "^7.4.0",
     "postcss-custom-media": "^12.0.3",
     "postcss-preset-env": "^11.6.1",
-    "satori": "^0.33.4"
+    "satori": "^0.32.0"
   },
   "devDependencies": {
-    "@types/node": "^26.2.0",
-    "postcss": "^8.5.31"
+    "@astrojs/check": "latest",
+    "@types/node": "^22.0.0",
+    "postcss": "^8.5.31",
+    "typescript": "latest"
   }
 }

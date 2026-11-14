@@ -4,10 +4,10 @@
  * タグ一覧ページ
  */
 import { getCollection } from 'astro:content';
-import { getRelativeLocaleUrl } from 'astro:i18n';
 import { t, locales, type Locale } from '@lib/i18n';
-import { getLocaleBaseUrl, ensureTrailingSlash } from '@lib/path';
-import { getUniquePagesByLocale } from '@lib/pages';
+import { getTagUrl, getLocalePathUrl } from '@lib/path';
+import { getTagMap } from '@lib/tags';
+import { getPublishedWikiPages } from '@lib/pages';
 import MainLayout from '@layouts/MainLayout.astro';
 import ListPageItem from '@layouts/ListPageItem.astro';
 
@@ -19,25 +19,14 @@ export const getStaticPaths = () => {
 };
 
 const { locale } = Astro.props as { locale: Locale };
-const localeBaseUrl = getLocaleBaseUrl(locale);
 
-const wikiPages = await getCollection('wiki', (p) => !p.data.draft);
-const pages = getUniquePagesByLocale(wikiPages, locale);
-const tagMap: Record<string, typeof pages> = {};
-for (const page of pages) {
-    const tags = page.data.tags || [];
-    for (const tag of tags) {
-        if (!tagMap[tag]) {
-            tagMap[tag] = [];
-        }
-        tagMap[tag].push(page);
-    }
-}
-const sortedTags = Object.entries(tagMap).sort(([a], [b]) => a.localeCompare(b, locale));
+const wikiPages = await getPublishedWikiPages();
+const tagMap = getTagMap(wikiPages, locale);
+const sortedTags = [...tagMap].sort(([a], [b]) => a.localeCompare(b, locale));
 
-const alternateLinks = locales.map((locale) => ({
-    locale: locale,
-    href: getRelativeLocaleUrl(locale, 'tag'),
+const alternateLinks = locales.map((loc) => ({
+    locale: loc,
+    href: getLocalePathUrl(loc, 'tag'),
 }));
 ---
 <MainLayout
@@ -50,7 +39,7 @@ const alternateLinks = locales.map((locale) => ({
 >
     <div class="listpage-header">
         <div class="listpage-counter">
-            {Object.keys(tagMap).length} {t('count.tags', locale)}
+            {tagMap.size} {t('count.tags', locale)}
         </div>
     </div>
     <div class="listpage-content">
@@ -59,7 +48,7 @@ const alternateLinks = locales.map((locale) => ({
                 return (
                     <li class="listpage-section">
                         <div class="listpage-section-header">
-                            <a href={ensureTrailingSlash(`${localeBaseUrl}tag/${tag}`)} class="listpage-section-title">
+                            <a href={getTagUrl(locale, tag)} class="listpage-section-title">
                                 <h3>#{tag}</h3>
                             </a>
                             <div class="listpage-section-count">

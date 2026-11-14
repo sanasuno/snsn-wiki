@@ -22,7 +22,11 @@ export interface ResolvedWikiPage {
     page: CollectionEntry<'wiki'>;
     isFallback: boolean;
     fallbackLocale: Locale;
+    availableLocales: Locale[];
 }
+
+// wikiコレクションから公開済みのページを取得する
+export const getPublishedWikiPages = () => getCollection('wiki', ({ data }) => !data.draft);
 
 /**
  * ウィキページを解決する関数
@@ -31,24 +35,32 @@ export interface ResolvedWikiPage {
  * @returns 解決されたウィキページ情報の配列
  */
 export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
-    const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+    const wikiPages = await getPublishedWikiPages();
 
-    const pagesBySlugLocale: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
-    const normalizedIdOwners: Record<string, Set<string>> = {};
+    const pagesBySlugLocale = new Map<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>>();
+    const normalizedIdOwners = new Map<string, Set<string>>();
 
     for (const page of wikiPages) {
         const locale = getLocale(page.id);
         const normalizedSlug = getNormalizedSlug(page.id);
-        if (!pagesBySlugLocale[normalizedSlug]) {
-            pagesBySlugLocale[normalizedSlug] = {};
+        if (!pagesBySlugLocale.has(normalizedSlug)) {
+            pagesBySlugLocale.set(normalizedSlug, {});
         }
-        pagesBySlugLocale[normalizedSlug][locale] = page;
+        pagesBySlugLocale.get(normalizedSlug)![locale] = page;
 
         const normalizedId = normalizeSlugLike(page.id);
-        if (!normalizedIdOwners[normalizedId]) {
-            normalizedIdOwners[normalizedId] = new Set();
+        if (!normalizedIdOwners.has(normalizedId)) {
+            normalizedIdOwners.set(normalizedId, new Set());
         }
-        normalizedIdOwners[normalizedId].add(page.id);
+        normalizedIdOwners.get(normalizedId)!.add(page.id);
+    }
+
+    for (const page of wikiPages) {
+        if (!page.data.isSubpage) continue;
+        const parentSlug = getNormalizedSlug(page.id.split('/').slice(0, -1).join('/'));
+        if (!Object.hasOwn(pagesBySlugLocale, parentSlug)) {
+            throw new Error(`[wiki routing] Parent page not found for subpage: ${page.id}`);
+        }
     }
 
     for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
@@ -59,7 +71,7 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
 
     const resolved: ResolvedWikiPage[] = [];
     for (const slug of Object.keys(pagesBySlugLocale)) {
-        const availablePages = pagesBySlugLocale[slug];
+        const availablePages = pagesBySlugLocale.get(slug)!;
         for (const locale of locales) {
             const isFallback = !availablePages[locale];
             let page: CollectionEntry<'wiki'>;
@@ -82,7 +94,14 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
             if (!page) {
                 throw new Error(`[wiki routing] No page found for slug "${slug}"`);
             }
-            resolved.push({ locale, slug, page, isFallback, fallbackLocale });
+            resolved.push({
+                locale,
+                slug,
+                page,
+                isFallback,
+                fallbackLocale,
+                availableLocales: locales.filter((l) => availablePages[l])
+            });
         }
     }
     return resolved;
@@ -110,4 +129,15 @@ export function getUniquePagesByLocale( pages: CollectionEntry<'wiki'>[], locale
         }
     }
     return Object.values(best);
+}
+
+/**
+ * 指定されたスラッグとロケールに対応するページを検索する関数
+ * @param slug スラッグ
+ * @param locale ロケール
+ * @returns ページまたはundefined
+ */
+export async function findPageBySlug(slug: string, locale: Locale) {
+    const pages = await getPublishedWikiPages();
+    return getUniquePagesByLocale(pages, locale).find((p) => getNormalizedSlug(p.id) === slug);
 }
