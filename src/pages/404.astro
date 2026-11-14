@@ -1,10 +1,14 @@
 ---
 // src/pages/404.astro
 import { defaultLocale } from '@i18n/i18n.config';
-import { t } from '@lib/i18n';
-import { getWikiBaseUrl } from '@lib/path';
+import { t, locales } from '@lib/i18n';
+import { getWikiBaseUrl, getLocalePathUrl } from '@lib/path';
 import MainLayout from '@layouts/MainLayout.astro';
 const locale = defaultLocale;
+const switchLinks = locales.map((loc) => ({
+    locale: loc,
+    href: getLocalePathUrl(loc, '404')
+}));
 ---
 <MainLayout
     title={t('404.title', locale)}
@@ -12,6 +16,7 @@ const locale = defaultLocale;
     locale={locale}
     type="other"
     showSubpanel={false}
+    switchLinks={switchLinks}
     noindex
 >
     <p>{t('404.description', locale)}</p>

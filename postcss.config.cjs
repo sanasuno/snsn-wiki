@@ -28,7 +28,7 @@ const layoutTokens = () => ({
         );
 
         // :root の寸法変数は theme.css にだけ注入
-        if (/theme\.css$/.test(root.source?.input.file ?? '')) {
+        if (/src[\\/]styles[\\/]theme\.css$/.test(root.source?.input.file ?? '')) {
             const decls = {
                 '--content-max-width': px(tokens.contentMaxWidth),
                 '--sidebar-width': px(tokens.sidebarWidth),

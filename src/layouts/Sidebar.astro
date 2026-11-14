@@ -3,7 +3,7 @@
  * @layouts/Sidebar.astro
  * サイドバーコンポーネント
  */
-import { getCollection, type CollectionEntry } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import { sidebarNavItems, autoAddUnknownCategories, type SortMode } from '@layouts/sidebar.nav';
 import { getPublishedWikiPages, getUniquePagesByLocale } from '@lib/pages';
 import { getLocale, normalizeSlugLike, getNormalizedSlug, getWikiUrl, getCurrentPath, getLocalePathUrl, isPathActive, decodePath } from '@lib/path';

@@ -107,6 +107,9 @@ export function languageSwitch(): void {
     if (languageList.dataset.languageSwitchInitialized === 'true') return;
     languageList.dataset.languageSwitchInitialized = 'true';
 
+    // bfcache 復帰時に選択状態を現在のロケールへ戻す
+    window.addEventListener('pageshow', updateLanguageSwitcher);
+
     languageList.addEventListener('change', () => {
         const selectedLocale = languageList.value;
 
@@ -116,29 +119,18 @@ export function languageSwitch(): void {
             return;
         }
 
+        // hreflang リンクで言語ページへナビゲート
+        const href = languageList.selectedOptions[0]?.dataset.href;
+        if (!href) {
+            // 遷移先がない場合は選択を戻して終了
+            languageList.value = document.documentElement.lang;
+            return;
+        }
+
         // LocalStorage に保存
         setLocalStorage('locale', selectedLocale);
 
-        // hreflang リンクで言語ページへナビゲート
-        const href = languageList.selectedOptions[0]?.dataset.href;
-        if (href) {
-            window.location.href = href;
-            return;
-        }
-        languageList.value = document.documentElement.lang;
-
-        window.addEventListener('pageshow', updateLanguageSwitcher);
-
-        // x-default へのフォールバック
-        const defaultLocaleLink = document.querySelector<HTMLLinkElement>(
-            'link[rel="alternate"][hreflang="x-default"]'
-        );
-        if (defaultLocaleLink?.href) {
-            window.location.href = defaultLocaleLink.href;
-            return;
-        }
-
         // 最終手段：ページリロード
-        window.location.reload();
+        window.location.href = href;
     });
 }

@@ -51,6 +51,7 @@ export default defineConfig({
     integrations: [
         mdx(),
         sitemap({
+            filter: (page) => !/\/404\/?$/.test(page),
             i18n: {
                 defaultLocale,
                 locales: Object.fromEntries(locales.map(locale => [locale, locale]))

@@ -58,12 +58,12 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
     for (const page of wikiPages) {
         if (!page.data.isSubpage) continue;
         const parentSlug = getNormalizedSlug(page.id.split('/').slice(0, -1).join('/'));
-        if (!Object.hasOwn(pagesBySlugLocale, parentSlug)) {
+        if (!pagesBySlugLocale.has(parentSlug)) {
             throw new Error(`[wiki routing] Parent page not found for subpage: ${page.id}`);
         }
     }
 
-    for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
+    for (const [normalizedId, owners] of normalizedIdOwners) {
         if (owners.size > 1) {
             throw new Error(`[wiki routing] Multiple owners for normalized ID "${normalizedId}": ${Array.from(owners).join(', ')}`);
         }

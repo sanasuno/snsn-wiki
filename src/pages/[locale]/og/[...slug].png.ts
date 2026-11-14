@@ -8,8 +8,6 @@ import { getTranslatedCategory } from '@lib/category';
 import { renderOgImage } from '@lib/og-image';
 import { t, locales } from '@lib/i18n';
 
-export const prerender = true;
-
 export const getStaticPaths = (async () => {
     const resolvedPages = await resolveWikiPages();
     const wikiPaths = resolvedPages.map(({ locale, slug, page }) => {

@@ -3,7 +3,6 @@
  * ./src/pages/[locale]/category/[...category].astro
  * カテゴリページ
  */
-import { getCollection } from 'astro:content';
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import { getCategoryArray, getCategory, translateCategory, matchCategory, getChildCategory } from '@lib/category';
 import { getCategoryUrl } from '@lib/path';
