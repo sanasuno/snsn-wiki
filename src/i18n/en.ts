@@ -26,6 +26,7 @@ export const en = {
     'sidebar.category': 'Category',
     'sidebar.tag': 'Tags',
     'sidebar.graph': 'Graph',
+    'sidebar.pages': 'Pages',
     
     'fallback.notice': 'This page does not have an English translation yet.',
     

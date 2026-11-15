@@ -39,11 +39,18 @@ const uniquePages = getUniquePagesByLocale(wikiPages, locale);
 
 const slugMap = new Map<string, WikiPage>();
 const pagesByCategory = new Map<string, WikiPage[]>();
+const rootPages: WikiPage[] = [];
+
 for (const page of uniquePages) {
     slugMap.set(getNormalizedSlug(page.id), page);
-    const category = getCategory(page.id, page.data.isSubpage);
-    if (!category) continue;
     if (page.data.isSubpage) continue;
+    const category = getCategory(page.id, page.data.isSubpage);
+    if (!category) {
+        if (getNormalizedSlug(page.id) !== '') {
+            rootPages.push(page);
+        }
+        continue;
+    }
     const list = pagesByCategory.get(category) ?? [];
     list.push(page);
     pagesByCategory.set(category, list);
@@ -145,13 +152,21 @@ if (autoAddUnknownCategories) {
         });
     }
 }
+
+if (rootPages.length > 0) {
+    sections.push({
+        title: t('sidebar.pages', locale),
+        icon: 'fas fa-file-lines',
+        collapsed: false,
+        links: sortPages(rootPages, 'order').map(toPageLink),
+    });
+}
 ---
 <aside class="sidebar" id="sidebar">
     <nav aria-label={t('sidebar.nav.title', locale)}>
         {sections.map((section, index) => (
             <section class="sidebar-section">
-                <button type="button" class="sidebar-section-title" aria-expanded={!section.collapsed} aria-controls={`sidebar-section-${index}`}>
-                    {section.icon && <i class={`${section.icon} fa-fw`} aria-hidden="true"></i>}
+                <button type="button" class="sidebar-section-title" aria-expanded={section.collapsed ? 'false' : 'true'} aria-controls={`sidebar-section-${index}`}>
                     {section.title}
                     <i class="fas fa-chevron-down fa-fw sidebar-chevron" aria-hidden="true"></i>
                 </button>

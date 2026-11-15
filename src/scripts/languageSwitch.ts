@@ -11,13 +11,6 @@ function currentLocale(): string {
     return document.documentElement.dataset.lang ?? document.documentElement.lang;
 }
 
-/**
- * 言語スイッチャーの選択状態を現在のロケールに合わせる関数
- */
-function updateLanguageSwitcher(): void {
-    const select = document.getElementById('language-list') as HTMLSelectElement | null;
-    if (select) select.value = currentLocale();
-}
 
 let i18nInitialized = false;
 
@@ -34,26 +27,20 @@ export function initI18n(): void {
  * 言語スイッチャーのイベントを設定する関数
  */
 export function languageSwitch(): void {
-    const languageList = document.getElementById('language-list') as HTMLSelectElement | null;
-    if (!languageList) return;
+    const menu = document.querySelector<HTMLDetailsElement>('.language-switcher');
+    if (!menu || menu.dataset.initialized === 'true') return;
+    menu.dataset.initialized = 'true';
 
-    // 二重登録防止
-    if (languageList.dataset.languageSwitchInitialized === 'true') return;
-    languageList.dataset.languageSwitchInitialized = 'true';
-
-    updateLanguageSwitcher();
-    // bfcache 復帰時に選択状態を現在のロケールへ戻す
-    window.addEventListener('pageshow', updateLanguageSwitcher);
-
-    languageList.addEventListener('change', () => {
-        const option = languageList.selectedOptions[0];
-        const href = option?.dataset.href;
-        if (!option || !href) {
-            // 遷移先がない場合は選択を戻して終了
-            updateLanguageSwitcher();
-            return;
+    menu.querySelectorAll<HTMLAnchorElement>('a[hreflang]').forEach((a) => {
+        a.addEventListener('click', () => setLocalStorage('locale', a.hreflang));
+    });
+    document.addEventListener('click', (e) => {
+        if (menu.open && e.target instanceof Node && !menu.contains(e.target)) menu.open = false;
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.open) {
+            menu.open = false;
+            menu.querySelector('summary')?.focus();
         }
-        setLocalStorage('locale', option.value);
-        window.location.href = href;
     });
 }

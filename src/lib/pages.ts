@@ -43,6 +43,9 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
     for (const page of wikiPages) {
         const locale = getLocale(page.id);
         const normalizedSlug = getNormalizedSlug(page.id);
+        if (/[?#%\\]/.test(normalizedSlug)) {
+            throw new Error(`[wiki routing] Unsafe characters in slug: ${page.id}`);
+        }
         if (!pagesBySlugLocale.has(normalizedSlug)) {
             pagesBySlugLocale.set(normalizedSlug, {});
         }

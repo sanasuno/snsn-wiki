@@ -12,6 +12,7 @@ export function setUpToc() {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const id = entry.target.id;
+                if (!id) return;
                 const link = document.querySelector(`.toc-nav a[href="#${CSS.escape(id)}"]`);
                 if (entry.isIntersecting) {
                     tocLinks.forEach(l => l.classList.remove('active'));

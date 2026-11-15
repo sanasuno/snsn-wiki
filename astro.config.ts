@@ -11,14 +11,19 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 // siteConfig.url の検証と正規化
+const rawUrl = process.env.SITE_URL ?? siteConfig.url;
 let site: string;
 try {
-    site = new URL(siteConfig.url).toString().replace(/\/+$/, '');
+    site = new URL(rawUrl).toString().replace(/\/+$/, '');
 } catch (error) {
     throw new Error(
         '[site.config] url is invalid',
         { cause: error }
     );
+}
+
+if (new URL(site).hostname === 'example.com' && process.argv.includes('build')) {
+    console.warn('[site.config] url is still "example.com". canonical / OGP / sitemap will be wrong.');
 }
 
 // siteConfig.basePath の検証と正規化

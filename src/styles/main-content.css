@@ -15,6 +15,10 @@
     padding: 32px var(--content-padding);
 }
 
+.main-content:focus {
+    outline: none;
+}
+
 /* サブパネル無しのページ
    サブパネル列の分だけ本文の上限幅を広げる */
 .layout:where(.no-subpanel) {

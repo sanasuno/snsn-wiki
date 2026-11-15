@@ -24,6 +24,7 @@ export const structuralKeys = [
     'sidebar.category',
     'sidebar.tag',
     'sidebar.graph',
+    'sidebar.pages',
 
     'fallback.notice',
 

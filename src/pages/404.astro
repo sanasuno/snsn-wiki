@@ -9,11 +9,16 @@ import { defaultLocale } from "@i18n/i18n.config";
 import { removeTrailingSlash } from "@lib/path";
 const baseUrl = removeTrailingSlash(import.meta.env.BASE_URL);
 ---
+<meta name="robots" content="noindex">
+<noscript>
+    <a href={`${baseUrl}/${defaultLocale}/404`}>
+        404
+    </a>
+</noscript>
 <script is:inline define:vars={{ locales, defaultLocale, baseUrl }}>
-
     // パスから言語を判定してリダイレクトする
     const baseSegments = baseUrl.split('/').filter(Boolean).length;
     const locale = window.location.pathname.split('/').filter(Boolean)[baseSegments];
     const targetLocale = locales.includes(locale) ? locale: defaultLocale;
-    window.location.href = `${baseUrl}/${targetLocale}/404/`;
+    window.location.replace(`${baseUrl}/${targetLocale}/404/`);
 </script>

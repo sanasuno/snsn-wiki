@@ -27,6 +27,7 @@ export const ja = {
     'sidebar.category': 'カテゴリ',
     'sidebar.tag': 'タグ',
     'sidebar.graph': 'グラフ',
+    'sidebar.pages': 'ページ',
 
     'fallback.notice': 'このページには現在日本語訳がありません。',
 

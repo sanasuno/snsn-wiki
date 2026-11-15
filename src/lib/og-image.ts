@@ -41,12 +41,23 @@ interface OgImageParams {
     siteName?: string;
 }
 
+const ogCache = new Map<string, Promise<Buffer>>();
+export function renderOgImage(params: OgImageParams): Promise<Buffer> {
+    const key = JSON.stringify(params);
+    let hit = ogCache.get(key);
+    if (!hit) {
+        hit = renderOgImageUncached(params);
+        ogCache.set(key, hit);
+    }
+    return hit;
+}
+
 /**
  * OGP画像をレンダリングする関数
  * @param param0 OGP画像生成用のパラメータ
  * @returns OGP画像のバッファ
  */
-export async function renderOgImage({ title, description, category, siteName }: OgImageParams): Promise<Buffer> {
+export async function renderOgImageUncached({ title, description, category, siteName }: OgImageParams): Promise<Buffer> {
     const width = 1200;
     const height = 630;
 

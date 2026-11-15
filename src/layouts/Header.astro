@@ -52,16 +52,26 @@ const navItems = headerNavItems.map((item) => ({
     </button>
 
     { showLanguageSwitcher && (
-        <div class="language-switcher">
-            <i class="fas fa-language" aria-hidden="true"></i>
-            <select id="language-list" class="language-switcher-list" aria-label={t('header.language.select', locale)}>
-                {locales.map((loc) => (
-                    <option value={loc} lang={loc} data-href={links.find((l) => l.locale === loc)?.href} selected={loc === locale}>
-                        {t('lang.name', loc)}
-                    </option>
-                ))}
-            </select>
-            <i class="fas fa-chevron-down language-switcher-arrow" aria-hidden="true"></i>
-        </div>
+        <details class="language-switcher">
+            <summary aria-label={t('header.language.select', locale)}>
+                <i class="fas fa-language" aria-hidden="true"></i>
+                <span lang={locale}>
+                    {t('lang.name', locale)}
+                </span>
+                <i class="fas fa-chevron-down language-switcher-arrow" aria-hidden="true"></i>
+            </summary>
+            <ul class="language-switcher-menu">
+                {locales.map((loc) => {
+                    const href = links.find((l) => l.locale === loc)?.href;
+                    return href && (
+                        <li>
+                            <a href={href} hreflang={loc} lang={loc} aria-current={loc === locale ? 'true' : undefined}>
+                                {t('lang.name', loc)}
+                            </a>
+                        </li>
+                    )
+                })}
+            </ul>
+        </details>
     )}
 </header>

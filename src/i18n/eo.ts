@@ -27,6 +27,7 @@ export const eo = {
     'sidebar.category': 'Kategorio',
     'sidebar.tag': 'Etikedoj',
     'sidebar.graph': 'Grafiko',
+    'sidebar.pages': 'Paĝoj',
     
     'fallback.notice': 'Ĉi tiu paĝo ankoraŭ ne havas esperantan tradukon.',
     

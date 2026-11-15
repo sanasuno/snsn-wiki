@@ -174,7 +174,7 @@ export function isPathActive(targetSlug: string, currentPath: string, exact = fa
     const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
-        : normalizeSlugLike(removeTrailingSlash(relativePath));
+        : `/${normalizeSlugLike(removeTrailingSlash(relativePath))}`;
     if (exact || targetSlug === '/') {
         return currentSlug === targetSlug;
     }
