@@ -47,7 +47,7 @@ export function getRawSlug(pageId: string): string {
 
 /**
  * スラッグを正規化する関数
- * NFKC 正規化、小文字化、空白・改行除去を行う。
+ * NFKC 正規化、小文字化、空白のハイフン化を行う。
  * 末尾の "/index" を削除する。
  * @param rawSlug 正規化するスラッグ
  * @returns 正規化されたスラッグ

@@ -466,12 +466,12 @@ ul.listpage-list {
 a.listpage-section-title {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--color-link) !important;
-    text-decoration: none !important;
+    color: var(--color-link);
+    text-decoration: none;
 }
 
 a.listpage-section-title:hover {
-    text-decoration: underline !important;
+    text-decoration: underline;
 }
 
 a.listpage-section-title h3 {
@@ -485,7 +485,7 @@ a.listpage-section-title h3 {
 
 ul.listpage-item-list {
     list-style: none;
-    margin: 0 !important;
+    margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -515,12 +515,12 @@ li.listpage-item {
 }
 
 .listpage-item-title {
-    color: var(--color-link) !important;
-    text-decoration: none !important;
+    color: var(--color-link);
+    text-decoration: none;
 }
 
 .listpage-item-title:hover {
-    text-decoration: underline !important;
+    text-decoration: underline;
 }
 
 .listpage-item-title i {
@@ -538,12 +538,12 @@ li.listpage-item {
     padding: 1px 6px;
     background-color: var(--color-bg-accent);
     border-radius: var(--radius-lg);
-    color: var(--color-accent-text) !important;
-    text-decoration: none !important;
+    color: var(--color-accent-text);
+    text-decoration: none;
 }
 
 .listpage-item-description {
-    margin: 4px !important;
+    margin: 4px;
     font-size: 0.85rem;
     color: var(--color-text-muted);
 }
