@@ -7,7 +7,6 @@ export const structuralKeys = [
     'lang.locale',
 
     'og.locale',
-    'og.font',
 
     'header.skip',
     'header.sidebar.toggle',

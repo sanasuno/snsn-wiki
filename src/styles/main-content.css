@@ -250,7 +250,7 @@ code {
     margin: 1em 0;
 }
 
-.article-content a {
+.article-content :where(a) {
     color: var(--color-link);
     text-decoration: underline;
     text-decoration-thickness: 1px;
@@ -258,11 +258,11 @@ code {
     transition: color 150ms ease;
 }
 
-.article-content a:hover {
+.article-content :where(a:hover) {
     color: var(--color-link-hover);
 }
 
-.article-content a:visited {
+.article-content :where(a:visited) {
     color: var(--color-link-visited);
 }
 

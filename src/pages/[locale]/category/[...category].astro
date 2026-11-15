@@ -3,7 +3,6 @@
  * ./src/pages/[locale]/category/[...category].astro
  * カテゴリページ
  */
-import { getRelativeLocaleUrl } from 'astro:i18n';
 import { getCategoryArray, getCategory, translateCategory, matchCategory, getChildCategory } from '@lib/category';
 import { getCategoryUrl } from '@lib/path';
 import { getPublishedWikiPages, getUniquePagesByLocale } from '@lib/pages';
@@ -74,7 +73,7 @@ const childCategoryPages = [...pagesByChild].map(([path, pages]) => ({
 
 const alternateLinks = locales.map((loc) => ({
     locale: loc,
-    href: getRelativeLocaleUrl(loc, `/category/${category}`),
+    href: getCategoryUrl(loc, category),
 }))
 ---
 <MainLayout

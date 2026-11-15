@@ -6,13 +6,14 @@
 import { t, type Locale } from '@lib/i18n';
 import { getLocalePathUrl } from '@lib/path';
 import { footerNavItems } from '@layouts/footer.nav';
+import { siteConfig } from '../site.config';
 
 interface Props {
     locale: Locale,
 }
 const { locale } = Astro.props;
 
-const startYear = 2026;
+const startYear = siteConfig.startYear;
 
 const year = new Date().getFullYear();
 ---

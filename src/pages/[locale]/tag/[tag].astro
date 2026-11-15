@@ -4,7 +4,7 @@
  * タグページ
  */
 import { t, locales, type Locale } from '@lib/i18n';
-import { getTagUrl } from '@lib/path';
+import { getTagUrl, getLocalePathUrl } from '@lib/path';
 import { getPublishedWikiPages } from '@lib/pages';
 import MainLayout from '@layouts/MainLayout.astro';
 import ListPageItem from '@layouts/ListPageItem.astro';
@@ -34,12 +34,20 @@ const sortedPages = [...(getTagMap(wikiPages, locale).get(tag) ?? [])]
 const alternateLinks = locales
     .filter((loc) => getTagMap(wikiPages, loc).has(tag))
     .map((loc) => ({ locale: loc, href: getTagUrl(loc, tag) }));
+
+const switchLinks = locales.map((loc) => ({
+    locale: loc,
+    href: getTagMap(wikiPages, loc).has(tag)
+        ? getTagUrl(loc, tag)
+        : getLocalePathUrl(loc, 'tag')
+}));
 ---
 <MainLayout
-    title={tag}
-    description={t('tagpage.description', locale)}
+    title={`#${tag}`}
+    description={`${t('tagpage.description', locale)} ${sortedPages.length} ${t('count.pages', locale)}`}
     locale={locale}
     alternateLinks={alternateLinks}
+    switchLinks={switchLinks}
     type="tag"
     showSubpanel={false}
     isSubpage={true}

@@ -39,7 +39,7 @@ const navItems = headerNavItems.map((item) => ({
         {navItems.map((item) => (
             <a href={item.href} class:list={['header-nav-link', { active: item.active, 'has-icon': !!item.icon }]} aria-current={item.active ? "page" : undefined}>
                 {item.icon && <i class={item.icon} aria-hidden="true"></i>}
-                <span class="header-nav-label" data-i18n={item.i18nKey}>
+                <span class="header-nav-label">
                     {t(item.i18nKey, locale)}
                 </span>
             </a>

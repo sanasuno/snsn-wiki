@@ -9,7 +9,6 @@ export const en = {
     'lang.name': 'English',
     'lang.locale': 'en-US',
     'og.locale': 'en_US',
-    'og.font': 'Noto Sans',
     
     'header.skip': 'Skip to main content',
     'header.sidebar.toggle': 'Toggle sidebar',

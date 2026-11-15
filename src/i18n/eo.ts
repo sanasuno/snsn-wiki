@@ -10,11 +10,10 @@ export const eo = {
     'lang.name': 'Esperanto',
     'lang.locale': 'eo',
     'og.locale': 'eo_EO',
-    'og.font': 'Noto Sans',
 
     'header.skip': 'Salti al ĉefa enhavo',
-    'header.sidebar.toggle': 'baskuligi flankan strion',
-    'header.theme.toggle': 'baskuligi temon',
+    'header.sidebar.toggle': 'Baskuligi flankan strion',
+    'header.theme.toggle': 'Baskuligi temon',
     'header.language.select': 'Elekti lingvon',
     'header.nav.title': 'Navigado',
     'header.nav.home': 'Hejmo',

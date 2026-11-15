@@ -119,15 +119,15 @@ export function getUniquePagesByLocale( pages: CollectionEntry<'wiki'>[], locale
             : l === defaultLocale
                 ? 1
                 : 2 + locales.indexOf(l);
-    const best: Record<string, CollectionEntry<'wiki'>> = {};
+    const best = new Map<string, CollectionEntry<'wiki'>>();
     for (const page of pages) {
         const key = getNormalizedSlug(page.id);
-        const current = best[key];
+        const current = best.get(key);
         if (!current || priority(getLocale(page.id)) < priority(getLocale(current.id))) {
-            best[key] = page;
+            best.set(key, page);
         }
     }
-    return Object.values(best);
+    return [...best.values()];
 }
 
 /**

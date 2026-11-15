@@ -1,4 +1,1 @@
-- astro.config.ts とその import 先（i18n.config.ts など）ではエイリアスが使えない。
-- 翻訳キーは keys.ts（システム標準）と keys.custom.ts（ユーザー編集）に分離されている。
-- 開発メモは src/content/wiki/ja/development/ に置く。
-- npm run check を通してからコミットする。
+@AGENTS.md

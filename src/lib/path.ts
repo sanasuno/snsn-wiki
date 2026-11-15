@@ -53,7 +53,7 @@ export function getRawSlug(pageId: string): string {
  * @returns 正規化されたスラッグ
  */
 export function normalizeSlugLike(rawSlug: string): string {
-    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim();
+    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim().replace(/\s+/g, '-');
     return normalized === 'index'
         ? ''
         : normalized.replace(/\/index$/, '');
@@ -162,7 +162,6 @@ export function decodePath(path: string): string {
  * 対象のスラッグが現在のパスでアクティブかどうかを判定する関数
  * @param targetSlug - 比較するスラッグ
  * @param currentPath - 現在のパス
- * @param isSubpage - サブページかどうか
  * @param exact - 絶対一致かどうか
  * @returns パスが一致する場合はtrue、そうでない場合はfalse
  */

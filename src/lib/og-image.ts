@@ -70,7 +70,8 @@ export async function renderOgImage({ title, description, category, siteName }: 
                     props: {
                         style: {
                             fontSize: 28,
-                            opacity: 0.7
+                            opacity: 0.7,
+                            lineClamp: 1,
                         },
                         children: siteName
                     }
@@ -129,6 +130,7 @@ export async function renderOgImage({ title, description, category, siteName }: 
                                         padding: '6px 16px',
                                         borderRadius: 999,
                                         border: '1px solid rgba(245,245,245,0.4)',
+                                        lineClamp: 4,
                                     },
                                     children: category,
                                 },
@@ -141,6 +143,9 @@ export async function renderOgImage({ title, description, category, siteName }: 
     };
 
     const svg = await satori(vnode as any, { width, height, fonts: loadFonts() });
-    const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: width} });
+    const resvg = new Resvg(svg, {
+        fitTo: { mode: 'width', value: width },
+        font: { loadSystemFonts: false },
+    });
     return resvg.render().asPng();
 }

@@ -31,6 +31,9 @@ const base = siteConfig.basePath.replace(/\/+$/, '') || '/';
 
 const locales = Object.keys(translations);
 
+const relativePath = (page: string) =>
+    new URL(page).pathname.slice(base === '/' ? 1 : base.length + 1).replace(/^\/|\/$/g, '');
+
 // https://astro.build/config
 export default defineConfig({
     site,
@@ -51,7 +54,10 @@ export default defineConfig({
     integrations: [
         mdx(),
         sitemap({
-            filter: (page) => !/\/404\/?$/.test(page),
+            filter: (page) => {
+                const path = relativePath(page);
+                return !/(^|\/)404$/.test(path) && path !== '' && !locales.includes(path);
+            },
             i18n: {
                 defaultLocale,
                 locales: Object.fromEntries(locales.map(locale => [locale, locale]))

@@ -11,9 +11,15 @@ export function setupSubpanelDrawer() {
     const button = document.getElementById('subpanel-drawer-button');
     if (!subpanel || !button) return;
 
+    const syncState = (open: boolean) => {
+        button.setAttribute('aria-expanded', String(open));
+        const label = open ? button.dataset.labelClose : button.dataset.labelOpen;
+        if (label) button.setAttribute('aria-label', label);
+    };
+
     const setOpen = (open: boolean) => {
         subpanel.classList.toggle('open', open);
-        button.setAttribute('aria-expanded', String(open));
+        syncState(open);
         if (open) document.dispatchEvent(new CustomEvent('drawer:open', { detail: 'subpanel' }));
     };
 
@@ -25,7 +31,7 @@ export function setupSubpanelDrawer() {
     document.addEventListener('drawer:open', (e) => {
         if ((e as CustomEvent<string>).detail !== 'subpanel') {
             subpanel.classList.remove('open');
-            button.setAttribute('aria-expanded', 'false');
+            syncState(false);
         }
     });
 

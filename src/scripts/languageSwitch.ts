@@ -2,98 +2,32 @@
  * @scripts/languageSwitch.ts
  * 言語切り替え関連スクリプト
  */
-import { defaultLocale } from '@i18n/i18n.config';
-import { type Locale } from '@lib/i18n';
-import { t } from '@lib/i18n';
-import { isLocale, isTranslationKey } from '@lib/i18n';
-import { getLocalStorage, setLocalStorage } from '@scripts/localStorage';
+import { setLocalStorage } from '@scripts/localStorage';
 
 /**
- * ロケールを解決する関数
- * @param htmlLang HTMLのlang属性
- * @returns ロケール
+ * 現在のページのロケールを返す関数
  */
-function resolveLocale(htmlLang: string): Locale {
-    if (isLocale(htmlLang)) {
-        return htmlLang;
-    }
-    const storedLocale = getLocalStorage('locale');
-    if (storedLocale && isLocale(storedLocale)) {
-        return storedLocale;
-    }
-    return defaultLocale;
+function currentLocale(): string {
+    return document.documentElement.dataset.lang ?? document.documentElement.lang;
 }
 
 /**
- * 言語スイッチャーを更新する関数
+ * 言語スイッチャーの選択状態を現在のロケールに合わせる関数
  */
 function updateLanguageSwitcher(): void {
-    const selected = document.getElementById('language-list') as HTMLSelectElement | null;
-    if (!selected) return;
-
-    const locale = document.documentElement.lang || getLocalStorage('locale');
-    if (locale) {
-        selected.value = locale;
-    }
-}
-
-/**
- * 翻訳ハンドラ
- */
-const handlers: Record<string, (el: Element, text: string) => void> = {
-    'data-i18n': (el, text) => {
-        el.textContent = text;
-    }
-};
-
-/**
- * すべての翻訳を適用する関数
- */
-function applyTranslations(): void {
-    const locale = getLocalStorage('locale');
-    if (!locale || !isLocale(locale)) return;
-
-    Object.entries(handlers).forEach(([attr, handler]) => {
-        const elements = document.querySelectorAll(`[${attr}]`);
-        elements.forEach((el) => {
-            const key = el.getAttribute(attr);
-            if (key && isTranslationKey(key)) {
-                handler(el, t(key, locale));
-            }
-        });
-    });
-}
-
-/**
- * i18n UIを更新する関数
- */
-function refreshI18nUI(): void {
-    updateLanguageSwitcher();
-    applyTranslations();
+    const select = document.getElementById('language-list') as HTMLSelectElement | null;
+    if (select) select.value = currentLocale();
 }
 
 let i18nInitialized = false;
 
 /**
- * i18nを初期化する関数
+ * 現在のロケールを LocalStorage に保存する関数
  */
 export function initI18n(): void {
     if (i18nInitialized) return;
     i18nInitialized = true;
-
-    const htmlLang = document.documentElement.dataset.lang ?? '';
-    const resolvedLocale = resolveLocale(htmlLang);
-
-    // HTML lang 属性と LocalStorage を同期
-    document.documentElement.lang = resolvedLocale;
-    setLocalStorage('locale', resolvedLocale);
-
-    // 読み込み完了後にUIを更新
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', refreshI18nUI, { once: true });
-    } else {
-        refreshI18nUI();
-    }
+    setLocalStorage('locale', currentLocale());
 }
 
 /**
@@ -107,30 +41,19 @@ export function languageSwitch(): void {
     if (languageList.dataset.languageSwitchInitialized === 'true') return;
     languageList.dataset.languageSwitchInitialized = 'true';
 
+    updateLanguageSwitcher();
     // bfcache 復帰時に選択状態を現在のロケールへ戻す
     window.addEventListener('pageshow', updateLanguageSwitcher);
 
     languageList.addEventListener('change', () => {
-        const selectedLocale = languageList.value;
-
-        // ロケール検証
-        if (!isLocale(selectedLocale)) {
-            console.warn(`Invalid locale: ${selectedLocale}`);
-            return;
-        }
-
-        // hreflang リンクで言語ページへナビゲート
-        const href = languageList.selectedOptions[0]?.dataset.href;
-        if (!href) {
+        const option = languageList.selectedOptions[0];
+        const href = option?.dataset.href;
+        if (!option || !href) {
             // 遷移先がない場合は選択を戻して終了
-            languageList.value = document.documentElement.lang;
+            updateLanguageSwitcher();
             return;
         }
-
-        // LocalStorage に保存
-        setLocalStorage('locale', selectedLocale);
-
-        // 最終手段：ページリロード
+        setLocalStorage('locale', option.value);
         window.location.href = href;
     });
 }

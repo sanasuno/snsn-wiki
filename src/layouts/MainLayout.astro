@@ -14,7 +14,9 @@ import Footer from '@layouts/Footer.astro';
 import Toc from '@layouts/Toc.astro';
 import MiniGraph from '@layouts/MiniGraph.astro';
 
-import '@fortawesome/fontawesome-free/css/all.min.css';
+import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
+import '@fortawesome/fontawesome-free/css/solid.min.css';
+import '@fortawesome/fontawesome-free/css/regular.min.css';
 
 import '@styles/theme.css';
 import '@styles/base.css';
@@ -131,8 +133,7 @@ const hasSubpanel = showSubpanel && hasToc;
         <!-- Google Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Serif+JP:wght@200..900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@400;700&family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         <!-- テーマ初期化スクリプト -->
         <script is:inline>
@@ -188,7 +189,12 @@ const hasSubpanel = showSubpanel && hasToc;
                             locale={locale}
                         />
                     </aside>
-                    <button type="button" class="subpanel-drawer-button" id="subpanel-drawer-button" aria-label={t('subpanel.open', locale)} aria-controls="subpanel" aria-expanded="false">
+                    <button type="button" class="subpanel-drawer-button" id="subpanel-drawer-button"
+                        aria-label={t('subpanel.open', locale)}
+                        data-label-open={t('subpanel.open', locale)}
+                        data-label-close={t('subpanel.close', locale)}
+                        aria-controls="subpanel"
+                        aria-expanded="false">
                         <i class="fas fa-list-ul" aria-hidden="true"></i>
                     </button>
                 </>

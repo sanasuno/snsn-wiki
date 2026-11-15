@@ -10,7 +10,6 @@ export const ja = {
     'lang.name': '日本語',
     'lang.locale': 'ja-JP',
     'og.locale': 'ja_JP',
-    'og.font': 'Noto Sans JP',
 
     'header.skip': 'メインコンテンツへ移動',
     'header.sidebar.toggle': 'サイドバー切り替え',
