@@ -124,6 +124,7 @@ export function scanWikiFiles(dir: string, slugs: Set<string>, prefix: string, m
             continue;
         }
         if (!/\.(md|mdx)$/.test(entry.name)) continue;
+        
         const [locale, ...dirs] = prefix.split('/');
         const baseName = entry.name.replace(/\.(md|mdx)$/, '');
         const baseSlug = normalizeSlugLike([...dirs, baseName].join('/'));
