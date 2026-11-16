@@ -3,6 +3,9 @@
  * パス関連のユーティリティ関数
  */
 import { isLocale, type Locale } from '@lib/i18n';
+import { normalizeSlugLike } from '@lib/slug-core';
+export { normalizeSlugLike}
+
 /**
  * 末尾のスラッシュを削除する関数
  * @param path 削除するパス
@@ -43,20 +46,6 @@ export function getLocale(pageId: string): Locale {
 export function getRawSlug(pageId: string): string {
     const parts = pageId.split('/');
     return parts.slice(1).join('/');
-}
-
-/**
- * スラッグを正規化する関数
- * NFKC 正規化、小文字化、空白のハイフン化を行う。
- * 末尾の "/index" を削除する。
- * @param rawSlug 正規化するスラッグ
- * @returns 正規化されたスラッグ
- */
-export function normalizeSlugLike(rawSlug: string): string {
-    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim().replace(/\s+/g, '-');
-    return normalized === 'index'
-        ? ''
-        : normalized.replace(/\/index$/, '');
 }
 
 /**

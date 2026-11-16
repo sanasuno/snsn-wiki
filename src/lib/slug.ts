@@ -6,6 +6,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { parseFrontmatter } from 'astro/markdown';
+import { normalizeSlugLike } from './slug-core';
 
 type SlugMap = Record<string, string>;
 
@@ -23,7 +24,8 @@ interface ParsedFrontmatter {
 
 let _cache: SlugMapCache | null = null;
 
-const cachePath = path.resolve(process.cwd(), '.node_modules/.cache/snsn-wiki-slugmap.json');
+const CACHE_VERSION = 2;
+const cachePath = path.resolve(process.cwd(), 'node_modules/.cache/snsn-wiki-slugmap.json');
 
 const wikiDir = path.resolve(process.cwd(), 'src/content/wiki');
 
@@ -72,11 +74,22 @@ function getCacheMtime(): number {
  */
 export function slugify(text: string): string {
     return text
+        .normalize('NFKC')
         .trim()
         .toLowerCase()
-        .replace(/[^\p{L}\p{N}\s-]/gu, '')
-        .replace(/[\s_-]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/\s+/g, '-');
+}
+
+const depth = (s:string) => s.split('/').length;
+
+function register(map: SlugMap, key: string, slug: string): void {
+    if (!key) return;
+    if (Object.hasOwn(map, key) && map[key] !== slug) {
+        console.warn(`[slugmap] ambiguous key "${key}": "${map[key]}" / "${slug}"`);
+        if (depth(slug) < depth(map[key])) map[key] = slug;
+        return;
+    }
+    map[key] =slug;
 }
 
 /**
@@ -93,48 +106,42 @@ function parseNormalizedFrontmatter(raw: string): ParsedFrontmatter {
     };
 }
 
-export function scanWikiFiles(dir: string, slugs: Set<string>, prefix: string = '', publishOnly: boolean = false): SlugMap {
-    const map: SlugMap = {};
-    const entries = fs.readdirSync(dir, { withFileTypes: true});
+/**
+ * ウィキファイルをスキャンする関数
+ * @param dir ディレクトリ
+ * @param slugs スラッグ
+ * @param prefix プレフィックス
+ * @param publishOnly 
+ * @returns 
+ */
+export function scanWikiFiles(dir: string, slugs: Set<string>, prefix: string, map: SlugMap): void {
+    const entries = fs.readdirSync(dir, { withFileTypes: true})
+        .sort((a, b) => (a.name < b.name ? -1 : 1));
     for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-            Object.assign(map, scanWikiFiles(fullPath, slugs, prefix ? `${prefix}/${entry.name}` : entry.name, publishOnly));
-        } else if (entry.name.match(/\.(md|mdx)$/)) {
-            const baseName = entry.name.replace(/\.(md|mdx)$/, '');
-            const parts = prefix ? prefix.split('/').map(slugify): [];
-            const baseSlugParts = parts.slice(1);
-            baseSlugParts.push(slugify(baseName));
-            const baseSlug = baseSlugParts.join('/');
-            map[slugify(baseName)] = baseSlug;
+            scanWikiFiles(fullPath, slugs, `${prefix}/${entry.name}`, map);
+            continue;
+        }
+        if (!/\.(md|mdx)$/.test(entry.name)) continue;
+        const [locale, ...dirs] = prefix.split('/');
+        const baseName = entry.name.replace(/\.(md|mdx)$/, '');
+        const baseSlug = normalizeSlugLike([...dirs, baseName].join('/'));
 
-            try {
-                const raw = fs.readFileSync(fullPath, 'utf-8');
-                const { meta } = parseNormalizedFrontmatter(raw);
-                let isDraft = false;
-                const titleMatch = meta.title as string | undefined;
-                if (titleMatch) {
-                    map[slugify(titleMatch.trim())] = baseSlug;
+        if (baseName !== 'index') register(map, slugify(baseName), baseSlug);
+        try {
+            const { meta } = parseNormalizedFrontmatter(fs.readFileSync(fullPath, 'utf-8'));
+            if (typeof meta.title === 'string') register(map, slugify(meta.title), baseSlug);
+            if (Array.isArray(meta.aliases)) {
+                for (const a of meta.aliases) {
+                    if (typeof a === 'string') register(map, slugify(a), baseSlug);
                 }
-                const aliasLines = meta.aliases as string[] | undefined;
-                if (aliasLines) {
-                    for (const line of aliasLines) {
-                        const a = line.replace(/["']/g, '').trim();
-                        if (a) {
-                            map[slugify(a)] = baseSlug;
-                        }
-                    }
-                }
-                isDraft = meta.draft === true;
-                if (!publishOnly || (!isDraft)) {
-                    slugs.add(baseSlug);
-                }
-            } catch (error) {
-                console.error(`Error reading gile ${fullPath}:`, error);
             }
+            if (meta.draft !== true) slugs.add(`${locale}/${baseSlug}`);
+        } catch (error) {
+            console.error(`Error reading file ${fullPath}:`, error);
         }
     }
-    return map;
 }
 
 /**
@@ -158,26 +165,23 @@ function listWikiFiles(dir: string, prefix=''): string[] {
     return out.sort();
 }
 
+let _lastCheck = 0;
+
 export function buildCache(): SlugMapCache {
+    if (_cache && Date.now() - _lastCheck < 1000) return _cache;
+    _lastCheck = Date.now();
+
     const wikiMtime = getDirLatestMtime(wikiDir);
-    const fileList = listWikiFiles(wikiDir);
-    const fileListKey = fileList.join('|');
+    const fileListKey = listWikiFiles(wikiDir).join('|');
+    if (_cache && _cache.mtime === wikiMtime && _cache.fileListKey === fileListKey) return _cache;
 
-    if (_cache && _cache.mtime == wikiMtime && _cache.fileListKey === fileListKey) {
-        return _cache;
-    }
-
-    const cacheMtime = getCacheMtime();
-
-    if (cacheMtime > wikiMtime && fs.existsSync(cachePath)) {
+    if (getCacheMtime() > wikiMtime && fs.existsSync(cachePath)) {
         try {
-            const raw = fs.readFileSync(cachePath, 'utf-8');
-            const { map, slugs: slugArr, fileListKey: cachedKey } = JSON.parse(raw) as { map: SlugMap; slugs: string[]; fileListKey: string};
-            if (cachedKey === fileListKey) {
-                _cache = { map, slugs: new Set(slugArr), mtime: wikiMtime, fileListKey};
+            const c = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
+            if (c.version === CACHE_VERSION && c.fileListKey === fileListKey) {
+                _cache = { map: c.map, slugs: new Set<string>(c.slugs), mtime: wikiMtime, fileListKey };
                 return _cache;
             }
-            console.log('[slugmap] File count has changed, rebuilding cache');
         } catch (error) {
             console.error('Error reading cache file:', error);
         }
@@ -185,27 +189,16 @@ export function buildCache(): SlugMapCache {
 
     const map: SlugMap = {};
     const slugs = new Set<string>();
-
     if (fs.existsSync(wikiDir)) {
-        const localeDirs = fs.readdirSync(wikiDir, { withFileTypes: true}).filter(dir => dir.isDirectory()).map(dir => dir.name);
-        for (const localeDir of localeDirs) {
-            const fullLocaleDir = path.join(wikiDir, localeDir);
-            const allLocaleSlugs = new Set<string>();
-            const localeMap = scanWikiFiles(fullLocaleDir, allLocaleSlugs, localeDir, false);
-            Object.assign(map, localeMap);
-
-            const publishedLocaleSlugs = new Set<string>();
-            scanWikiFiles(fullLocaleDir, publishedLocaleSlugs, localeDir, true);
-            for (const slug of publishedLocaleSlugs) {
-                slugs.add(`${localeDir}/${slug}`);
-            }
+        for (const d of fs.readdirSync(wikiDir, { withFileTypes: true })) {
+            if (d.isDirectory()) scanWikiFiles(path.join(wikiDir, d.name), slugs, d.name, map);
         }
     }
     try {
-            fs.mkdirSync(path.dirname(cachePath), { recursive: true});
-            fs.writeFileSync(cachePath, JSON.stringify({ map, slugs: [...slugs], fileListKey }, null, 2));
+        fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+        fs.writeFileSync(cachePath, JSON.stringify({ version: CACHE_VERSION, map, slugs: [...slugs], fileListKey }));
     } catch (error) {
-        console.error('[slugmp] Failed to write cache file:', error);
+        console.error('[slugmap] Failed to write cache file:', error);
     }
     _cache = { map, slugs, mtime: wikiMtime, fileListKey };
     return _cache;
@@ -219,5 +212,5 @@ export function buildCache(): SlugMapCache {
  */
 export function resolveSlug(text: string, map: SlugMap): string {
     const key = slugify(text);
-    return map[key] || key;
+    return Object.hasOwn(map, key) ? map[key] : normalizeSlugLike(text);
 }
