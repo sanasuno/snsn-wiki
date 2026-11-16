@@ -10,6 +10,8 @@ import { translations, defaultLocale } from './src/i18n/i18n.config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
+import { remarkWikiLinks } from './src/lib/wikilink';
+
 // siteConfig.url の検証と正規化
 const rawUrl = process.env.SITE_URL ?? siteConfig.url;
 let site: string;
@@ -45,6 +47,9 @@ export default defineConfig({
     base,
     trailingSlash: 'always',
     markdown: {
+        remarkPlugins: [
+            [remarkWikiLinks, { base: base === '/' ? '' : base}],
+        ],
         shikiConfig: {
             themes: { light: 'github-light', dark: 'github-dark' },
         },
