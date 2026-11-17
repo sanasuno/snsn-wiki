@@ -44,21 +44,21 @@ export const eo = {
     'toc.title': 'Enhavtabelo',
     
     'homepage.title': 'Hejmo',
-    'homepage.description': 'Hejma paĝa priskribo',
+    'homepage.description': 'Hejma paĝo',
 
     'count.pages': 'paĝo(j)',
     'count.categories': 'kategorio(j)',
     'count.tags': 'etikedo(j)',
     
     'categorypage.title': 'Kategorio',
-    'categorypage.description': 'Kategoria paĝa priskribo',
+    'categorypage.description': 'Kategoria paĝo',
     'categorypage.directpages': 'Rektaj paĝoj',
 
     'tagpage.title': 'Etikedo',
-    'tagpage.description': 'Etikeda paĝa priskribo',
+    'tagpage.description': 'Etikeda paĝo',
     
     'graph.title': 'Grafiko',
-    'graph.description': 'Grafika paĝa priskribo',
+    'graph.description': 'Grafika paĝo',
 
     '404.title': '404',
     '404.description': 'Paĝo ne trovita',

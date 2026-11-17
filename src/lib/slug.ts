@@ -6,7 +6,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { parseFrontmatter } from 'astro/markdown';
-import { normalizeSlugLike } from './slug-core';
+import { slugify, normalizeSlugLike } from './slug-core';
 
 type SlugMap = Record<string, string>;
 
@@ -67,19 +67,6 @@ function getCacheMtime(): number {
     }
 }
 
-/**
- * テキストをスラッグに変換する関数
- * @param text テキスト
- * @returns スラッグ
- */
-export function slugify(text: string): string {
-    return text
-        .normalize('NFKC')
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, '-');
-}
-
 const depth = (s:string) => s.split('/').length;
 
 function register(map: SlugMap, key: string, slug: string): void {
@@ -111,8 +98,7 @@ function parseNormalizedFrontmatter(raw: string): ParsedFrontmatter {
  * @param dir ディレクトリ
  * @param slugs スラッグ
  * @param prefix プレフィックス
- * @param publishOnly 
- * @returns 
+ * @param map スラッグマップ
  */
 export function scanWikiFiles(dir: string, slugs: Set<string>, prefix: string, map: SlugMap): void {
     const entries = fs.readdirSync(dir, { withFileTypes: true})

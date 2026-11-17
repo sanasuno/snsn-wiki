@@ -20,7 +20,7 @@ const wiki = defineCollection({
         pattern: '**/*.{md,mdx}',
         generateId: ({ entry }) => entry.replace(/\.(md|mdx)$/, '')
     }),
-    schema: z.object({
+    schema: z.strictObject({
         title: z.string(),
         description: z.string().optional(),
         order: z.number().default(99999999),

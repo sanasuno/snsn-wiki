@@ -43,21 +43,21 @@ export const en = {
     'toc.title': 'Table of Contents',
     
     'homepage.title': 'Home',
-    'homepage.description': 'Home page description',
+    'homepage.description': 'Home page',
 
     'count.pages': 'page(s)',
     'count.categories': 'category(ies)',
     'count.tags': 'tag(s)',
     
     'categorypage.title': 'Category',
-    'categorypage.description': 'Category page description',
+    'categorypage.description': 'Category page',
     'categorypage.directpages': 'Direct pages',
 
     'tagpage.title': 'Tag',
-    'tagpage.description': 'Tag page description',
+    'tagpage.description': 'Tag page',
     
     'graph.title': 'Graph',
-    'graph.description': 'Graph page description',
+    'graph.description': 'Graph page',
 
     '404.title': '404',
     '404.description': 'Page not found',

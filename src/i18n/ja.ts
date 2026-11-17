@@ -47,20 +47,20 @@ export const ja = {
     'toc.title': '目次',
     
     'homepage.title': 'ホーム',
-    'homepage.description': 'ホームページの説明',
+    'homepage.description': 'ホームページです。',
 
     'count.pages': 'ページ',
     'count.categories': 'カテゴリ',
     'count.tags': 'タグ',
 
     'categorypage.title': 'カテゴリ',
-    'categorypage.description': 'カテゴリの説明',
+    'categorypage.description': 'カテゴリページです。',
     'categorypage.directpages': '直下ページ',
 
     'tagpage.title': 'タグ',
-    'tagpage.description': 'タグの説明',
+    'tagpage.description': 'タグページです。',
     'graph.title': 'グラフ',
-    'graph.description': 'グラフの説明',
+    'graph.description': 'グラフページです。',
     
     ...jaCustom
 } satisfies Record<TranslationKey, string>;

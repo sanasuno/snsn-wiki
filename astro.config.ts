@@ -8,6 +8,7 @@ import { siteConfig } from './src/site.config';
 import { translations, defaultLocale } from './src/i18n/i18n.config';
 
 import { remarkWikiLinks } from './src/lib/wikilink';
+import { buildCache } from './src/lib/slug';
 
 import mdx from '@astrojs/mdx';
 import { satteri } from '@astrojs/markdown-satteri';
@@ -83,7 +84,12 @@ export default defineConfig({
         sitemap({
             filter: (page) => {
                 const path = relativePath(page);
-                return !/(^|\/)404$/.test(path) && path !== '' && !locales.includes(path);
+                if (/(^|\/)404$/.test(path) || path === '' || locales.includes(path)) return false;
+                const m = path.match(/^([^/]+)\/wiki(?:\/(.*))?$/);
+                if (m) {
+                    return buildCache().slugs.has(`${m[1]}/${decodeURIComponent(m[2] ?? '')}`);
+                }
+                return true;
             },
             i18n: {
                 defaultLocale,

@@ -65,7 +65,7 @@ const navItems = headerNavItems.map((item) => ({
                     const href = links.find((l) => l.locale === loc)?.href;
                     return href && (
                         <li>
-                            <a href={href} hreflang={loc} lang={loc} aria-current={loc === locale ? 'true' : undefined}>
+                            <a href={href} hreflang={loc} lang={loc} aria-current={loc === locale ? 'true' : undefined} aria-label={t(`lang.name`, loc)}>
                                 {t('lang.name', loc)}
                             </a>
                         </li>

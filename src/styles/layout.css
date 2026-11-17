@@ -18,7 +18,7 @@
     --content-padding: var(--content-padding-wide);
 }
 
-@media (--no-subpanel-collapsed) {
+@media (--nosub-narrow) {
     .layout:where(.no-subpanel) {
         --content-padding: var(--content-padding-medium);
     }

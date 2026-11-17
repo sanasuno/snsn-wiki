@@ -26,7 +26,10 @@ export interface ResolvedWikiPage {
 }
 
 // wikiコレクションから公開済みのページを取得する
-export const getPublishedWikiPages = () => getCollection('wiki', ({ data }) => !data.draft);
+let published: Promise<CollectionEntry<'wiki'>[]> | undefined;
+const load = () => getCollection('wiki', ({ data }) => !data.draft);
+export const getPublishedWikiPages = () => 
+    import.meta.env.PROD ? (published ??= load()) : load();
 
 /**
  * ウィキページを解決する関数

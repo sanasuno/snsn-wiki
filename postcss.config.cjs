@@ -22,7 +22,7 @@ const layoutTokens = () => ({
         // postcss-custom-media より前に実行する
         root.prepend(
             new AtRule({ name: 'custom-media', params: `--subpanel-collapsed (width < ${px(subpanelAt)})` }),
-            new AtRule({ name: 'custom-media', params: `--no-subpanel-collapsed (width < ${px(noSubpanelAt)})`}),
+            new AtRule({ name: 'custom-media', params: `--nosub-narrow (width < ${px(noSubpanelAt)})`}),
             new AtRule({ name: 'custom-media', params: `--sidebar-collapsed (width <= ${px(tokens.mobileBreakpoint)})` }),
             new AtRule({ name: 'custom-media', params: `--header-compact (width <= ${px(tokens.headerLabelBreakpoint)})` })
         );
