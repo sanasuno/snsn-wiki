@@ -2,14 +2,23 @@
 title: 国際化ライブラリ
 description: 国際化関連のライブラリの開発メモです。
 order: 1
+aliases: [i18n.ts]
 tags: [国際化, 翻訳]
 date: 2026-10-23
 ---
-`@lib/i18n.ts` は、国際化関連のライブラリです。
+`@lib/i18n.ts` は、翻訳関連のユーティリティ関数を提供するライブラリです。
+
+## インポート
+[[i18n.config.ts]] と [[翻訳キー|keys.ts]] から翻訳データとキー定義をインポートします。
+
+```ts
+import { translations, defaultLocale } from '@i18n/i18n.config';
+import { translationKeys, type TranslationKey } from '@i18n/keys';
+```
 
 ## Locale
 利用可能なロケールの型です。
-- `translations` のキーから定義されます。
+- `translations` のオブジェクトが持つプロパティ名から定義されます。
 
 ```ts
 export type Locale = keyof typeof translations;
@@ -17,14 +26,17 @@ export type Locale = keyof typeof translations;
 
 ## locales
 利用可能なロケール一覧の配列です。
-- `translations` のキーから定義されます。
+- `translations` のオブジェクトのキー配列として定義されます。
+- `as Locale[]` で配列の要素が `Locale` 型であることを型アサーションしています。
 
 ```ts
 export const locales = Object.keys(translations) as Locale[];
 ```
 
 ## isLocale()
-対象の文字列が有効なロケールかどうかを判定する関数です。
+ロケールの型ガード関数です。渡された文字列が有効なロケールかどうかを判定します。
+- `value is Locale` の型述語によって、型スコープ内で `value` の型が `Locale` に絞られます。
+- 引数として渡される `value` は `string` 型なので、比較するために `locales` を `readonly string[]` に型アサーションしています。
 
 ```ts
 export function isLocale(value: string): value is Locale {
@@ -33,7 +45,9 @@ export function isLocale(value: string): value is Locale {
 ```
 
 ## isTranslationKey()
-対象の文字列が有効な翻訳キーかどうかを判定する関数です。
+翻訳キーの型ガード関数です。渡された文字列が有効な翻訳キーかどうかを判定します。
+- `value is TranslationKey` の型述語によって、型スコープ内で `value` の型が `TranslationKey` に絞られます。
+- 引数として渡される `value` は `string` 型なので、比較するために `translationKeys` を `readonly string[]` に型アサーションしています。
 
 ```ts
 export function isTranslationKey(value: string): value is TranslationKey {
@@ -42,9 +56,15 @@ export function isTranslationKey(value: string): value is TranslationKey {
 ```
 
 ## t()
-与えられた翻訳キーとロケール（省略時はデフォルトロケール）から、翻訳された文字列を返す関数です。
-- 指定ロケールに対象の翻訳が存在しない場合、デフォルトロケールの翻訳を返します。
-- 指定ロケールにもデフォルトロケールにも翻訳が存在しない場合、キーの値をそのまま返します。
+翻訳文字列を取得する関数です。
+- 引数は翻訳キーとロケール（省略時はデフォルトロケール）です。
+- 翻訳が存在しないケースのフォールバックも備えています。
+
+1. 指定された言語の辞書を取得します。
+2. 辞書にキーが存在する場合、その値を返し、非 null として扱います。
+3. 辞書にキーが存在しない場合、デフォルトロケールの辞書を取得します。
+4. デフォルトロケールの辞書にキーが存在する場合、その値を返します。
+5. デフォルトロケールの辞書にもキーが存在しない場合、キーの値を返します。
 
 ```ts
 export function t(key: TranslationKey, locale: Locale = defaultLocale): string {

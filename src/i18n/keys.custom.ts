@@ -4,8 +4,8 @@
  */
 
 export const customKeys = [
-    'site.title',
-    'site.description',
+    'site.title', // 必須
+    'site.description', // 必須
 
     'category.development',
     'category.development.css',

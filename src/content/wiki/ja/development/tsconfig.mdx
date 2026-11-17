@@ -2,9 +2,54 @@
 title: tsconfig.json
 description: tsconfig.json の開発メモです。
 order: 2
-tags: [開発, 設定]
+tags: [開発, 設定, TypeScript]
 date: 2026-11-16
 ---
-`tsconfig.json` は Astro プロジェクトの TypeScript 設定ファイルです。
+`tsconfig.json` は TypeScript 設定ファイルです。
 
 ## extends
+Astro が提供する strict プリセットを継承します。
+- TypeScript の厳密な型チェックが有効になります。
+
+```json
+"extends": "astro/tsconfigs/strict",
+```
+
+## include
+TypeScript の型チェック対象となるファイルを指定します。
+- `.astro/types.d.ts` は Astro が生成する型定義ファイルです。
+- `**/*` はプロジェクト内のすべてのファイルを対象とします。
+
+```json
+"include": [".astro/types.d.ts", "**/*"],
+```
+
+## exclude
+型チェック対象から除外するファイルを指定します。
+- `dist` は Astro のビルド成果物が出力されるディレクトリです。
+
+```json
+"exclude": ["dist"],
+```
+
+## compilerOptions
+TypeScript コンパイラの設定です。
+
+### paths
+インポートに使用するパスエイリアスを指定します。
+- <code>[[astro.config.ts]]</code> およびそのインポート先ではエイリアスが使用できません。相対パスで記述する必要があります。
+
+```json
+"paths": {
+    "@assets/*": ["./src/assets/*"],
+    "@components/*": ["./src/components/*"],
+    "@content/*": ["./src/content/*"],
+    "@data/*": ["./src/data/*"],
+    "@i18n/*": ["./src/i18n/*"],
+    "@layouts/*": ["./src/layouts/*"],
+    "@lib/*": ["./src/lib/*"],
+    "@scripts/*": ["./src/scripts/*"],
+    "@styles/*": ["./src/styles/*"],
+    "@typeDefs/*": ["./src/types/*"]
+}
+```

@@ -1,17 +1,17 @@
 ---
-title: 環境構築
+title: インストール
 description: Astroの環境構築の開発記録です。
 order: 1
 tags: [環境構築]
 date: 2026-10-20
 ---
-## 環境構築
+## Astro インストール
 以下のコマンドで Astro をインストールします。
 
 ```bash
 npm create astro@latest
 ```
-- テンプレートは `Use minimal (empty) template` を選択、その他の質問はすべて `yes` を選択します。
+- テンプレートは `Use minimal (empty) template` を選択、それ以外の質問はすべて `yes` を選択します。
 
 ## ディレクトリ構成
 以下のようなディレクトリ構成を準備します。
@@ -55,31 +55,6 @@ npm create astro@latest
     ├─ styles/
     └─ types/
 
-```
-
-### エイリアス
-`tsconfig.json` にエイリアスを設定します。
-
-```json
-{
-    "extends": "astro/tsconfigs/strict",
-    "include": [".astro/types.d.ts", "**/*"],
-    "exclude": ["dist"],
-    "compilerOptions": {
-        "paths": {
-            "@assets/*": ["./src/assets/*"],
-            "@components/*": ["./src/components/*"],
-            "@content/*": ["./src/content/*"],
-            "@data/*": ["./src/data/*"],
-            "@i18n/*": ["./src/i18n/*"],
-            "@layouts/*": ["./src/layouts/*"],
-            "@lib/*": ["./src/lib/*"],
-            "@scripts/*": ["./src/scripts/*"],
-            "@styles/*": ["./src/styles/*"],
-            "@typeDefs/*": ["./src/types/*"]
-        }
-    }
-}
 ```
 
 ## ライセンス
@@ -136,4 +111,7 @@ npm i -D @types/mdast vfile
 
 ```sh
 npm install @astrojs/markdown-remark
+```
+```sh
+npm i satteri@^0.10.5
 ```

@@ -1,11 +1,11 @@
 /**
  * @lib/wikilink.ts
- * ウィキリンク処理用 remark プラグイン
+ * ウィキリンク処理用プラグイン
  * ※ astro.config.ts から読み込まれるため、エイリアスおよびエイリアスを使う './i18n' は import 禁止
  */
-import type { Root, PhrasingContent } from 'mdast';
-import type { VFile } from 'vfile';
-import { visit, SKIP } from 'unist-util-visit';
+import type { PhrasingContent } from 'mdast';
+import type { MdastPluginDefinition } from 'satteri';
+import { fileURLToPath } from 'node:url';
 import { slug as githubSlug } from 'github-slugger';
 import { translations, defaultLocale } from '../i18n/i18n.config';
 import { buildCache, resolveSlug } from './slug';
@@ -47,22 +47,24 @@ export function extractWikiLinks(body: string, slugSet?: Set<string>, slugMap?: 
 }
 
 /**
- * ウィキリンクを HTML リンクに変換する remark プラグイン
+ * ウィキリンクを HTML リンクに変換する Sätteri mdast プラグイン
  */
-export function remarkWikiLinks(options: { base?: string } = {}) {
+export function remarkWikiLinks(options: { base?: string } = {}): MdastPluginDefinition {
     const base = options.base?.replace(/\/$/, '') ?? '';
-    return (tree: Root, file: VFile) => {
-        const { map: slugMap, slugs } = buildCache();
-        const filePath = file?.path || file?.history?.[0] || '';
-        const rawLocale = filePath.match(/src[\\/]content[\\/]wiki[\\/]([^\\/]+)/)?.[1];
-        const currentLocale = isLocale(rawLocale) ? rawLocale : defaultLocale;
+    return {
+        name: 'remark-wiki-links',
+        text(node, ctx) {
+            const parent = ctx.parent(node);
+            if (parent && (parent.type === 'link' || parent.type === 'linkReference')) return; // ネスト防止
 
-        visit(tree, 'text', (node, index, parent) => {
-            if (!parent || index === undefined) return;
-            if (parent.type === 'link' || parent.type === 'linkReference') return; // ネスト防止
+            const filePath = ctx.fileURL?.protocol === 'file:' ? fileURLToPath(ctx.fileURL) : '';
+            const rawLocale = filePath.match(/src[\\/]content[\\/]wiki[\\/]([^\\/]+)/)?.[1];
+            const currentLocale = isLocale(rawLocale) ? rawLocale : defaultLocale;
+
+            const { map: slugMap, slugs } = buildCache();
+            const text = node.value;
 
             const pattern = new RegExp(wikilinkPattern, 'g');
-            const text = node.value;
             const newNodes: PhrasingContent[] = [];
             let last = 0;
             let m: RegExpExecArray | null;
@@ -94,8 +96,7 @@ export function remarkWikiLinks(options: { base?: string } = {}) {
 
             if (newNodes.length === 0) return;
             if (last < text.length) newNodes.push({ type: 'text', value: text.slice(last) });
-            parent.children.splice(index, 1, ...newNodes);
-            return [SKIP, index + newNodes.length];
-        });
+            ctx.replaceNode(node, newNodes);
+        },
     };
 }

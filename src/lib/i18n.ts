@@ -1,6 +1,6 @@
 /**
  * @lib/i18n.ts
- * i18n ロジック（翻訳関数・型ガード）
+ * 翻訳関連のユーティリティ関数
  */
 
 import { translations, defaultLocale } from '@i18n/i18n.config';

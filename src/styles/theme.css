@@ -47,8 +47,8 @@
     --color-text-muted: #666666;
 
     /* ボーダー色 */
-    --color-border: #e0e0e0;
-    --color-border-hover: #d0d0d0;
+    --color-border: #c0c0c0;
+    --color-border-hover: #a0a0a0;
     --color-border-accent: #c8e6c9;
 
     /* アクセント色 */
@@ -97,8 +97,8 @@
     --color-text-muted: #a0a0a0;
 
     /* ボーダー色 */
-    --color-border: #333333;
-    --color-border-hover: #444444;
+    --color-border: #303030;
+    --color-border-hover: #505050;
     --color-border-accent: #1f3a2b;
 
     /* アクセント色 */
@@ -112,7 +112,7 @@
     --color-link: #4fc3f7;
     --color-link-hover: #29b6f6;
     --color-link-visited: #ce93d8;
-    --color-wikilink: #9575cd;
+    --color-wikilink: #2196f3;
     --color-wikilink-missing: #ef5350;
 }
 

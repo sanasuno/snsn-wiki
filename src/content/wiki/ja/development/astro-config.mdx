@@ -2,39 +2,50 @@
 title: astro.config.ts
 description: astro.config.tsの開発メモです。
 order: 3
-tags: [設定]
+tags: [開発, 設定]
 date: 2026-10-20
+updated: 2026-11-17
 ---
-`astro.config.ts` は、`Astro` のサイト設定を管理するファイルです。
-ユーザーが誤った編集を行うとサイト全体に影響が及びうるため、ユーザーの編集対象は別ファイルに記述し、それを `astro.config.ts` でインポートする、という形式をとります。
+`astro.config.ts` はサイト設定を管理するファイルです。非常に重要なファイルのため、ユーザーの編集対象は別ファイルに分離します。
+- [[site.config.ts]] : サイトの基本設定を管理するファイル
+- [[i18n.config.ts]] : 国際化設定を管理するファイル
 
-なお `astro.config.ts` ではエイリアスを利用できないため、インポートされるファイル群でもエイリアスを使用できないことに注意が必要です。
-
-## URL設定
-`site`（サイトのオリジン）と `base`（サブディレクトリ配置の配信パス）の値を設定することで
-URL を管理します。
-
-`./src/site.config.ts` に `url` と `basePath` を記述し、
-`astro.config.ts` にインポートして検証と正規化をしてから `defineConfig` に渡します。
+## インポート
+使用する機能をインポートします。
+- `astro.config.ts` およびここでインポートされるファイルではエイリアスを使用できません。相対パスを使用する必要があります。
 
 ```ts
-export const siteConfig = {
-    url: 'https://example.com',
-    basePath: '/'
-} as const;
+import { defineConfig } from 'astro/config';
+
+import { siteConfig } from './src/site.config';
+import { translations, defaultLocale } from './src/i18n/i18n.config';
+
+import { remarkWikiLinks } from './src/lib/wikilink';
+
+import mdx from '@astrojs/mdx';
+import { satteri } from '@astrojs/markdown-satteri';
+import sitemap from '@astrojs/sitemap';
 ```
 
-### site
-`siteConfig.url` が有効な URL であるかを `URL()` でチェックします。
+## site
+サイトのオリジンを決定する変数です。
 
-成功したら `string` 型に戻し、末尾の `/` を削除してから `site` に代入します。
-失敗したらエラーをスローします。
-- `try` ブロック内で `site` に代入するため、まず `let` で `site` を宣言しておきます。
+正規化前の生の URL を `rawUrl` として取得します。環境変数 `SITE_URL` が設定さればそちらを、設定されていなければ `siteConfig.url` を使用します。
+
+```ts
+const rawUrl = process.env.SITE_URL ?? siteConfig.url;
+```
+
+URL の検証と正規化を行います。
+1. URL として正しいかを `new URL()` で検証します。
+2. URL を文字列形式に戻します。
+3. 末尾の `/` をすべて削除します。
+4. エラーが発生した場合はビルドを停止し、エラーをスローします。
 
 ```ts
 let site: string;
 try {
-    site = new URL(siteConfig.url).toString().replace(/\/+$/, '');
+    site = new URL(rawUrl).toString().replace(/\/+$/, '');
 } catch (error) {
     throw new Error(
         '[site.config] url is invalid',
@@ -43,88 +54,174 @@ try {
 }
 ```
 
-### base
-`siteConfig.basePath` が `/` で始まるかチェックします。
-
-成功したら末尾の `/` を削除してから `base` に代入します。空文字列になった場合は `/` を代入します。
-失敗したらエラーをスローします。
+ビルド時にサイトの URL のホスト名が `example.com` のままなら警告します。
+- ビルド自体は停止しません。
 
 ```ts
-if (!siteConfig.basePath.startsWith('/')) {
+if (new URL(site).hostname === 'example.com' && process.argv.includes('build')) {
+    console.warn('[site.config] url is still "example.com". canonical / OGP / sitemap will be wrong.');
+}
+```
+
+## base
+サイトのベースパスを決定する変数です。サイトがドメイン直下ではなく、特定のディレクトリ以下に配置される場合のパスです。
+
+正規化前の生の URL を `rawUrl` として取得します。環境変数 `BASE_PATH` が設定さればそちらを、設定されていなければ `siteConfig.basePath` を使用します。
+
+```ts
+const rawBase = process.env.BASE_PATH ?? siteConfig.basePath
+```
+
+`siteConfig.basePath` が `/` で始まるかチェックします。`/` で始まっていない場合はエラーをスローします。
+
+```ts
+if (!rawBase.startsWith('/')) {
     throw new Error(
         '[site.config] basePath must start with "/"'
     );
 }
-const base = siteConfig.basePath.replace(/\/+$/, '') || '/';
 ```
 
-### defineConfig
-設定した `site` と `base` を `defineConfig` に渡します。
-また、 `trailingSlash: 'always'` を設定し、URL の末尾に `/` が付くようにします。
+`rawBase` の末尾の `/` をすべて削除してから `base` に代入します。除去した結果空文字列になった場合は `/` を代入します。
 
 ```ts
-export default defineConfig({
-    site,
-    base,
-    trailingSlash: 'always',
-})
+const base = rawBase.replace(/\/+$/, '') || '/';
 ```
 
-## 国際化設定
-利用可能なロケールとデフォルトロケールを設定します。
-- `astro.config.ts` ではエイリアスが利用できないので、インポート先の `@i18n` 内のファイル群でもエイリアスが利用できません。
-- 利用可能なロケール配列 `locales` も独自に導出します（ `@lib/i18n.ts` で定義されているものと同じ定義です）。
-- URL の取り扱いを全ロケールで統一するため、 `prefixDefaultLocale` は `true` に設定します。
-
+## locales
+利用可能なロケールの一覧です。[[i18n.config.ts]] で設定した `translations` オブジェクトのキーを取り出します。
 
 ```ts
-import { locales, defaultLocale } from './src/i18n/i18n.config';
 const locales = Object.keys(translations);
+```
 
-export default defineConfig({
-    i18n: {
-        locales,
-        defaultLocale,
-        routing: {
-            prefixDefaultLocale: true
-        }
+## relativePath
+ベースパスを基準にした相対パスとしてのページのパスです。
+- サイトマップの対象ページ判定に使用します。
+
+1. URL からドメイン部分を取り除いたパスを取得します。
+2. ベースパスに応じた `prefix` を作成します。
+3. 対象ページが設定されたベースパスの範囲内にあるか確認します。
+4. ベースパス部分を削除し、先頭と末尾の `/` を取り除いて、相対パスとして返します。
+
+```ts
+const relativePath = (page: string) => {
+    const pathname = new URL(page).pathname;
+    const prefix = base === '/' ? '/' : `${base}/`;
+    if (!pathname.startsWith(prefix) && pathname !== base) {
+        throw new Error(`Page is outside base path: ${page}`);
     }
-});
+    return pathname
+        .slice(base === '/' ? 1 : base.length + 1)
+        .replace(/^\/|\/$/g, '');
+};
 ```
 
-## インテグレーション設定
-利用するインテグレーションの設定を行います。
+## defineConfig
+Astro の設定を定義します。
 
-### mdx
-`shiki` によるコードブロックのテーマを設定します。
+### site
+サイトの絶対 URL を指定します。
 
 ```ts
-import mdx from '@astrojs/mdx';
-export default defineConfig({
-    markdown: {
-        shikiConfig: {
-            themes: { light: 'github-light', dark: 'github-dark' },
-        },
-    },
-    integrations: [
-        mdx()
+site,
+```
+
+### base
+サイトの公開ベースパスを指定します。
+
+```ts
+base,
+```
+
+### trailingSlash
+URL の末尾に常に `/` を付ける設定です。
+
+```ts
+trailingSlash: 'always',
+```
+
+### markdown
+Markdown の解析・変換方法の設定です。
+
+#### processor
+Markdown を処理するためのプロセッサを `satteri` で指定し、独自の処理プラグインとして <code>[[@lib/wikilink#remarkwikilinks|remarkWikiLinks]]</code> を設定します。
+
+```ts
+processor: satteri({
+    mdastPlugins: [
+        remarkWikiLinks({ base }),
     ],
-})
+}),
 ```
 
-### sitemap
-国際化対応用のデフォルトロケールとロケール一覧を設定します。
+#### shikiConfig
+コードブロックのシンタックスハイライトの設定です。ライトモードに `github-light`、ダークモードに `github-dark` を使用します。
 
 ```ts
-import sitemap from '@astrojs/sitemap';
-export default defineConfig({
-    integrations: [
-        sitemap({
-            i18n: {
-                defaultLocale,
-                locales: Object.fromEntries(locales.map(locale => [locale, locale]))
-            }
-        })
-    ]
-});
+shikiConfig: {
+    themes: { light: 'github-light', dark: 'github-dark' },
+},
+```
+
+### i18n
+- 国際化機能の設定です。
+
+#### locales
+対応するロケールの一覧です。
+
+```ts
+locales,
+```
+
+#### defaultLocale
+デフォルトのロケールです。[[i18n.config.ts]] で指定します。
+
+```ts
+defaultLocale,
+```
+
+#### prefixDefaultLocale
+デフォルトロケールでも URL に言語コードを付ける設定です。
+
+```ts
+routing: {
+    prefixDefaultLocale: true
+}
+```
+
+### integrations
+インテグレーションの設定を行います。
+
+#### mdx
+MDX 形式を利用できるインテグレーションです。Markdown の中に JSX コンポーネントを記述できます。
+
+```ts
+mdx(),
+```
+
+#### sitemap
+サイトマップを利用するためのインテグレーションです。
+
+##### filter
+サイトマップにページを含めるかどうかを判定します。
+
+404 ページ、空のパス、ロケール名だけのパスを除外します。
+- 相対パスを使用して判定します。
+
+```ts
+filter: (page) => {
+    const path = relativePath(page);
+    return !/(^|\/)404$/.test(path) && path !== '' && !locales.includes(path);
+},
+```
+
+##### i18n
+サイトマップの多言語情報設定です。デフォルトロケールおよび各言語の対応関係を渡します。
+
+```ts
+i18n: {
+    defaultLocale,
+    locales: Object.fromEntries(locales.map(locale => [locale, locale]))
+}
 ```

@@ -25,6 +25,7 @@
     "postcss-custom-media": "^12.0.3",
     "postcss-preset-env": "^11.6.1",
     "satori": "^0.63.2",
+    "satteri": "^0.10.5",
     "unist-util-visit": "^5.2.0"
   },
   "devDependencies": {

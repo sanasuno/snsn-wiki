@@ -1,0 +1,32 @@
+---
+title: site.config.ts
+description: site.config.tsの開発メモです。
+order: 4
+tags: [開発, 設定]
+date: 2026-11-17
+---
+`site.config.ts` は、サイト全体で使用する基本設定を定義するファイルです。主に [[astro.config.ts]] で読み込まれ、検証・処理して設定として利用できるようになります。
+- 書き換えを防ぐため、`as const` をつけています。
+
+## url
+サイトの絶対 URL を指定します。
+- 公開時は本番サイトのドメインに変更します。
+
+```ts
+url: 'https://example.com',
+```
+
+## basePath
+サイトを配信するパスを指定します。サブディレクトリ配信時に設定します。
+- 不要なら `/` のままにします。
+
+```ts
+basePath: '/',
+```
+
+## startYear
+サイトの開始年を指定します。フッター表示で利用します。
+
+```ts
+startYear: 2026
+```

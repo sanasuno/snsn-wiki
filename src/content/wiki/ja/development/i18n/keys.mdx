@@ -1,32 +1,38 @@
 ---
 title: 翻訳キー
 description: 翻訳キーの開発メモです。
-order: 1
+order: 2
 tags: [国際化, 翻訳]
 date: 2026-10-22
+updated: 2026-11-17
 ---
-`@i18n/keys.ts` および `@i18n/keys.custom.ts` は、翻訳キーの定義ファイルです。
-`snsn-wiki` 本体のアップデートによってユーザー独自の翻訳を上書きしないように、システム標準の翻訳キーとユーザー編集用の翻訳キーが分離されています。
+`@i18n/keys.ts` および `@i18n/keys.custom.ts` は翻訳キーの定義ファイルです。システム標準の翻訳キーは `keys.ts` に、ユーザー編集用の翻訳キーは `keys.custom.ts` に記述します。
+- `snsn-wiki` 本体のアップデートによってユーザー独自の翻訳を上書きしないように分離しています。
 
-システム標準のキーは `structuralKeys` として `@i18n/keys.ts` に、ユーザー編集対象のキーは `customKeys` として `@i18n/keys.custom.ts` に記述します。
+## customKeys
+ユーザーが独自に定義する翻訳キー配列です。`as const` で型情報として保持しています。
+- `site.title` および `site.description` は必須です。
 
-## 配列と型定義
-辞書ファイルで使う翻訳キーの型を保証するために、型を定義します。
-
-辞書ファイルもシステム標準のものとユーザー編集対象のものを分離しますが、取り扱いの簡便化のために、システム標準キーの中にユーザー編集対象のものも組み込み、そのロケール全体の翻訳辞書として出力します。
-
-このため、ユーザー編集対象のキーの型はそのまま `CustomKey` として出力しますが、システム標準キーの型はカスタムキーも組み込んだものを `TranslationKey` として出力します。
-
-`keys.ts` に `customKeys` をインポートし、
-`structuralKeys` と `customKeys` の両者を結合したキー配列を `translationKeys` 、
-その型を `TranslationKey` としてエクスポートします。
+## CustomKey
+ユーザー編集用翻訳キーの型です。ユーザー編集用翻訳ファイルの型チェックに使用します。
 
 ```ts
 export type CustomKey = typeof customKeys[number];
 ```
 
+## structuralKeys
+システム標準の翻訳キー配列です。`as const` で型情報として保持しています。
+
+## translationKeys
+`structuralKeys` と `customKeys` を結合した翻訳キー一覧の配列です。
+
 ```ts
-import { customKeys } from './keys.custom';
 export const translationKeys = [...structuralKeys, ...customKeys] as const;
+```
+
+## TranslationKey
+翻訳キーの型です。翻訳ファイルの型チェックに使用します。
+
+```ts
 export type TranslationKey = typeof translationKeys[number];
 ```

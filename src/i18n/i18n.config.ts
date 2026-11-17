@@ -1,20 +1,19 @@
 /**
  * @i18n/i18n.config.ts
  * i18n ユーザー設定ファイル
- * 対応ロケールの登録とデフォルトロケールの指定を行う。
- * 翻訳ロジックは @lib/i18n.ts にあるので、そちらは編集しない。
- * ※ astro.config.ts から読み込まれるため、エイリアスは使えない。
+ * 対応ロケールの登録とデフォルトロケールの指定を行います。
+ * ※ astro.config.ts から読み込まれるため、エイリアスは使えません。
  */
 
 // ロケール追加時は import と translations の両方に追記する
+import { ja } from './ja';
 import { en } from './en';
 import { eo } from './eo';
-import { ja } from './ja';
 
 export const translations = {
+    ja,
     en,
     eo,
-    ja
 } as const;
 
 // デフォルトロケール（translations のキーのいずれかであること）

@@ -1,0 +1,37 @@
+---
+title: i18n.config.ts
+description: i18n.config.ts の開発メモです。
+order: 1
+tags: [国際化]
+date: 2026-10-23
+updated: 2026-11-17
+---
+`@18n/i18n.config.ts` は、ロケール登録とデフォルトロケールの設定を記述するファイルです。
+
+## インポート
+[[翻訳ファイル]]をインポートします。
+
+```ts
+import { ja } from './ja';
+import { en } from './en';
+import { eo } from './eo';
+```
+
+## translations
+インポートした翻訳ファイルをすべてまとめたオブジェクトです。`as const` で読み取り専用にしています。
+
+```ts
+export const translations = {
+    ja,
+    en,
+    eo,
+} as const;
+```
+
+### defaultLocale
+翻訳やページ遷移のフォールバックとして使われるロケールです。
+- `satisfies keyof typeof translations` で登録済みのロケールかどうかを検証します。
+
+```ts
+export const defaultLocale = 'ja' satisfies keyof typeof translations;
+```
