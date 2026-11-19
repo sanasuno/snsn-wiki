@@ -1,7 +1,7 @@
 # snsn-wiki
 
 `snsn-wiki` は、Astro をベースに構築された高速でモダンなパーソナル多言語 Wiki システムです。
-Markdown / MDX で記述されたドキュメントを解析し、双方向リンクの構築どを提供します。
+Markdown / MDX で記述されたドキュメントを解析し、ウィキリンクの構築などを提供します。
 
 ---
 
@@ -50,3 +50,14 @@ Markdown / MDX で記述されたドキュメントを解析し、双方向リ�
 | `npm run build` | 本番用静的サイトのビルド (`dist/` ディレクトリに出力されます) |
 | `npm run preview` | ビルドされた静的ファイルをローカルでプレビュー起動 |
 | `npm run check` | TypeScript の型チェックを実行 |
+
+---
+
+## 環境変数
+
+| 変数 | 説明 |
+| :--- | :--- |
+| `SITE_URL` | サイトのオリジン。未設定時は `src/site.config.ts` の `url` |
+| `BASE_PATH` | 配信パス。未設定時は `siteConfig.basePath` |
+
+コミット前に `npm run check` と `npm run build` を通してください。

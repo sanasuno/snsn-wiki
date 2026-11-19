@@ -85,9 +85,11 @@ export default defineConfig({
             filter: (page) => {
                 const path = relativePath(page);
                 if (/(^|\/)404$/.test(path) || path === '' || locales.includes(path)) return false;
+                let slugs: Set<string> | undefined;
+                const getSlugs = () => (slugs ??= buildCache().slugs);
                 const m = path.match(/^([^/]+)\/wiki(?:\/(.*))?$/);
                 if (m) {
-                    return buildCache().slugs.has(`${m[1]}/${decodeURIComponent(m[2] ?? '')}`);
+                    return getSlugs().has(`${m[1]}/${decodeURIComponent(m[2] ?? '')}`);
                 }
                 return true;
             },

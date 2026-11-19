@@ -21,6 +21,7 @@ import { siteConfig } from './src/site.config';
 import { translations, defaultLocale } from './src/i18n/i18n.config';
 
 import { remarkWikiLinks } from './src/lib/wikilink';
+import { buildCache } from './src/lib/slug';
 
 import mdx from '@astrojs/mdx';
 import { satteri } from '@astrojs/markdown-satteri';
@@ -30,19 +31,13 @@ import sitemap from '@astrojs/sitemap';
 ## site
 サイトのオリジンを決定する変数です。
 
-正規化前の生の URL を `rawUrl` として取得します。環境変数 `SITE_URL` が設定さればそちらを、設定されていなければ `siteConfig.url` を使用します。
-
-```ts
-const rawUrl = process.env.SITE_URL ?? siteConfig.url;
-```
-
-URL の検証と正規化を行います。
-1. URL として正しいかを `new URL()` で検証します。
-2. URL を文字列形式に戻します。
-3. 末尾の `/` をすべて削除します。
+1. 正規化前の生の URL を `rawUrl` として取得します。環境変数 `SITE_URL` が設定されていればそちらを、設定されていなければ `siteConfig.url` を使用します。
+2. URL として正しい形式かどうかを `new URL()` で検証します。
+3. URL を文字列形式に戻し、末尾の `/` をすべて削除します。
 4. エラーが発生した場合はビルドを停止し、エラーをスローします。
 
 ```ts
+const rawUrl = process.env.SITE_URL ?? siteConfig.url;
 let site: string;
 try {
     site = new URL(rawUrl).toString().replace(/\/+$/, '');
@@ -66,25 +61,17 @@ if (new URL(site).hostname === 'example.com' && process.argv.includes('build')) 
 ## base
 サイトのベースパスを決定する変数です。サイトがドメイン直下ではなく、特定のディレクトリ以下に配置される場合のパスです。
 
-正規化前の生の URL を `rawUrl` として取得します。環境変数 `BASE_PATH` が設定さればそちらを、設定されていなければ `siteConfig.basePath` を使用します。
+1. 正規化前の生の URL を `rawUrl` として取得します。環境変数 `BASE_PATH` が設定されていればそちらを、設定されていなければ `siteConfig.basePath` を使用します。
+2. `/` で始まるかチェックします。`/` で始まっていない場合はエラーをスローします。
+3. `rawBase` の末尾の `/` をすべて削除してから `base` に代入します。削除した結果、空文字列になった場合は `/` を代入します。
 
 ```ts
 const rawBase = process.env.BASE_PATH ?? siteConfig.basePath
-```
-
-`siteConfig.basePath` が `/` で始まるかチェックします。`/` で始まっていない場合はエラーをスローします。
-
-```ts
 if (!rawBase.startsWith('/')) {
     throw new Error(
         '[site.config] basePath must start with "/"'
     );
 }
-```
-
-`rawBase` の末尾の `/` をすべて削除してから `base` に代入します。除去した結果空文字列になった場合は `/` を代入します。
-
-```ts
 const base = rawBase.replace(/\/+$/, '') || '/';
 ```
 
@@ -99,10 +86,10 @@ const locales = Object.keys(translations);
 ベースパスを基準にした相対パスとしてのページのパスです。
 - サイトマップの対象ページ判定に使用します。
 
-1. URL からドメイン部分を取り除いたパスを取得します。
+1. `new URL().pathname` で URL からパスネームを取得します。
 2. ベースパスに応じた `prefix` を作成します。
-3. 対象ページが設定されたベースパスの範囲内にあるか確認します。
-4. ベースパス部分を削除し、先頭と末尾の `/` を取り除いて、相対パスとして返します。
+3. 対象ページが設定されたベースパスの範囲内にあるか確認します。範囲外の場合はエラーをスローします。
+4. ベースパス部分を削除し、先頭と末尾の `/` を取り除いたものを相対パスとして取得します。
 
 ```ts
 const relativePath = (page: string) => {
@@ -118,7 +105,7 @@ const relativePath = (page: string) => {
 ```
 
 ## defineConfig
-Astro の設定を定義します。
+Astro に渡す設定を定義します。
 
 ### site
 サイトの絶対 URL を指定します。
@@ -128,7 +115,7 @@ site,
 ```
 
 ### base
-サイトの公開ベースパスを指定します。
+サイトの公開ディレクトリを指定します。
 
 ```ts
 base,
@@ -145,7 +132,7 @@ trailingSlash: 'always',
 Markdown の解析・変換方法の設定です。
 
 #### processor
-Markdown を処理するためのプロセッサを `satteri` で指定し、独自の処理プラグインとして <code>[[@lib/wikilink#remarkwikilinks|remarkWikiLinks]]</code> を設定します。
+Markdown を処理するためのプロセッサを `satteri` で指定し、独自の処理プラグインとして <code>[[wikilink.ts#remarkwikilinks|remarkWikiLinks]]</code> を設定します。
 
 ```ts
 processor: satteri({
@@ -194,7 +181,7 @@ routing: {
 インテグレーションの設定を行います。
 
 #### mdx
-MDX 形式を利用できるインテグレーションです。Markdown の中に JSX コンポーネントを記述できます。
+MDX 形式を利用するためのインテグレーションです。Markdown の中に JSX コンポーネントを記述できます。
 
 ```ts
 mdx(),
@@ -204,15 +191,27 @@ mdx(),
 サイトマップを利用するためのインテグレーションです。
 
 ##### filter
-サイトマップにページを含めるかどうかを判定します。
+サイトマップに登録するページを選別する関数です。
 
 404 ページ、空のパス、ロケール名だけのパスを除外します。
-- 相対パスを使用して判定します。
+
+1. ページの相対パスを取得します。
+2. 404ページ、サイトのルート、各ロケールのトップページを除外します。
+3. スラッグ一覧のキャッシュを作成します。
+4. ページがウィキページの場合、スラッグが存在するか確認します。
+5. ウィキページ以外のページはサイトマップに含めます。
 
 ```ts
 filter: (page) => {
     const path = relativePath(page);
-    return !/(^|\/)404$/.test(path) && path !== '' && !locales.includes(path);
+    if (/(^|\/)404$/.test(path) || path === '' || locales.includes(path)) return false;
+    let slugs: Set<string> | undefined;
+    const getSlugs = () => (slugs ??= buildCache().slugs);
+    const m = path.match(/^([^/]+)\/wiki(?:\/(.*))?$/);
+    if (m) {
+        return getSlugs().has(`${m[1]}/${decodeURIComponent(m[2] ?? '')}`);
+    }
+    return true;
 },
 ```
 
