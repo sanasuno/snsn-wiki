@@ -1,48 +1,122 @@
 ---
 title: ウィキページ
-description: ウィキページのルーティング開発メモです。
+description: ウィキページのルーティングの開発メモです。
 order: 1
 tags: [ウィキページ]
 date: 2026-10-20
+updated: 2026-11-20
 ---
-`./src/pages/[locale]/wiki/[...slug].astro` は、ウィキページの動的ルーティング用のページです。
+`./src/pages/[locale]/wiki/[...slug].astro` は、動的ルーティングによってウィキページを表示するためのファイルです。ページの URL とレイアウトを決定します。
 
-`getStaticPaths()` 関数の `params` で `locale` と `slug` を出力することで、対応するパスのページを生成します。
+## インポート
+
+```ts
+import { render, type CollectionEntry } from 'astro:content';
+import { locales, type Locale } from '@lib/i18n';
+import { resolveWikiPages } from '@lib/pages';
+import { getWikiBaseUrl, getWikiUrl, ensureTrailingSlash } from '@lib/path';
+import MainLayout from '@layouts/MainLayout.astro';
+```
+
+## Props
+このコンポーネントが受け取るプロパティの方を定義するインターフェースです。
+
+```ts
+interface Props {
+    page: CollectionEntry<'wiki'>;
+    locale: Locale;
+    slug: string;
+    isFallback: boolean;
+    fallbackLocale: Locale;
+    availableLocales: Locale[];
+}
+```
+
+- `page` : 表示するウィキページ
+- `locale` : ページのロケール
+- `slug` : URL 上の記事のパス
+- `isFallback` : 代替言語の記事かどうか
+- `fallbackLocale` : 代替記事の元となる言語
+- `availableLocales` : 記事が利用可能な言語の一覧
 
 ## getStaticPaths()
-URL の組み立てに必要な `params` とページレンダリングに必要な `props` を出力します。
-- 実際の処理はほぼ `resolveWikiPages()` で行っているので、各項目を当てはめていきます。
+動的ルーティングに必要な URL の生成および対応するページデータを Astro に渡す関数です。
 
 ```ts
 export async function getStaticPaths() {
     const resolvedPages = await resolveWikiPages();
-    return resolvedPages.map(({ locale, slug, page, isFallback, fallbackLocale }) => ({
+    return resolvedPages.map(({ locale, slug, page, isFallback, fallbackLocale, availableLocales }) => ({
         params: {
             locale,
             slug: slug === '' ? undefined : slug,
         },
-        props: { page, locale, slug, isFallback, fallbackLocale },
+        props: { page, locale, slug, isFallback, fallbackLocale, availableLocales },
     }));
 }
 ```
 
-## alternateLinks
-別ロケールのページへの代替リンク一覧です。全てのロケールについて、ロケールと URL を設定します。
+1. <code>[[pages.ts#resolveWikiPages|resolveWikiPages]]</code> を用いてページを解決します。
+2. `map()` を用いて `resolvedPages` の各要素を `params` と `props` に変換します。
+
+### params
+生成する URL のパラメータです。ここでは、`locale` （ロケール部分）と `slug` （スラッグ部分）の２つが必要になります。
+- `slug` が空文字列の場合、`undefind` にすることで Wiki のトップページを表現します。
+
+### props
+ページの中身を決めるための情報です。レイアウトコンポーネントに渡して使います。
+
+## Astro.props
+`getStaticPaths()` で渡した `props` を受け取ります。
 
 ```ts
-const alternateLinks = locales.map(loc => ({
-    locale: loc,
-    href: ensureTrailingSlash(`${getWikiBaseUrl(loc)}${slug}`)
-}));
+const { page, locale, slug, isFallback, fallbackLocale, availableLocales } = Astro.props;
 ```
 
-## ページレンダー
-`render()` 関数を用いて `page` を出力し、`MainLayout` コンポーネントに各種 props を渡します。
+## 代替リンク
+別ロケールのページへの代替リンクに関する変数を定義します。
+
+### toLink
+引数として受け取ったロケールのウィキページへのリンク情報を返す関数です。ロケール（`locale`）と URL（`href`）を返します。
+
+```ts
+const toLink = (loc: Locale) => ({
+    locale: loc,
+    href: ensureTrailingSlash(`${getWikiBaseUrl(loc)}${slug}`)
+});
+```
+
+### alternateLinks
+現在の記事に対応する記事が存在するロケール（`availableLocales`）について、その記事へのリンクを生成します。
+
+```ts
+const alternateLinks = availableLocales.map(toLink);
+```
+
+### switchLinks
+サイトで利用可能なすべてのロケールについて、現在の記事に対応するリンクを生成します。言語切り替えの選択肢として使用します。
+
+```ts
+const switchLinks = locales.map(toLink);
+```
+
+### canonicalHref
+現在の記事の正規 URL です。代替言語で表示している場合、元になっているロケールの記事の URL を設定します。
+
+```ts
+const canonicalHref = getWikiUrl(page.id, (isFallback ? fallbackLocale : locale));
+```
+
+## レンダリング
+`render()` 関数を用いてレンダリングします。`Content`（本文）と `headings`（見出し情報）の両方を取得します。
+
+```ts
+const { Content, headings } = await render(page);
+```
+
+## 受け渡し
+レイアウトコンポーネント [[MainLayout]] にページ情報を渡します。
 
 ```astro
----
-const { Content, headings } = await render(page);
----
 <MainLayout
     title={page.data.title}
     description={page.data.description}

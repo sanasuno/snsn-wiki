@@ -4,16 +4,20 @@ description: ページライブラリの開発メモです。
 order: 3
 tags: [ルーティング]
 date: 2026-10-23
+updated: 2026-11-20
 ---
 `@lib/page.ts` は、ページルーティング関連のライブラリです。
 
+## インポート
+```ts
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { defaultLocale } from '@i18n/i18n.config';
+import { locales, type Locale } from '@lib/i18n';
+import { getLocale, getNormalizedSlug, normalizeSlugLike } from '@lib/path';
+```
+
 ## ResolvedWikiPage
-ウィキページの解決結果の型です。
-- `locale`: ページのロケール
-- `slug`: ページのスラッグ
-- `page`: ページデータ
-- `isFallback`: フォールバックページかどうか
-- `fallbackLocale`: フォールバックページのロケール
+`resolveWikiPages()` が返すページ情報の型です。
 
 ```ts
 export interface ResolvedWikiPage {
@@ -24,6 +28,40 @@ export interface ResolvedWikiPage {
     fallbackLocale: Locale;
 }
 ```
+- `locale` : ページのロケール
+- `slug` : ページのスラッグ
+- `page` : ページデータ
+- `isFallback` : フォールバックページかどうか
+- `fallbackLocale` : フォールバックページのロケール
+
+## 公開済み記事の取得とキャッシュ
+`wiki` コレクションから下書きを除いた記事を取得し、本番環境では取得結果をキャッシュします。
+
+### published
+記事取得処理の結果を保存する変数です。取得していない状態では `undefined` です。
+
+```ts
+let published: Promise<CollectionEntry<'wiki'>[]> | undefined;
+```
+
+### load()
+`wiki` コレクションから下書きではない記事だけを取得する処理です。
+
+```ts
+const load = () => getCollection('wiki', ({ data }) => !data.draft);
+```
+
+### getPublishedWikiPages()
+記事取得処理を開始する関数です。本番環境ではキャッシュを利用します。
+
+```ts
+export const getPublishedWikiPages = () => 
+    import.meta.env.PROD ? (published ??= load()) : load();
+```
+
+1. 本番ビルド環境かどうかを判定します。
+2. 本番ビルド環境の場合、`published` が未設定なら記事取得処理を開始し、その Promise を保存します。`published` が設定済みなら再利用します。
+3. 開発環境ではキャッシュを利用せず、毎回 `load()` を呼び出します。これはファイル変更時に古い取得結果が残らないようにするためです。
 
 ## resolveWikiPages()
 ウィキページを解決する関数です。ウィキページ収集、ロケール・スラッグ抽出、衝突の検知、フォールバック判定を行います。

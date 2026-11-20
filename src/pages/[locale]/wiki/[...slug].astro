@@ -42,7 +42,7 @@ const toLink = (loc: Locale) => ({
 });
 const alternateLinks = availableLocales.map(toLink);
 const switchLinks = locales.map(toLink);
-const canonicalHref = isFallback ? getWikiUrl(page.id, fallbackLocale) : undefined;
+const canonicalHref = getWikiUrl(page.id, (isFallback ? fallbackLocale : locale));
 
 const { Content, headings } = await render(page);
 ---

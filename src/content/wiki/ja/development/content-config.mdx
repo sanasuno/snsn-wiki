@@ -1,0 +1,120 @@
+---
+title: コレクションローダー
+description: コレクションローダーの開発メモです。
+order: 5
+tags: [ウィキページ]
+date: 2026-10-23
+updated: 2026-11-20
+---
+`./src/content.config.ts` は Astro のコンテンツコレクション定義ファイルです。ウィキページの読み込み方法・ID の生成方法・フロントマターのスキーマを定義します。
+
+## インポート
+
+```ts
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
+```
+
+### defineCollection
+コンテンツコレクションを宣言する関数です。コンテンツを扱うルールを記述します。
+
+### glob
+ファイルシステムから対象ファイルを検索するローダーです。
+
+### z
+スキーマバリデーションライブラリ `Zod` です。読み込まれたデータに対して実行時に検証します。
+
+## tag
+タグ文字列の正規化・検証を行う処理です。
+
+```ts
+const tag = z.string()
+    .transform((s) => s.normalize('NFKC').toLowerCase().trim())
+    .refine(
+        (s) => s.length > 0 && s !== '.' && s !== '..' && !/[\/\\?#%:*"<>|\u0000-\u001f]/.test(s),
+        'Tag must be non-empty and must not contain / \\ ? # % : * " < > | control chars, or be "." / ".."'
+    );
+```
+
+1. タグが文字列であることを要求します。
+2. NFKC 正規化し、英字を小文字に変換して、戦闘と末尾の空白を削除します。
+3. 空文字列、`.` および `..` 、特殊文字を含むタグを禁止します。
+
+## wiki
+ウィキページのコレンクション定義です。
+
+### loader
+読むファイルの指定方法と ID の生成方法を定義しています。
+
+```ts
+loader: glob({
+    base: './src/content/wiki',
+    pattern: '**/*.{md,mdx}',
+    generateId: ({ entry }) => entry.replace(/\.(md|mdx)$/, '')
+}),
+```
+
+#### base
+読み込む対象のディレクトリです。
+
+```ts
+base: './src/content/wiki',
+```
+
+`./src/content/wiki` ディレクトリ配下のファイルを対象にしています。
+
+#### pattern
+読み込むファイルの条件です。
+
+```ts
+pattern: '**/*.{md,mdx}',
+```
+
+`wiki` 配下にあるすべての Markdown および MDX ファイルを対象とします。
+
+#### generateId
+各記事に対して一意の ID を生成する関数です。`entry` が対象ファイルのパスを表します。
+
+```ts
+generateId: ({ entry }) => entry.replace(/\.(md|mdx)$/, '')
+```
+
+各ファイルパスの拡張子（`.md` または `.mdx`）を削除したものを ID としています。ディレクトリ構造と ID が一致するので、記事の特定にファイルパスを用いることができます。
+
+### schema
+ウィキページのフロントマターに記述するメタデータの仕様を定義します。
+- `strictObject()` で、定義されていないプロパティを許可しないようにしています。これにより、記述ミスを発見することができます。
+
+```ts
+schema: z.strictObject({
+    title: z.string(),
+    description: z.string().optional(),
+    order: z.number().default(99999999),
+    aliases: z.array(z.string()).default([]),
+    tags: z.array(tag).default([]).transform((tags) => [...new Set(tags)]),
+    date: z.coerce.date().optional(),
+    updated: z.coerce.date().optional(),
+    draft: z.boolean().default(false),
+    showSubpanel: z.boolean().default(true),
+    isSubpage: z.boolean().default(false),
+}),
+```
+
+- `title`: ページのタイトル（文字列、必須）
+- `description`: ページの説明文（文字列、任意）
+- `order`: ページの表示順（数値が小さい方が上に表示される）（整数、任意、デフォルト値 99999999）
+- `aliases`: ページの別名（文字列配列、任意）
+- `tags`: ページのタグ（重複排除）（タグ配列、任意）
+- `date`: ページの作成日（YYYY-MM-DD形式、任意）
+- `updated`: ページの更新日（YYYY-MM-DD形式、任意）
+- `draft`: 下書きフラグ（true/false、任意、デフォルトfalse）
+- `showSubpanel`: サブパネル表示フラグ（true/false、任意、デフォルトtrue）
+- `isSubpage`: サブページフラグ（true/false、任意、デフォルトfalse）
+
+## collections
+定義した `wiki` コレクションを Astro に公開します。
+
+```ts
+export const collections = { wiki };
+```
