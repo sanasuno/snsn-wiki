@@ -38,7 +38,7 @@ interface OgImageParams {
     title: string;
     description?: string;
     category?: string;
-    siteName?: string;
+    siteName: string;
 }
 
 const ogCache = new Map<string, Promise<Buffer>>();
@@ -47,6 +47,7 @@ export function renderOgImage(params: OgImageParams): Promise<Buffer> {
     let hit = ogCache.get(key);
     if (!hit) {
         hit = renderOgImageUncached(params);
+        hit.catch(() => ogCache.delete(key));
         ogCache.set(key, hit);
     }
     return hit;
@@ -57,7 +58,7 @@ export function renderOgImage(params: OgImageParams): Promise<Buffer> {
  * @param param0 OGP画像生成用のパラメータ
  * @returns OGP画像のバッファ
  */
-export async function renderOgImageUncached({ title, description, category, siteName }: OgImageParams): Promise<Buffer> {
+async function renderOgImageUncached({ title, description, category, siteName }: OgImageParams): Promise<Buffer> {
     const width = 1200;
     const height = 630;
 
@@ -69,7 +70,8 @@ export async function renderOgImageUncached({ title, description, category, site
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between',
+                flex: 1,
+                justifyContent: 'center',
                 padding: '64px',
                 background: '#0f1115',
                 color: '#f5f5f5',
@@ -103,7 +105,7 @@ export async function renderOgImageUncached({ title, description, category, site
                                         fontWeight: 700,
                                         lineHeight: 1.3,
                                         lineClamp: 2,
-                                        textOverflow: 'ellipsis'
+                                        wordBreak: 'break-word',
                                     },
                                     children: title
                                 },
@@ -141,7 +143,7 @@ export async function renderOgImageUncached({ title, description, category, site
                                         padding: '6px 16px',
                                         borderRadius: 999,
                                         border: '1px solid rgba(245,245,245,0.4)',
-                                        lineClamp: 4,
+                                        lineClamp: 1,
                                     },
                                     children: category,
                                 },

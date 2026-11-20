@@ -127,6 +127,13 @@ const hasSubpanel = showSubpanel && hasToc;
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content={title} />
+        <meta property="og:image:type" content="image/png" />
+        {alternateLinks
+            .filter((l) => l.locale !== locale)
+            .map((l) => <meta property="og:locale:alternate" content={t('og.locale', l.locale)} />)}
+        {type === 'wiki' && date && <meta property="article:published_time" content={date.toISOString()} />}
+        {type === 'wiki' && updated && <meta property="article:modified_time" content={updated.toISOString()} />}
+        {type === 'wiki' && tags.map((tag) => <meta property="article:tag" content={tag} />)}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={pageDescription} />
