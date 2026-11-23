@@ -142,8 +142,9 @@ normalizedIdOwners.get(normalizedId)!.add(page.id);
 ```ts
 for (const page of wikiPages) {
     if (!page.data.isSubpage) continue;
+    const locale = getLocale(page.id);
     const parentSlug = getNormalizedSlug(page.id.split('/').slice(0, -1).join('/'));
-    if (!pagesBySlugLocale.has(parentSlug)) {
+    if (!pagesBySlugLocale.get(parentSlug)?.[locale]) {
         throw new Error(`[wiki routing] Parent page not found for subpage: ${page.id}`);
     }
 }
@@ -152,75 +153,132 @@ for (const page of wikiPages) {
 2. ID の最後の階層を取り除き、正規化したものを親ページのスラッグとします。
 3. `pagesBySlugLocale` に親ページのスラッグが登録されていなければ、エラーをスローします。
 
-### ウィキページ解決・フォールバック判定
-`pagesBySlugLocale` に登録されているすべてのスラッグとロケールを組み合わせ、フォールバック判定を行ってからウィキページを解決します。
-
-各スラッグについて、全てのロケールでページの存在をチェックします。存在しない場合、同スラッグ・別ロケールのページ内容をフォールバックとして使用します。
-
-フォールバックの優先順は以下の通りです。
-1. 本来のロケール
-2. デフォルトロケール (`defaultLocale`)
-3. 対象のスラッグでページが存在するロケール（ `locales` の配列順に検証）
-
-- ページが存在しない場合、 `isFallback` フラグが `true` になり、 `fallbackLocale` にフォールバック先のロケールが設定されます。
-- ページが存在する場合、 `fallbackLocale` には本来のロケールが設定されますが、これは実際には使用されません。
-- いずれのロケールでもページが存在しない場合、エラーをスローします。
-
+### 衝突検知
+`normalizedIdOwners`に登録したすべての正規化 ID について、正規化前の ID の登録数を検証します。登録数が1より多ければ衝突とみなし、エラーをスローします。
 ```ts
-const resolved: ResolvedWikiPage[] = [];
-for (const slug of Object.keys(pagesBySlugLocale)) {
-    const availablePages = pagesBySlugLocale[slug];
-    for (const locale of locales) {
-        const isFallback = !availablePages[locale];
-        let page: CollectionEntry<'wiki'>;
-        let fallbackLocale: Locale;
-        if (availablePages[locale]) {
-            page = availablePages[locale]!;
-            fallbackLocale = locale;
-        } else if (availablePages[defaultLocale]) {
-            page = availablePages[defaultLocale]!;
-            fallbackLocale = defaultLocale;
-        } else {
-            page = locales.map((loc) => availablePages[loc]).find(
-                (p): p is CollectionEntry<'wiki'> => p !== undefined
-            )!;
-            fallbackLocale = getLocale(page!.id);
-        }
-        if (!page) {
-            throw new Error(`[wiki routing] No page found for slug "${slug}"`);
-        }
-        resolved.push({ locale, slug, page, isFallback, fallbackLocale });
+for (const [normalizedId, owners] of normalizedIdOwners) {
+    if (owners.size > 1) {
+        throw new Error(`[wiki routing] Multiple owners for normalized ID "${normalizedId}": ${Array.from(owners).join(', ')}`);
     }
 }
 ```
 
-### 戻り値
-解決されたウィキページ情報の配列を返します。
+### ページ生成
+`pagesBySlugLocale` に登録されているすべてのスラッグとロケールを組み合わせ、フォールバック判定を行ってからウィキページを生成します。
 
+#### フォールバック処理
+ページの存在をチェックし、存在しない場合は同スラッグ・別ロケールのページ内容をフォールバックとして使用します。
+
+##### isFallback
+実際にページが存在するかをチェックします。`true` なら存在せず、`false` なら存在します。
+
+```ts
+const isFallback = !availablePages[locale];
+```
+##### フォールバック処理
+```ts
+let page: CollectionEntry<'wiki'>;
+let fallbackLocale: Locale;
+if (availablePages[locale]) {
+    page = availablePages[locale]!;
+    fallbackLocale = locale;
+} else if (availablePages[defaultLocale]) {
+    page = availablePages[defaultLocale]!;
+    fallbackLocale = defaultLocale;
+} else {
+    page = locales.map((loc) => availablePages[loc]).find(
+        (p): p is CollectionEntry<'wiki'> => p !== undefined
+    )!;
+    fallbackLocale = getLocale(page!.id);
+}
+```
+以下の優先度で判定します。
+1. 本来のロケール
+2. デフォルトロケール (`defaultLocale`)
+3. `locales` の配列順で最初に見つかった、記事が存在するロケール
+
+- ページが存在しない場合、 `isFallback` フラグが `true` になります。
+- `fallbackLocale` は実際に表示される記事のロケールです。
+- いずれのロケールでもページが存在しない場合、エラーをスローします。
+
+#### ページ生成
+```ts
+if (!page) {
+    throw new Error(`[wiki routing] No page found for slug "${slug}"`);
+}
+```
+ページ情報が取得できない場合はエラーをスローします。
+
+
+```ts
+resolved.push({
+    locale,
+    slug,
+    page,
+    isFallback,
+    fallbackLocale,
+    availableLocales: locales.filter((l) => availablePages[l])
+});
+```
+最終的なページ情報を出力します。
+
+### 出力
 ```ts
 return resolved;
 ```
+`resolved` 配列を返します。
 
 ## getUniquePagesByLocale()
-対象のページ群に対し、指定ロケール向けに正規化スラッグをキーとした一意のページリストを返す関数です。
+指定した言語を優先して、同じスラッグの記事を1つにまとめる関数です。
 - 指定されたロケール、デフォルトロケール、その他のロケール（ `locales` の配列順）の順序で、同じスラッグを持つページ同士で比較し、最も優先度の高いものを格納して返します。
 
+### proority
+ロケールの優先順位を表す変数です。引数で指定されたロケールに0、デフォルトロケールに1、それ以外のロケールには `locales` の登録順に2以降の数値を順に割り当てます。
 ```ts
-export function getUniquePagesByLocale( pages: CollectionEntry<'wiki'>[], locale: Locale ): CollectionEntry<'wiki'>[] {
-    const priority = (l: Locale) =>
-        l === locale
-            ? 0
-            : l === defaultLocale
-                ? 1
-                : 2 + locales.indexOf(l);
-    const best: Record<string, CollectionEntry<'wiki'>> = {};
-    for (const page of pages) {
-        const key = getNormalizedSlug(page.id);
-        const current = best[key];
-        if (!current || priority(getLocale(page.id)) < priority(getLocale(current.id))) {
-            best[key] = page;
-        }
+const priority = (l: Locale) =>
+    l === locale
+        ? 0
+        : l === defaultLocale
+            ? 1
+            : 2 + locales.indexOf(l);
+```
+
+### best
+スラッグごとに最も優先順位の高いロケールの記事を保存する変数です。
+
+```ts
+const best = new Map<string, CollectionEntry<'wiki'>>();
+```
+
+### 記事の処理
+対象となる全てのページについて処理を行います。
+```ts
+for (const page of pages) {
+    const key = getNormalizedSlug(page.id);
+    const current = best.get(key);
+    if (!current || priority(getLocale(page.id)) < priority(getLocale(current.id))) {
+        best.set(key, page);
     }
-    return Object.values(best);
 }
 ```
+1. 正規化したスラッグを取得し、同じスラッグのキーが登録されているか調べます。
+2. 同じスラッグの記事が他に登録されていないか、登録済みの記事の優先度が現在の記事の優先度より低い場合、`best` を現在の記事に更新します。
+
+### 結果を返す
+`best` の Map に登録されている値を取得し、配列に変換して返します。
+```ts
+return [...best.values()];
+```
+
+## findPageBySlug()
+指定されたスラッグとロケールに対応するWiki記事を検索する関数です。
+
+```ts
+export async function findPageBySlug(slug: string, locale: Locale) {
+    const pages = await getPublishedWikiPages();
+    return getUniquePagesByLocale(pages, locale).find((p) => getNormalizedSlug(p.id) === slug);
+}
+```
+1. 公開済み記事を取得します。
+2. 指定ロケールを優先し、スラッグのロケールを1つに絞ります。
+3. スラッグが一致する記事を検索し、返します。存在しなければ `undefined` になります。

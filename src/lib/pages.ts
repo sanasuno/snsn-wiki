@@ -114,8 +114,8 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
 }
 
 /**
- * 対象のページ群に対し、指定ロケール向けに正規化スラッグをキーとした一意のページリストを返す関数
- * @param pages ページリスト
+ * 指定した言語を優先して、同じスラッグの記事を1つにまとめる関数
+ * @param pages ページ配列
  * @param locale ロケール
  * @returns ページリスト
  */
