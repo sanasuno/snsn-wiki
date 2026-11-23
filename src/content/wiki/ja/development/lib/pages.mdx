@@ -66,60 +66,91 @@ export const getPublishedWikiPages = () =>
 ## resolveWikiPages()
 ウィキページを解決する関数です。ウィキページ収集、ロケール・スラッグ抽出、衝突の検知、フォールバック判定を行います。
 
-### ウィキページ収集
-`getCollection()` 関数でウィキページを収集します。
-- 下書きページ（ `draft = true` を設定したページ）は除外します。
+### 記事整理
+#### wikiPages
+`getCollection()` 関数で公開設定のウィキページを収集します。
 
 ```ts
-const wikiPages = await getCollection('wiki', (page) => !page.data.draft);
+const wikiPages = await getPublishedWikiPages();
 ```
 
-### ページデータ格納
-収集したページを、スラッグとロケールをキーとして配列 `pagesBySlugLocale` に格納します。
-
-また、スラッグ生成時の正規化で起こりうるスラッグ名の衝突を検知するため、並行して正規化前後のページ ID を `normalizedIdOwners` に格納します。
+#### pagesBySlugLocale
+同じ記事のロケール違いをまとめる Map です。スラッグ → ロケール の二重のキーを持ちます。
 
 ```ts
-const pagesBySlugLocale: Record<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>> = {};
-const normalizedIdOwners: Record<string, Set<string>> = {};
+const pagesBySlugLocale = new Map<string, Partial<Record<Locale, CollectionEntry<'wiki'>>>>();
 ```
 
-各ページのキーとなる `locale` と `normalizedSlug` を取得し、ページ内容を `pagesBySlugLocale` に登録します。  
+#### normalizedIdOwners
+正規化で ID が衝突する記事を検出するための Map です。
 
 ```ts
-for (const page of wikiPages) {
-    const locale = getLocale(page.id);
-    const normalizedSlug = getNormalizedSlug(page.id);
-    if (!pagesBySlugLocale[normalizedSlug]) {
-        pagesBySlugLocale[normalizedSlug] = {};
-    }
-    pagesBySlugLocale[normalizedSlug][locale] = page;
+const normalizedIdOwners = new Map<string, Set<string>>();
 ```
 
-並行して、正規化後のページ ID をキー、正規化前のページ ID を値として `normalizedIdOwners` に登録します。
-- 衝突の検出は同一ロケール内で判定するため、スラッグではなくロケール情報を含むページ ID を使用します。
+キーに正規化後、値に正規化前の ID を保存します。
+
+### 記事登録
+取得した記事を順番に処理し、2つの Map に登録します。
+
+1. ロケールとスラッグを取得します。
+2. スラッグをキーとし、記事を登録します。
+3. 正規化前後の ID を紐付けます。
+
+#### locale
+記事のロケールです。<code>[[path.ts#getLocale|getLocale()]]</code> 関数を使用します。
 
 ```ts
-for (const page of wikiPages) {
-    const normalizedId = normalizeSlugLike(page.id);
-    if (!normalizedIdOwners[normalizedId]) {
-        normalizedIdOwners[normalizedId] = new Set();
-    }
-    normalizedIdOwners[normalizedId].add(page.id);
+const locale = getLocale(page.id);
+```
+
+#### normalizedSlug
+```ts
+const normalizedSlug = getNormalizedSlug(page.id);
+if (/[?#%\\]/.test(normalizedSlug)) {
+    throw new Error(`[wiki routing] Unsafe characters in slug: ${page.id}`);
 }
 ```
 
-### 衝突検知
-`normalizedIdOwners` の各エントリについて要素数を検証します。
-複数の要素が同一の正規化後 ID に存在する場合、正規化による衝突と判定してエラーをスローします。
+1. <code>[[path.ts#getNormalizedSlug|getNormalizedSlug()]]</code> 関数でページの ID からロケール部分を取り除き、正規化したスラッグを取得します。
+2. スラッグに危険な文字（`?` `#` `%` `\` ）が入っている場合はエラーをスローします。
 
+
+#### pagesBySlugLocaleへの登録
 ```ts
-for (const [normalizedId, owners] of Object.entries(normalizedIdOwners)) {
-    if (owners.size > 1) {
-        throw new Error(`[wiki routing] Multiple owners for normalized ID "${normalizedId}": ${Array.from(owners).join(', ')}`);
+if (!pagesBySlugLocale.has(normalizedSlug)) {
+    pagesBySlugLocale.set(normalizedSlug, {});
+}
+pagesBySlugLocale.get(normalizedSlug)![locale] = page;
+```
+1. スラッグが `pagesBySlugLocale` のキーに存在しなければ、スラッグをキーとして空のオブジェクトを登録します。
+2. 現在の記事を、スラッグとロケールをキーとして `pagsBySlugLocale` に登録します。
+
+#### normalizedIdOwnersへの登録
+```ts
+const normalizedId = normalizeSlugLike(page.id);
+if (!normalizedIdOwners.has(normalizedId)) {
+    normalizedIdOwners.set(normalizedId, new Set());
+}
+normalizedIdOwners.get(normalizedId)!.add(page.id);
+```
+1. 記事 ID を正規化します。
+2. 正規化 ID が `normalizedIdOwners` に存在しなければ、正規化 ID をキーとして空の Set を登録します。
+3. 正規化前の ID を Set に追加します。
+
+### サブページの親記事検証
+```ts
+for (const page of wikiPages) {
+    if (!page.data.isSubpage) continue;
+    const parentSlug = getNormalizedSlug(page.id.split('/').slice(0, -1).join('/'));
+    if (!pagesBySlugLocale.has(parentSlug)) {
+        throw new Error(`[wiki routing] Parent page not found for subpage: ${page.id}`);
     }
 }
 ```
+1. サブページフラグが設定されているか検証します。サブページでなければこのループ処理を終了し、次に進みます。
+2. ID の最後の階層を取り除き、正規化したものを親ページのスラッグとします。
+3. `pagesBySlugLocale` に親ページのスラッグが登録されていなければ、エラーをスローします。
 
 ### ウィキページ解決・フォールバック判定
 `pagesBySlugLocale` に登録されているすべてのスラッグとロケールを組み合わせ、フォールバック判定を行ってからウィキページを解決します。
