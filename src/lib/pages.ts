@@ -63,8 +63,9 @@ export async function resolveWikiPages(): Promise<ResolvedWikiPage[]> {
 
     for (const page of wikiPages) {
         if (!page.data.isSubpage) continue;
+        const locale = getLocale(page.id);
         const parentSlug = getNormalizedSlug(page.id.split('/').slice(0, -1).join('/'));
-        if (!pagesBySlugLocale.has(parentSlug)) {
+        if (!pagesBySlugLocale.get(parentSlug)?.[locale]) {
             throw new Error(`[wiki routing] Parent page not found for subpage: ${page.id}`);
         }
     }
