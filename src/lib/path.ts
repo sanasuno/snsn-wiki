@@ -45,7 +45,10 @@ export function getLocale(pageId: string): Locale {
  */
 export function getRawSlug(pageId: string): string {
     const parts = pageId.split('/');
-    return parts.slice(1).join('/');
+    if (isLocale(parts[0])) {
+        return parts.slice(1).join('/');
+    }
+    throw new Error(`[Invalid id format] ${pageId}`);
 }
 
 /**
@@ -101,6 +104,9 @@ export function getWikiBaseUrl(locale: Locale): string {
  */
 export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
+    if (/[?#%\\]/.test(slug)) {
+        throw new Error(`[wiki routing] Unsafe characters in slug: ${pageId}`);
+    }
     return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${slug}`);
 }
 
@@ -143,7 +149,7 @@ export function decodePath(path: string): string {
     try {
         return ensureTrailingSlash(decodeURIComponent(path));
     } catch {
-        return ensureTrailingSlash(path);
+        throw new Error(`[path] Failed to decode path: ${path}`);
     }
 }
 
@@ -155,6 +161,9 @@ export function decodePath(path: string): string {
  * @returns パスが一致する場合はtrue、そうでない場合はfalse
  */
 export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
+    if (!targetSlug.startsWith('/')) {
+        throw new Error(`[path] targetSlug must start with '/': ${targetSlug}`);
+    }
     const base = getBaseUrl();
     const decodedCurrentPath = decodePath(currentPath);
     const relativePath = decodedCurrentPath.startsWith(base)
