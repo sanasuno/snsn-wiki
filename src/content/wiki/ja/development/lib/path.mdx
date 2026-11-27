@@ -7,8 +7,18 @@ date: 2026-10-23
 ---
 `@lib/path.ts` は、パス関連のライブラリです。
 
+## インポート・再エクスポート
+
+```ts
+import { isLocale, type Locale } from '@lib/i18n';
+import { normalizeSlugLike } from '@lib/slug-core';
+export { normalizeSlugLike }
+```
+
+<code>[[slug-core.ts#normalizeSlugLike|normalizeSlugLike()]]</code> 関数は、このファイルからも公開します。
+
 ## removeTrailingSlash()
-パス末尾のスラッシュを削除する関数です。
+パス末尾のスラッシュを1つ削除する関数です。
 
 ```ts
 export function removeTrailingSlash(path: string): string {
@@ -17,8 +27,7 @@ export function removeTrailingSlash(path: string): string {
 ```
 
 ## ensureTrailingSlash()
-パス末尾にスラッシュを付与する関数です。
-- 既に末尾にスラッシュがある場合は新たに付与せず、そのまま返します。
+パス末尾にスラッシュがない場合、スラッシュを付与して返す関数でたに付与せず、す。既に末尾にスラッシュがある場合はそのまま返します。
 
 ```ts
 export function ensureTrailingSlash(path: string): string {
@@ -27,9 +36,8 @@ export function ensureTrailingSlash(path: string): string {
 ```
 
 ## getLocale()
-ページ ID からロケールを取得する関数です。
-- ページ ID を `/` で分割したときの先頭の要素を `isLocale()` 関数で有効かどうか判定します。
-- 有効だった場合はロケールとして返し、有効でなかった場合はエラーをスローします。
+ページ ID からロケールを取得する関数です。ID の先頭の要素をロケールとして返します。
+- <code>[[i18n.ts#isLocale|isLocale()]]</code> 関数で有効かどうか判定し、有効でなかった場合はエラーをスローします。
 
 ```ts
 export function getLocale(pageId: string): Locale {
@@ -42,8 +50,7 @@ export function getLocale(pageId: string): Locale {
 ```
 
 ## getRawSlug()
-ページ ID から生のスラッグを取得する関数です。
-- ページ ID からロケール部分（`/` で分割した際の先頭部分）を除いた要素を返します。
+ページ ID から生のスラッグを取得する関数です。先頭のロケール部分を取り除いたものを返します。
 
 ```ts
 export function getRawSlug(pageId: string): string {
@@ -52,24 +59,8 @@ export function getRawSlug(pageId: string): string {
 }
 ```
 
-## normalizeSlugLike()
-スラッグやパスを正規化する関数です。
-- `NFKC` 正規化、小文字化、空白・改行除去を、この順に適用します。
-- 結果が `index` になった場合は空文字を返します。
-- 末尾に `/index` がある場合は削除して返します。
-
-```ts
-export function normalizeSlugLike(rawSlug: string): string {
-    const normalized = rawSlug.normalize('NFKC').toLowerCase().trim();
-    return normalized === 'index'
-        ? ''
-        : normalized.replace(/\/index$/, '');
-}
-```
-
 ## getNormalizedSlug()
-ページ ID から正規化されたスラッグを取得する関数です。
-- `getRawSlug()` 関数で生のスラッグを取得し、`normalizeSlugLike()` 関数で正規化します。
+ページ ID から正規化済みのスラッグを取得する関数です。`getRawSlug()` 関数で取得したスラッグに <code>[[slug-core.ts#normalizeSlugLike|normalizeSlugLike()]]</code> 関数による正規化を施します。
 
 ```ts
 export function getNormalizedSlug(pageId: string): string {
@@ -79,7 +70,7 @@ export function getNormalizedSlug(pageId: string): string {
 ```
 
 ## getBaseUrl()
-ベース URL を取得する関数です。
+サイトのベース URL を取得する関数です。
 - 環境変数から `BASE_URL` を取得し、`ensureTrailingSlash()` 関数で末尾のスラッシュを確保して返します。
 
 ```ts
@@ -90,7 +81,7 @@ export function getBaseUrl(): string {
 
 ## getLocaleBaseUrl()
 ロケールベース URL を取得する関数です。
-- ベース URL の後ろに各ロケールの文字列を追加した URL を返します。
+- ベース URL の後ろにロケールを追加した URL を返します。
 
 ```ts
 export function getLocaleBaseUrl(locale: Locale): string {
@@ -99,8 +90,7 @@ export function getLocaleBaseUrl(locale: Locale): string {
 ```
 
 ## getLocalePathUrl()
-ロケールとパスから URL を取得する関数です。
-- ロケールベース URL の後ろに、パスを連結した URL を返します。
+ロケールベース URL に任意のパスを追加した URL を返す関数です。
 
 ```ts
 export function getLocalePathUrl(locale: Locale, path: string): string {
@@ -120,7 +110,7 @@ export function getWikiBaseUrl(locale: Locale): string {
 
 ## getWikiUrl()
 ページ ID からウィキページの URL を取得する関数です。
-- ロケールを指定しない場合は、ページ ID からロケールを取得します。
+- ロケールを指定した場合は URL のロケール部分のみが指定ロケールの URL を返します。
 
 ```ts
 export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
@@ -129,9 +119,28 @@ export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): 
 }
 ```
 
+## getTagUrl()
+タグページの URL を取得する関数です。タグ名は URL 用にエンコードされます。
+
+```ts
+export function getTagUrl(locale: Locale, tag: string): string {
+    return getLocalePathUrl(locale, `tag/${encodeURIComponent(tag)}`);
+}
+```
+
+## getCategoryUrl()
+カテゴリページの URL を取得する関数です。
+- カテゴリは階層構造を持つので、階層を区切る `/` がエンコード処理に巻き込まれないよう、階層ごとにエンコードします。
+
+```ts
+export function getCategoryUrl(locale: Locale, category: string): string {
+    const encoded = category.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+    return getLocalePathUrl(locale, `category/${encoded}`);
+}
+```
+
 ## getCurrentPath()
-Astro.url から現在のパスを取得する関数です。
-- 現在のパスを取得し、末尾のスラッシュを確保して返します。
+URL オブジェクトのパスネームを取得する関数です。主に `Astro.url` を渡して現在のパスを取得することを想定しています。
 
 ```ts
 export function getCurrentPath(url: URL): string {
@@ -140,9 +149,7 @@ export function getCurrentPath(url: URL): string {
 ```
 
 ## decodePath()
-URL のパスをデコードする関数です。
-- `decodeURIComponent` でデコードし、末尾のスラッシュを確保して返します。
-- デコードに失敗した場合は、元のパスを返します。
+エンコードされた URL パスをデコードする関数です。デコードに失敗した場合は、元のパスを返します。末尾の `/` も確保されます。
 
 ```ts
 export function decodePath(path: string): string {
@@ -156,22 +163,30 @@ export function decodePath(path: string): string {
 
 ## isPathActive()
 現在のパスが指定されたスラッグでアクティブかどうかを判定する関数です。主にナビゲーションにおいて現在の位置を示すために使用されます。
-- `exact` パラメータに `true` を設定すると、絶対一致で判定します。
-- `exact` が `false` もしくは未指定の場合、現在のパスがスラッグで始まるかどうかを判定します。
-- 現在のパスにはベース URL やロケールが含まれるので、これらを取り除いてから判定を行います。
+- `exact` パラメータに `true` を設定すると絶対一致で、`false` もしくは未指定の場合は現在のパスが対象スラッグで始まるかどうかで判定します。
 
 ```ts
 export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
     const base = getBaseUrl();
     const decodedCurrentPath = decodePath(currentPath);
-    const relativePath = decodedCurrentPath.startsWith(base) ? decodedCurrentPath.slice(base.length) : decodedCurrentPath;
+    const relativePath = decodedCurrentPath.startsWith(base)
+        ? decodedCurrentPath.slice(base.length)
+        : decodedCurrentPath;
     const [maybeLocale, ...rest] = relativePath.split('/');
     const currentSlug = isLocale(maybeLocale)
         ? `/${normalizeSlugLike(removeTrailingSlash(rest.join('/')))}`
-        : normalizeSlugLike(removeTrailingSlash(relativePath));
+        : `/${normalizeSlugLike(removeTrailingSlash(relativePath))}`;
     if (exact || targetSlug === '/') {
         return currentSlug === targetSlug;
     }
     return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
 }
 ```
+
+1. ベース URL を取得します。
+2. 現在のパスの URL エンコードをデコードし、末尾の `/` を確保します。
+3. 現在のパスがサイトのベース URL で始まる場合、その部分を取り除きます。始まらない場合はそのまま使います。
+4. パスを `/` で分割し、最初の要素を `maybeLocale` に、残りを `rest` に格納します。
+5. `maybeLocale` を `isLocale()` 関数で判定し、ロケールだった場合は取り除いて正規化します。ロケールでなければそのまま全体を正規化します。
+6. `exact` が `true` の場合または `targetSlug` が `/` の場合、完全一致で判定します。
+7. それ以外の場合は配下にあるかどうかで判定します。意図しない部分一致を避けるため、完全一致もしくは区切り文字まで含めた一致で判定します。
