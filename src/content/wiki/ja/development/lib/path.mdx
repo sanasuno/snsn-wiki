@@ -1,8 +1,8 @@
 ---
 title: パスライブラリ
 description: パスライブラリの開発メモです。
-aliases: [path.ts]
 order: 2
+aliases: [path.ts]
 tags: [パス, ルーティング]
 date: 2026-10-23
 updated: 2026-11-27
@@ -57,7 +57,10 @@ export function getLocale(pageId: string): Locale {
 ```ts
 export function getRawSlug(pageId: string): string {
     const parts = pageId.split('/');
-    return parts.slice(1).join('/');
+    if (isLocale(parts[0])) {
+        return parts.slice(1).join('/');
+    }
+    throw new Error(`[Invalid id format] ${pageId}`);
 }
 ```
 
@@ -117,6 +120,9 @@ export function getWikiBaseUrl(locale: Locale): string {
 ```ts
 export function getWikiUrl(pageId: string, locale: Locale = getLocale(pageId)): string {
     const slug = getNormalizedSlug(pageId);
+    if (/[?#%\\]/.test(slug)) {
+        throw new Error(`[wiki routing] Unsafe characters in slug: ${pageId}`);
+    }
     return ensureTrailingSlash(`${getWikiBaseUrl(locale)}${slug}`);
 }
 ```
@@ -158,7 +164,7 @@ export function decodePath(path: string): string {
     try {
         return ensureTrailingSlash(decodeURIComponent(path));
     } catch {
-        return ensureTrailingSlash(path);
+        throw new Error(`[path] Failed to decode path: ${path}`);
     }
 }
 ```
@@ -169,6 +175,9 @@ export function decodePath(path: string): string {
 
 ```ts
 export function isPathActive(targetSlug: string, currentPath: string, exact = false): boolean {
+    if (!targetSlug.startsWith('/')) {
+        throw new Error(`[path] targetSlug must start with '/': ${targetSlug}`);
+    }
     const base = getBaseUrl();
     const decodedCurrentPath = decodePath(currentPath);
     const relativePath = decodedCurrentPath.startsWith(base)
@@ -182,13 +191,14 @@ export function isPathActive(targetSlug: string, currentPath: string, exact = fa
         return currentSlug === targetSlug;
     }
     return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
+}return currentSlug === targetSlug || currentSlug.startsWith(`${targetSlug}/`);
 }
 ```
-
-1. ベース URL を取得します。
-2. 現在のパスの URL エンコードをデコードし、末尾の `/` を確保します。
-3. 現在のパスがサイトのベース URL で始まる場合、その部分を取り除きます。始まらない場合はそのまま使います。
-4. パスを `/` で分割し、最初の要素を `maybeLocale` に、残りを `rest` に格納します。
-5. `maybeLocale` を `isLocale()` 関数で判定し、ロケールだった場合は取り除いて正規化します。ロケールでなければそのまま全体を正規化します。
-6. `exact` が `true` の場合または `targetSlug` が `/` の場合、完全一致で判定します。
-7. それ以外の場合は配下にあるかどうかで判定します。意図しない部分一致を避けるため、完全一致もしくは区切り文字まで含めた一致で判定します。
+1. `targetSlug` が `/` で始まるかチェックします。
+2. ベース URL を取得します。
+3. 現在のパスの URL エンコードをデコードし、末尾の `/` を確保します。
+4. 現在のパスがサイトのベース URL で始まる場合、その部分を取り除きます。始まらない場合はそのまま使います。
+5. パスを `/` で分割し、最初の要素を `maybeLocale` に、残りを `rest` に格納します。
+6. `maybeLocale` を `isLocale()` 関数で判定し、ロケールだった場合は取り除いて正規化します。ロケールでなければそのまま全体を正規化します。
+7. `exact` が `true` の場合または `targetSlug` が `/` の場合、完全一致で判定します。
+8. それ以外の場合は配下にあるかどうかで判定します。意図しない部分一致を避けるため、完全一致もしくは区切り文字まで含めた一致で判定します。
