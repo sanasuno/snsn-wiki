@@ -4,7 +4,7 @@
  */
 import { isLocale, type Locale } from '@lib/i18n';
 import { normalizeSlugLike } from '@lib/slug-core';
-export { normalizeSlugLike}
+export { normalizeSlugLike }
 
 /**
  * 末尾のスラッシュを削除する関数
